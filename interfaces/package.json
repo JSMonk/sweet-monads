@@ -1,0 +1,9 @@
+{
+  "name": "@sweet-monads/interfaces",
+  "version": "0.0.1",
+  "description": "Monad interfaces",
+  "main": "index.js",
+  "scripts": {},
+  "author": "",
+  "license": "ISC"
+}

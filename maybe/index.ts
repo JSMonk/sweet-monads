@@ -1,4 +1,4 @@
-import { Monad } from "../interfaces/monad";
+import { Monad } from "@sweet-monads/interfaces/monad";
 
 enum MaybeState {
   Just = "Just",
