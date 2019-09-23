@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@sweet-monad/interfaces": "^0.0.1"
+    "@sweet-monads/interfaces": "^0.0.1"
   },
   "author": "",
   "license": "ISC"
