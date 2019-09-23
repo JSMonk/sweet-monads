@@ -4,9 +4,9 @@
   "description": "Either monad",
   "main": "index.js",
   "scripts": {},
-    "devDependencies": {
-        "@sweet-monad/interfaces": "^0.0.1"   
-    },
+  "dependencies": {
+    "@sweet-monad/interfaces": "^0.0.1"
+  },
   "author": "",
   "license": "ISC"
 }
