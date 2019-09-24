@@ -1,10 +1,10 @@
 {
   "name": "@sweet-monads/maybe",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "",
   "main": "index.js",
   "dependencies": {
-    "@sweet-monads/interfaces": "^0.0.1"
+    "@sweet-monads/interfaces": "^0.0.2"
   },
   "author": "",
   "license": "ISC"
