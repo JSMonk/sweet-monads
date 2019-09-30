@@ -1,4 +1,4 @@
-import { Maybe } from "@sweet-monads/maybe";
+import { Maybe } from "./node_modules/@sweet-monads/maybe/index";
 
 type IteratorCreator<T> = () => Iterator<T>;
 type FromIterator = <I>() => Iterable<I>;
@@ -7,7 +7,7 @@ const GENERATE_WITH = Symbol("GENERATE_WITH");
 
 const id = (x: any) => x;
 
-const defaultFromIterator = function() {
+const defaultFromIterator = function<I>(): Array<I> {
   return [...this];
 };
 
@@ -87,19 +87,21 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  enumarate() {
+  enumarate(): LazyIterator<[number, I]> {
     let index = 0;
     return this.map(item => [index++, item]);
   }
 
-  fold<A>(fn: (a: A, i: I) => A, accumulator?: A) {
+  fold(fn: (a: I, i: I) => I): I;
+  fold<A>(fn: (a: A, i: I) => A, accumulator: A): A;
+  fold<A>(fn: (a: A | I, i: I) => A | I, accumulator?: A | I) {
     const iterator = this[Symbol.iterator]();
     const first = iterator.next();
     if (first.done) {
       return accumulator;
     }
     accumulator =
-      arguments.length === 1 ? first.value : fn(accumulator, first.value);
+      accumulator === undefined ? first.value : fn(accumulator, first.value);
     // @ts-ignore
     for (const item of iterator) {
       accumulator = fn(accumulator, item);
@@ -110,7 +112,7 @@ export class LazyIterator<I> implements Iterable<I> {
   first(): Maybe<I>;
   first(withoutMaybe: false): Maybe<I>;
   first(withoutMaybe: true): I | undefined;
-  first(withoutMaybe = false) {
+  first(withoutMaybe = false): Maybe<I> | I | undefined {
     const first = this[Symbol.iterator]().next();
     if (withoutMaybe) {
       return first.value;
@@ -118,7 +120,9 @@ export class LazyIterator<I> implements Iterable<I> {
     return first.done ? Maybe.none<I>() : Maybe.just<I>(first.value);
   }
 
-  filter(predicat: (i: I) => boolean) {
+  filter<T extends I>(predicat: (i: I) => i is T): LazyIterator<T>;
+  filter(predicat: (i: I) => boolean): LazyIterator<I>;
+  filter<T extends I>(predicat: (i: I) => i is T): LazyIterator<T> {
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
@@ -204,9 +208,7 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  flatten<T extends LazyIterator<I>, I>(
-    this: LazyIterator<T | I>
-  ): LazyIterator<I> {
+  flatten(this: LazyIterator<I | LazyIterator<I>>): LazyIterator<I> {
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
@@ -220,7 +222,7 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator as IteratorCreator<I>);
   }
 
-  forEach<T>(fn: (i: I) => T) {
+  forEach(fn: (i: I) => unknown) {
     for (const item of this) {
       fn(item);
     }
@@ -247,11 +249,13 @@ export class LazyIterator<I> implements Iterable<I> {
   max(f?: (i: I) => number): Maybe<I>;
   max(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
   max(f: (i: I) => number, withoutMaybe: true): I | undefined;
-  max(getValue = id, withoutMaybe = false) {
+  max(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
     const res = this.fold(
       (max, a) =>
         Maybe.just<I>(
-          max.isNone() || getValue(a) > getValue(max.value) ? a : max.value
+          max.isNone() || getValue(a) > getValue(max.value)
+            ? a
+            : (max.value as I)
         ),
       Maybe.none<I>()
     );
@@ -261,11 +265,13 @@ export class LazyIterator<I> implements Iterable<I> {
   min(f?: (i: I) => number): Maybe<I>;
   min(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
   min(f: (i: I) => number, withoutMaybe: true): I | undefined;
-  min(getValue = id, withoutMaybe = false) {
+  min(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
     const res = this.fold(
       (max, a) =>
         Maybe.just<I>(
-          max.isNone() || getValue(a) < getValue(max.value) ? a : max.value
+          max.isNone() || getValue(a) < getValue(max.value)
+            ? a
+            : (max.value as I)
         ),
       Maybe.none<I>()
     );
@@ -460,7 +466,7 @@ export class LazyIterator<I> implements Iterable<I> {
         let i2 = 0;
         for (const item2 of oldIterator) {
           if (i1 !== i2) {
-            yield [item1, item2];
+            yield [item1, item2] as [I, I];
           }
           i2 += 1;
         }
@@ -487,8 +493,8 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  compact<T extends I | undefined, I>(this: LazyIterator<T>): LazyIterator<I> {
-    return this.filter(a => a !== undefined);
+  compact<I>(this: LazyIterator<I | undefined>) {
+    return this.filter((a: I | undefined): a is I => a !== undefined);
   }
 
   contains(elem: I) {
@@ -557,6 +563,6 @@ export class LazyIterator<I> implements Iterable<I> {
   }
 
   collect() {
-    return this.fromIterator();
+    return this.fromIterator<I>();
   }
 }
