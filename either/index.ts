@@ -1,4 +1,4 @@
-import { Monad } from "@sweet-monads/interfaces/monad";
+import { Monad } from "@sweet-monads/interfaces";
 
 enum EitherType {
   Left = "Left",

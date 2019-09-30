@@ -1,12 +1,12 @@
 {
   "name": "@sweet-monads/either",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Either monad",
   "main": "index.js",
-  "type": "index.d.ts",
+  "types": "index.d.ts",
   "scripts": {},
   "dependencies": {
-    "@sweet-monads/interfaces": "^0.0.2"
+    "@sweet-monads/interfaces": "^0.0.4"
   },
   "author": "",
   "license": "ISC"
