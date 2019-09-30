@@ -1,8 +1,9 @@
 {
   "name": "@sweet-monads/either",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "Either monad",
   "main": "index.js",
+  "type": "index.d.ts",
   "scripts": {},
   "dependencies": {
     "@sweet-monads/interfaces": "^0.0.2"

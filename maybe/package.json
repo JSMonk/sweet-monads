@@ -1,8 +1,9 @@
 {
   "name": "@sweet-monads/maybe",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "",
   "main": "index.js",
+  "type": "index.d.ts",
   "dependencies": {
     "@sweet-monads/interfaces": "^0.0.2"
   },

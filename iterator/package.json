@@ -1,11 +1,12 @@
 {
   "name": "@sweet-monads/iterator",
-  "version": "0.0.1",
+  "version": "0.0.2",
   "description": "Implement iterator with helper functions",
-  "main": "index.ts",
+  "main": "index.js",
+  "type": "index.d.ts",
   "author": "JSMonk",
   "license": "MIT",
   "dependencies": {
-    "@sweet-monads/maybe": "0.0.4"
+    "@sweet-monads/maybe": "0.0.6"
   }
 }
