@@ -1,11 +1,11 @@
 {
   "name": "@sweet-monads/maybe",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "",
   "main": "index.js",
-  "type": "index.d.ts",
+  "types": "index.d.ts",
   "dependencies": {
-    "@sweet-monads/interfaces": "^0.0.3"
+    "@sweet-monads/interfaces": "^0.0.4"
   },
   "author": "",
   "license": "MIT"
