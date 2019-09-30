@@ -34,7 +34,7 @@ export class Either<L, R> implements Monad<R> {
 
   constructor(type: EitherType.Left, v: L);
   constructor(type: EitherType.Right, v: R);
-  constructor(private type: EitherType, private value: L | R) {}
+  constructor(private type: EitherType, public readonly value: L | R) {}
 
   isLeft() {
     return this.type === EitherType.Left;

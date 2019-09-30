@@ -33,7 +33,7 @@ export class Maybe<T> implements Monad<T> {
 
   constructor(type: MaybeState.None);
   constructor(type: MaybeState.Just, v: T);
-  constructor(private state: MaybeState, private value?: T) {}
+  constructor(private state: MaybeState, public readonly value?: T) {}
 
   isNone() {
     return this.state === MaybeState.None;
