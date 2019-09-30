@@ -87,9 +87,9 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  enumarate(): LazyIterator<[number, I]> {
+  enumarate() {
     let index = 0;
-    return this.map(item => [index++, item]);
+    return this.map((item): [number, I] => [index++, item]);
   }
 
   fold(fn: (a: I, i: I) => I): I;
