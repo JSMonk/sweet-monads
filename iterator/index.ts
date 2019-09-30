@@ -11,13 +11,13 @@ const defaultFromIterator = function() {
   return [...this];
 };
 
-export class LazyIterator<I> {
+export class LazyIterator<I> implements Iterable<I> {
   static from<I>(item: Iterable<I>, fromIterator?: FromIterator) {
     return new LazyIterator<I>(item[Symbol.iterator].bind(item), fromIterator);
   }
 
   private fromIterator: FromIterator;
-  private [Symbol.iterator]: IteratorCreator<I>;
+  public readonly [Symbol.iterator]: IteratorCreator<I>;
 
   constructor(
     initialIterator: IteratorCreator<I>,
