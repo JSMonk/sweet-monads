@@ -1,9 +1,10 @@
 {
   "name": "@sweet-monads/interfaces",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "Monad interfaces",
   "main": "index.js",
+  "type": "index.d.ts",
   "scripts": {},
   "author": "",
-  "license": "ISC"
+  "license": "MIT"
 }
