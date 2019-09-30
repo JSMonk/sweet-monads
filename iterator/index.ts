@@ -1,17 +1,28 @@
 import { Maybe } from "@sweet-monads/maybe";
 
 type IteratorCreator<T> = () => Iterator<T>;
-type FromIterator = <T>() => T;
+type FromIterator = <I>() => Iterable<I>;
 
 const GENERATE_WITH = Symbol("GENERATE_WITH");
 
 const id = (x: any) => x;
 
-class LazyIterator<I> {
+const defaultFromIterator = function() {
+  return [...this];
+};
+
+export class LazyIterator<I> {
+  static from<I>(item: Iterable<I>, fromIterator?: FromIterator) {
+    return new LazyIterator<I>(item[Symbol.iterator].bind(item), fromIterator);
+  }
+
   private fromIterator: FromIterator;
   private [Symbol.iterator]: IteratorCreator<I>;
 
-  constructor(initialIterator: IteratorCreator<I>, fromIterator: FromIterator) {
+  constructor(
+    initialIterator: IteratorCreator<I>,
+    fromIterator: FromIterator = defaultFromIterator
+  ) {
     if (typeof initialIterator !== "function") {
       throw new Error(
         "Symbol.iteartor should be implemented for lazy iterating"
@@ -42,10 +53,10 @@ class LazyIterator<I> {
   any(predicat: (i: I) => boolean) {
     for (const item of this) {
       if (predicat(item)) {
-        return false;
+        return true;
       }
     }
-    return true;
+    return false;
   }
 
   chain(...otherIterators: Iterable<I>[]) {
@@ -65,10 +76,12 @@ class LazyIterator<I> {
   cycle() {
     const oldIterator = this;
     const newIterator = function*() {
+      const iterator = oldIterator[Symbol.iterator]().next();
+      if (iterator.done) {
+        return;
+      }
       while (true) {
-        const iterator = oldIterator[Symbol.iterator]();
-        // @ts-ignore
-        yield* iterator;
+        yield* oldIterator;
       }
     };
     return this[GENERATE_WITH](newIterator);
@@ -81,8 +94,12 @@ class LazyIterator<I> {
 
   fold<A>(fn: (a: A, i: I) => A, accumulator?: A) {
     const iterator = this[Symbol.iterator]();
-    const first = iterator.next().value;
-    accumulator = accumulator === undefined ? first : fn(accumulator, first);
+    const first = iterator.next();
+    if (first.done) {
+      return accumulator;
+    }
+    accumulator =
+      arguments.length === 1 ? first.value : fn(accumulator, first.value);
     // @ts-ignore
     for (const item of iterator) {
       accumulator = fn(accumulator, item);
@@ -131,11 +148,12 @@ class LazyIterator<I> {
       for (const item of oldIterator) {
         const maybeItem = predicatMapper(item);
         if (
-          (maybeItem instanceof Maybe && maybeItem.isJust()) ||
-          maybeItem !== undefined
+          (maybeItem instanceof Maybe && maybeItem.isNone()) ||
+          maybeItem === undefined
         ) {
-          yield maybeItem instanceof Maybe ? maybeItem.value : maybeItem;
+          continue;
         }
+        yield maybeItem instanceof Maybe ? maybeItem.value : maybeItem;
       }
     };
     return this[GENERATE_WITH](newIterator);
@@ -166,27 +184,21 @@ class LazyIterator<I> {
     for (const item of this) {
       const maybeItem = mapper(item);
       if (
-        (maybeItem instanceof Maybe && maybeItem.isJust()) ||
-        maybeItem !== undefined
+        (maybeItem instanceof Maybe && maybeItem.isNone()) ||
+        maybeItem === undefined
       ) {
-        return maybeItem instanceof Maybe ? maybeItem.value : maybeItem;
+        continue;
       }
+      return maybeItem;
     }
     return withoutMaybe ? undefined : Maybe.none<I>();
   }
 
-  flatMap<T extends LazyIterator<I>, I, N>(
-    this: LazyIterator<T | I>,
-    fn: (i: I) => N
-  ): LazyIterator<N> {
+  flatMap<N>(fn: (i: I) => LazyIterator<N>): LazyIterator<N> {
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
-        if (item instanceof LazyIterator) {
-          yield* item.map(fn);
-        } else {
-          yield fn(item);
-        }
+        yield* fn(item);
       }
     };
     return this[GENERATE_WITH](newIterator);
@@ -303,7 +315,7 @@ class LazyIterator<I> {
   }
 
   product(this: LazyIterator<number>) {
-    return this.fold<number>((res, a) => res * a);
+    return this.fold((res, a) => res * a, 1);
   }
 
   reverse(): LazyIterator<I> {
@@ -344,7 +356,7 @@ class LazyIterator<I> {
     let shouldYield = false;
     const newIterator = function*() {
       for (const item of oldIterator) {
-        if (predicat(item) || shouldYield) {
+        if (!predicat(item) || shouldYield) {
           shouldYield = true;
           yield item;
         }
@@ -357,7 +369,7 @@ class LazyIterator<I> {
     if (step <= 0) {
       throw new Error("step should be greater than 0");
     }
-    let n = step;
+    let n = 0;
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
@@ -372,7 +384,7 @@ class LazyIterator<I> {
   }
 
   sum(this: LazyIterator<number>) {
-    return this.fold<number>((sum, a) => sum + a);
+    return this.fold((sum, a) => sum + a, 0);
   }
 
   take(n: number) {
@@ -416,13 +428,13 @@ class LazyIterator<I> {
     const newIterator = function*() {
       const selfIterator = self[Symbol.iterator]();
       const otherIterator = other[Symbol.iterator]();
-      let first: IteratorResult<I> = { done: false, value: undefined };
-      let second: IteratorResult<T>  = { done: false, value: undefined };
-      do {
+      let first = selfIterator.next();
+      let second = otherIterator.next();
+      while (!first.done && !second.done) {
+        yield [first.value, second.value] as [I, T];
         first = selfIterator.next();
         second = otherIterator.next();
-        yield [first.value, second.value] as [I, T];
-      } while(first.done || second.done)
+      }
     };
     return this[GENERATE_WITH](newIterator);
   }
@@ -432,7 +444,7 @@ class LazyIterator<I> {
     const newIterator = function*() {
       let index = 0;
       for (const item of oldIterator) {
-        if (arrayOfBits[index]) {
+        if (arrayOfBits[index++]) {
           yield item;
         }
       }
@@ -443,12 +455,12 @@ class LazyIterator<I> {
   permutations() {
     const oldIterator = this;
     const newIterator = function*() {
-      let i1 = 0
+      let i1 = 0;
       for (const item1 of oldIterator) {
         let i2 = 0;
         for (const item2 of oldIterator) {
           if (i1 !== i2) {
-            yield [item1, item2]
+            yield [item1, item2];
           }
           i2 += 1;
         }
@@ -463,19 +475,19 @@ class LazyIterator<I> {
     const newIterator = function*() {
       let index = 0;
       for (const item of oldIterator) {
-        if (index >= end) {
+        if (end !== undefined && index >= end) {
           return;
         }
         if (index >= start) {
           yield item;
-          index += 1;
         }
+        index += 1;
       }
     };
     return this[GENERATE_WITH](newIterator);
   }
 
-  compact<T extends (I | undefined), I>(this: LazyIterator<T>): LazyIterator<I> {
+  compact<T extends I | undefined, I>(this: LazyIterator<T>): LazyIterator<I> {
     return this.filter(a => a !== undefined);
   }
 
@@ -497,7 +509,7 @@ class LazyIterator<I> {
     };
     return this[GENERATE_WITH](newIterator);
   }
-  
+
   isEmpty() {
     return this.first().isNone();
   }
@@ -546,17 +558,5 @@ class LazyIterator<I> {
 
   collect() {
     return this.fromIterator();
-  }
-}
-
-export abstract class LazyIterable<T> {
-  abstract [Symbol.iterator](): Iterator<T>;
-
-  get lazy() {
-    return new LazyIterator<T>(this[Symbol.iterator].bind(this), this.fromIterator.bind(this));
-  }
-
-  fromIterator() {
-    return [...this];
   }
 }

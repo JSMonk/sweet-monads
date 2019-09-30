@@ -7,7 +7,7 @@ describe("Iterator", () => {
     it("should say true for all items", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect(iterator.all(a => typeof a === "number")).toBe(true);
         })
       );
@@ -15,7 +15,7 @@ describe("Iterator", () => {
     it("should say false for all items", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect(iterator.all(a => typeof a === "string")).toBe(
             arr.length === 0
           );
@@ -27,7 +27,7 @@ describe("Iterator", () => {
     it("should say true for any item", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect(iterator.any(a => typeof a === "number")).toBe(
             arr.length !== 0
           );
@@ -37,7 +37,7 @@ describe("Iterator", () => {
     it("should say false for any item", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect(iterator.any(a => typeof a === "string")).toBe(false);
         })
       );
@@ -50,7 +50,7 @@ describe("Iterator", () => {
           fc.array(fc.nat()),
           fc.array(fc.nat()),
           (arr1: number[], arr2: number[]) => {
-            const iterator = LazyIterator.from(arr1).chain(arr2);
+            const iterator: LazyIterator<number> = LazyIterator.from(arr1).chain(arr2);
             expect([...iterator]).toEqual([...arr1, ...arr2]);
             expect(iterator).toBeInstanceOf(LazyIterator);
           }
@@ -62,7 +62,7 @@ describe("Iterator", () => {
     it("should give right count of items", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect(iterator.count()).toBe(arr.length);
           expect(iterator).toBeInstanceOf(LazyIterator);
         })
@@ -74,7 +74,7 @@ describe("Iterator", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
           debugger;
-          const iterator = LazyIterator.from(arr).cycle();
+          const iterator: LazyIterator<number> = LazyIterator.from(arr).cycle();
           if (arr.length === 0) {
             expect(iterator[Symbol.iterator]().next().done).toBe(true);
           } else {
@@ -115,7 +115,7 @@ describe("Iterator", () => {
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
           const sum = (s: number, a: number) => s + a;
           const concat = (s: string, a: number) => s + a;
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           if (arr.length !== 0) {
             expect(iterator.fold(sum)).toEqual(arr.reduce(sum));
           }
@@ -128,7 +128,7 @@ describe("Iterator", () => {
     it("should get right first element with Maybe", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           const first = iterator.first();
           expect(first).toEqual(
             arr[0] === undefined ? Maybe.none() : Maybe.just(arr[0])
@@ -139,7 +139,7 @@ describe("Iterator", () => {
     it("should get right first element", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect(iterator.first(true)).toBe(arr[0]);
         })
       );
@@ -150,7 +150,7 @@ describe("Iterator", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
           const criteria = (item: number) => item < 3;
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect([...iterator.filter(criteria)]).toEqual([
             ...arr.filter(criteria)
           ]);
@@ -165,7 +165,7 @@ describe("Iterator", () => {
           const criteria = (item: number) => item < 3;
           const map = (item: number) =>
             item < 3 ? Maybe.just(item + 5) : Maybe.none();
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect([...iterator.filterMap(map)]).toEqual([
             ...arr
               .filter(criteria)
@@ -180,7 +180,7 @@ describe("Iterator", () => {
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
           const criteria = (item: number) => item < 3;
           const map = (item: number) => (item < 3 ? item + 5 : undefined);
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           expect([...iterator.filterMap(map, true)]).toEqual([
             ...arr.filter(criteria).map(map)
           ]);
@@ -192,7 +192,7 @@ describe("Iterator", () => {
     it("should find element with Maybe", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           const finder = (a: number) => a === 3;
           const element = iterator.find(finder);
           if (arr.find(finder)) {
@@ -206,7 +206,7 @@ describe("Iterator", () => {
     it("should find element", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from<number[], number>(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           const finder = (a: number) => a === 3;
           expect(iterator.find(finder, true)).toBe(arr.find(finder));
         })
@@ -217,11 +217,11 @@ describe("Iterator", () => {
     it("should find and map element with Maybe", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from<number[], number>(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           const element1 = iterator.findMap(
             a => (a === 3 ? Maybe.just(a + 3) : Maybe.none<number>())
           );
-          if (arr.find(a => a === 3)) {
+          if (arr.includes(3)) {
             expect(element1).toEqual(Maybe.just(6));
           } else {
             expect(element1).toEqual(Maybe.none());
@@ -232,7 +232,7 @@ describe("Iterator", () => {
     it("should find and map element", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          const iterator = LazyIterator.from<number[], number>(arr);
+          const iterator: LazyIterator<number> = LazyIterator.from(arr);
           const element1 = iterator.findMap(
             a => (a === 3 ? a + 3 : undefined),
             true
@@ -745,7 +745,7 @@ describe("Iterator", () => {
           fc.nat(),
           (arr: number[], element: number) => {
             const iterator: LazyIterator<number> = LazyIterator.from(arr);
-            const newIterator = iterator.prepend(element);
+            const newIterator: LazyIterator<number> = iterator.prepend(element);
             expect([...newIterator]).toEqual([element, ...arr]);
           }
         )
@@ -760,7 +760,7 @@ describe("Iterator", () => {
           fc.nat(),
           (arr: number[], element: number) => {
             const iterator: LazyIterator<number> = LazyIterator.from(arr);
-            const newIterator = iterator.append(element);
+            const newIterator: LazyIterator<number> = iterator.append(element);
             expect([...newIterator]).toEqual([...arr, element]);
           }
         )
