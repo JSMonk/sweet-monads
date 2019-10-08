@@ -1,7 +1,7 @@
 # @sweet-monads/maybe
 
 
-[Maybe Monad](https://en.wikibooks.org/wiki/Haskell/Understanding_monads/Maybe), monad which provide nullable-safe API
+[Maybe Monad](https://en.wikibooks.org/wiki/Haskell/Understanding_monads/Maybe), The Maybe monad represents computations which might "go wrong" by not returning a value.
 
 ### This library belongs to *sweet-monads* project
 
@@ -34,12 +34,12 @@ const user = getUser(1).map(({ email }) => email);
 
 - [`Maybe.merge(maybiesArray)`](#maybemerge)
 - [`Maybe.none()`](#maybenone)
-- [`Maybe.just(someValue)`](#maybejustsomevalue)
+- [`Maybe.just(someValue)`](#maybejust)
 - [`Maybe#isNone()`](#maybeisnone)
 - [`Maybe#isJust()`](#maybeisjust)
 - [`Maybe#map(value => newValue)`](#maybemap)
 - [`Maybe#asyncMap(value => Promise(newValue))`](#maybeasyncmap)
-- [`Maybe#chain(value => Maybe(newValue))`](#maybechainp)
+- [`Maybe#chain(value => Maybe(newValue))`](#maybechain)
 - [`Maybe#asyncChain(value => Promise(Maybe(newValue)))`](#maybeasyncchain)
 - [Helpers](#helpers)
 
@@ -101,9 +101,9 @@ v2.isNone() // true
 
 ##### `Maybe#isJust`
 ```typescript
-function isNone(): boolean;
+function isJust(): boolean;
 ```
-- Returns `true` if state of maybe instance is `None` else return `false`
+- Returns `true` if state of maybe instance is `Just` else return `false`
 Example:
 ```typescript
 const v1 = Maybe.just(2);
