@@ -100,7 +100,7 @@ const newArray = lazyArray.map(a => a * a).collect();
 - [`LazyIterator#append`](#lazyiteratorappend)
 - [`LazyIterator#collect`](#lazyiteratorcollect)
 
-##### `LazyIterator.from`
+#### `LazyIterator.from`
 
 Create `LazyIterator<I>` from any `Iterable<I>` object
 
@@ -121,7 +121,7 @@ LazyIterator.from<number>([1, 2, 3]); // LazyIterator<number>
 LazyIterator.from([1, 2, 3]); // LazyIterator<unknown> because of TypeScript 😡
 ```
 
-##### `LazyIterator.all`
+#### `LazyIterator.all`
 
 Tests if every element of the `LazyIterator` matches a predicate.
 
@@ -142,7 +142,7 @@ iterator.all(a => typeof a === "number") // true
 iterator.all(a => a % 2 === 0) // false
 ```
 
-##### `LazyIterator.any`
+#### `LazyIterator.any`
 
 Tests if any element of the `LazyIterator` a predicate.
 
@@ -161,7 +161,7 @@ iterator.any(a => a % 2 === 0) // true
 iterator.any(a => a === 0) // false
 ```
 
-##### `LazyIterator.chain`
+#### `LazyIterator.chain`
 
 Takes two iterators and creates a new iterator over both in sequence.
 
@@ -187,7 +187,7 @@ for (const i of newIterator) { console.log(i) }
 // 7
 ```
 
-##### `LazyIterator.count`
+#### `LazyIterator.count`
 
 Consumes the iterator, counting the number of iterations and returning it.
 
@@ -208,7 +208,7 @@ iterator.count() // 5
 infinityIterator.count() // Will lock your application
 ```
 
-##### `LazyIterator.cycle`
+#### `LazyIterator.cycle`
 
 Instead of stopping at `done: true`, the `LazyIterator` will instead start again, from the beginning. After iterating again, it will start at the beginning again. And again. And again. Forever.
 
@@ -241,7 +241,7 @@ for (const a of iterator); // Will lock your application
 for (const a of empty); // Will not computed
 ```
 
-##### `LazyIterator.enumarate`
+#### `LazyIterator.enumarate`
 
 Creates an `LazyIterator` which gives the current iteration count as well as the next value.
     
@@ -262,7 +262,7 @@ for (const [index, element] of iterator) { console.log(index, element) };
 // 3, 9
 ```
 
-##### `LazyIterator.fold`
+#### `LazyIterator.fold`
 
 An `LazyIterator` method that applies a function as long as it returns successfully, producing a single, final value. Folding is useful whenever you have a collection of something, and want to produce a single value from it.
 
@@ -284,7 +284,7 @@ const iterator = LazyIterator.from([1, 1, 2, 3, 5, 8]);
 const sum = iterator.fold((sum, i) => sum + i, 0); // number 20
 ```
 
-##### `LazyIterator.first`
+#### `LazyIterator.first`
 
 An `LazyIterator` method that return first element of the `LazyIterator`.
 
@@ -312,7 +312,7 @@ const f5 = empty.first(false) // Maybe<number>.None without value
 const f6 = empty.first(true) // undefined
 ```
 
-##### `LazyIterator.filter`
+#### `LazyIterator.filter`
 
 Creates an `LazyIterator` which uses a function to determine if an element should be yielded.
 
@@ -342,7 +342,7 @@ for (const i of twos) console.log(i);
 // 2
 ```
 
-##### `LazyIterator.filterMap`
+#### `LazyIterator.filterMap`
 
 Creates an iterator that both filters and maps.
 
@@ -368,7 +368,7 @@ const filtered3 = iterator.filterMap(i => i % 2 ? i * i : undefined, true); // L
 // filtered1 <-> filtered2 <-> filtered2 <-> [1, 9, 25, 49, 81]
 ```
 
-##### `LazyIterator.find`
+#### `LazyIterator.find`
 
 Searches for an element of an `LazyIterator` that satisfies a predicate. 
 `find()` is short-circuiting; in other words, it will stop processing as soon as the predicate returns `true`. But, it will lock your application if your `LazyIterator` is cycled and doesn't contain element which will satisfied a predicate.
@@ -397,7 +397,7 @@ const two5 = iterator.find(i => i === 10, false); // Maybe<number>.None without 
 const two6 = iterator.find(i => i === 10, true); // undefined
 ```
 
-##### `LazyIterator.findMap`
+#### `LazyIterator.findMap`
 
 Applies function to the elements of `LazyIterator` and returns the first non-none result.
 `findMap()` is short-circuiting; in other words, it will stop processing as soon as the predicate returns `Maybe.Just` or non-`undefined` value. But, it will lock your application if your `LazyIterator` is cycled and doesn't contain element which will satisfied a predicate.
@@ -426,7 +426,7 @@ const two5 = iterator.find(i => i === 10 ? Maybe.just(i) : Maybe.none(), false);
 const two6 = iterator.find(i => i === 10 ? i : undefined, true); // undefined 
 ```
 
-##### `LazyIterator.flatMap`
+#### `LazyIterator.flatMap`
 
 Creates an `LazyIterator` that works like map, but flattens nested structure.
 
@@ -446,7 +446,7 @@ for (const i of mapped) console.log(i);
 // 15 times "|"
 ```
 
-##### `LazyIterator.flatten`
+#### `LazyIterator.flatten`
 
 Creates an `LazyIterator` that flattens nested structure.
 This is useful when you have an `LazyIterator` of `LazyIterator` or an `LazyIterator` of things that can be turned into iterators and you want to remove one level of indirection.
@@ -466,7 +466,7 @@ const mapped = iterator.map(n => LazyIterator.from<string>("|".repeat(n))); // L
 const flatten = mapped.flatten(); // LazyIterator<string>
 ```
 
-##### `LazyIterator.forEach`
+#### `LazyIterator.forEach`
 
 Calls a function on each element of an `LazyIterator`.
 This is equivalent to using a `for..of` loop on the `LazyIterator`, although `break` and `continue` are not possible from a function. It's generally more idiomatic to use a `for..of` loop, but `forEach` may be more legible when processing items at the end of longer `LazyIterator` chains. 
@@ -490,7 +490,7 @@ iterator.forEach(console.log);
 // 5
 ```
 
-##### `LazyIterator.last`
+#### `LazyIterator.last`
 
 An `LazyIterator` method that return last element of the `LazyIterator`.
 
@@ -522,7 +522,7 @@ const f6 = empty.last(true) // undefined
 const f7 = cycled.last(true) // Lock your application
 ```
 
-##### `LazyIterator.map`
+#### `LazyIterator.map`
 
 Takes a function and creates an `LazyIterator` which calls that function on each element. `map()` transforms one `LazyIterator` into another.
 If you are good at thinking in types, you can think of `map()` like this: If you have an `LazyIterator` that gives you elements of some type `I`, and you want an `LazyIterator` of some other type `T`, you can use `map()`, passing a function that takes an `I` and returns a `T`.
@@ -549,7 +549,7 @@ for (const i of mapped) console.log(i);
 // "8"
 ```
 
-##### `LazyIterator.max`
+#### `LazyIterator.max`
 
 Returns the maximum element of an `LazyIterator`.
 If several elements are equally maximum, the last element is returned.
@@ -579,7 +579,7 @@ empty.max(a => a, false) // Maybe<number>.None without value
 empty.max(a => a, true) // undefined
 ```
 
-##### `LazyIterator.min`
+#### `LazyIterator.min`
 
 Returns the minimum element of an `LazyIterator`.
 If several elements are equally minimum, the first element is returned.
@@ -609,7 +609,7 @@ empty.min(a => a, false) // Maybe<number>.None without value
 empty.min(a => a, true) // undefined
 ```
 
-##### `LazyIterator.nth`
+#### `LazyIterator.nth`
 
 Returns the `n`th element of the `LazyIterator`.
 Like most indexing operations, the count starts from zero, so `nth(0)` returns the first value, `nth(1)` the second, and so on.
@@ -640,7 +640,7 @@ empty.nth(0, false) // Maybe<number>.None without value
 empty.nth(0, true) // undefined
 ```
 
-##### `LazyIterator.partion`
+#### `LazyIterator.partion`
 
 Returns a 2-elements tuple of arrays. Splits the elements in the input iterable into either of the two arrays. Will fully exhaust the input iterable. The first array contains all items that match the predicate, the second the rest
 
@@ -687,7 +687,7 @@ for (const i of notTwos) console.log(i);
 // 9
 ```
 
-##### `LazyIterator.position`
+#### `LazyIterator.position`
 
 Searches for an element in an iterator, returning its index.
 `position()` is short-circuiting; in other words, it will stop processing as soon as the predicate returns `true`. But, it will lock your application if your `LazyIterator` is cycled and doesn't contain element which will satisfied a predicate.
@@ -716,7 +716,7 @@ const two5 = iterator.position(i => i === 10, false); // Maybe<number>.None with
 const two6 = iterator.position(i => i === 10, true); // undefined
 ```
 
-##### `LazyIterator.product`
+#### `LazyIterator.product`
 
 Iterates over the entire iterator, multiplying all the elements.
 
@@ -740,7 +740,7 @@ const product2 = empty.product() // 1
 const product3 = cycled.product() // Will lock your application 
 ```
 
-##### `LazyIterator.reverse`
+#### `LazyIterator.reverse`
 
 Reverses an iterator's direction. Usually, `LazyIterator`s iterate from left to right. After using `reverse()`, an `LazyIterator` will instead iterate from right to left.
 
@@ -769,7 +769,7 @@ for (const a of reversed1) console.log(a);
 const reversed2 = cycled.reverse(); // Will lock your application
 ```
 
-##### `LazyIterator.scan`
+#### `LazyIterator.scan`
 
 An `LazyIterator` adaptor similar to [`LazyIterator#fold`](#lazyiteratorfold) that holds internal state and produces a new iterator.
 
@@ -794,7 +794,7 @@ for (const a of factorials) console.log(a);
 // 120
 ```
 
-##### `LazyIterator.skip`
+#### `LazyIterator.skip`
 
 Creates an `LazyIterator` that skips the first `n` elements.
 After they have been consumed, the rest of the elements are yielded.
@@ -817,7 +817,7 @@ for (const a of skipped) console.log(a);
 // 5
 ```
 
-##### `LazyIterator.skipWhile`
+#### `LazyIterator.skipWhile`
 
 Creates an `LazyIterator` that [`LazyIterator#skip`](#lazyiteratorskip) s elements based on a predicate.
 
@@ -839,7 +839,7 @@ for (const a of skipped) console.log(a);
 // 5
 ```
 
-##### `LazyIterator.stepBy`
+#### `LazyIterator.stepBy`
 
 Creates an `LazyIterator` starting at the same point, but stepping by the given amount at each iteration.
 
@@ -864,7 +864,7 @@ for (const a of skipped) console.log(a);
 // 5
 ```
 
-##### `LazyIterator.sum`
+#### `LazyIterator.sum`
 
 Sums the elements of an iterator.
 Takes each element, adds them together, and returns the result.
@@ -889,7 +889,7 @@ const product2 = empty.sum() // 0
 const product3 = cycled.sum() // Will lock your application 
 ```
 
-##### `LazyIterator.take`
+#### `LazyIterator.take`
 
 Creates an `LazyIterator` that yields its first `n` elements.
 
@@ -910,7 +910,7 @@ for (const a of skipped) console.log(a);
 // 2
 ```
 
-##### `LazyIterator.takeWhile`
+#### `LazyIterator.takeWhile`
 
 Creates an `LazyIterator` that [`LazyIterator#take`](#lazyiteratortake) s elements based on a predicate.
 
@@ -931,7 +931,7 @@ for (const a of skipped) console.log(a);
 // 2
 ```
 
-##### `LazyIterator.unzip`
+#### `LazyIterator.unzip`
 
 Converts an `LazyIterator` of pairs into a pair of arrays.
 `unzip()` consumes an entire `LazyIterator` of pairs, producing two arrays: one from the left elements of the pairs, and one from the right elements.
@@ -952,7 +952,7 @@ odd // [1, 3, 5, 7]
 even // [2, 4, 6, 8]
 ```
 
-##### `LazyIterator.zip`
+#### `LazyIterator.zip`
 
 'Zips up' two iterators into a single `LazyIterator` of pairs.
 
@@ -982,7 +982,7 @@ for (const a of zipped2) console.log(a);
 // [1, 15]
 ```
 
-##### `LazyIterator.compress`
+#### `LazyIterator.compress`
 
 Pick items for `LazyIterator` by mask which will be provided as argument.
 
@@ -1012,7 +1012,7 @@ for (const a of masked2) console.log(a);
 // 7
 ```
 
-##### `LazyIterator.permutations`
+#### `LazyIterator.permutations`
 
 Return successive permutations of elements in the iterable.
 
@@ -1036,7 +1036,7 @@ for (const a of permutated) console.log(a);
 // [3, 2]
 ```
 
-##### `LazyIterator.compact`
+#### `LazyIterator.compact`
 
 Create `LazyIterator` without undefined elements.
 
@@ -1059,7 +1059,7 @@ for (const a of compacted) console.log(a);
 // 15
 ```
 
-##### `LazyIterator.contains`
+#### `LazyIterator.contains`
 
 Tests if any element of the `LazyIterator` matches provided element.
 
@@ -1086,7 +1086,7 @@ iterator.contains(2) // true
 iterator.contains(7) // false
 ```
 
-##### `LazyIterator.unique`
+#### `LazyIterator.unique`
 
 Create `LazyIterator` which contains only unique elements.
 
@@ -1111,7 +1111,7 @@ for (const a of unique) console.log(a);
 // 5
 ```
 
-##### `LazyIterator.isEmpty`
+#### `LazyIterator.isEmpty`
 
 Check `LazyIterator` for emptiness.
 
@@ -1128,7 +1128,7 @@ iterator1.isEmpty() // false
 iterator2.isEmpty() // true
 ```
 
-##### `LazyIterator.except`
+#### `LazyIterator.except`
 
 Create `LazyIterator` without element which was contained in provided `LazyIterator`.
 
@@ -1152,7 +1152,7 @@ for (const a of excepted) console.log(a);
 // 5
 ```
 
-##### `LazyIterator.intersect`
+#### `LazyIterator.intersect`
 
 Create `LazyIterator` only with elements which was existed in both `LazyIterator`s.
 
@@ -1178,7 +1178,7 @@ for (const a of intesection) console.log(a);
 // 4
 ```
 
-##### `LazyIterator.isEmpty`
+#### `LazyIterator.isEmpty`
 
 Check `LazyIterator` for emptiness.
 
@@ -1195,7 +1195,7 @@ iterator1.isEmpty() // false
 iterator2.isEmpty() // true
 ```
 
-##### `LazyIterator.except`
+#### `LazyIterator.except`
 
 Convert `LazyIterator` without element which was contained in provided `LazyIterator`.
 
@@ -1216,7 +1216,7 @@ iterator1.collect() // iterable object
 iterator2.collect() // array [1, 2, 3, 4, 5]
 ```
 
-##### `LazyIterator.prepend`
+#### `LazyIterator.prepend`
 
 Create `LazyIterator` with new element at the head position.
 
@@ -1239,7 +1239,7 @@ for (const a of iterator2) console.log(a);
 // 5
 ```
 
-##### `LazyIterator.append`
+#### `LazyIterator.append`
 
 Create `LazyIterator` with new element in the end.
 
@@ -1262,7 +1262,7 @@ for (const a of iterator2) console.log(a);
 // 4
 ```
 
-##### `LazyIterator.collect`
+#### `LazyIterator.collect`
 
 Convert `LazyIterator` in initial iterable object or array.
 If initial iterable object had `fromIterator` method  or `fromIterator` was provided as second argument of [`LazyIterator.from`](#lazyiteratorfrom) function `fromIterator` will be called for convertion, otherwise convert `LazyIterator` in array.
