@@ -62,23 +62,9 @@ export class Either<L, R> implements Monad<R> {
     return Either.right<L, T>(f(this.value as R));
   }
 
-  asyncMap<T>(f: (r: R) => Promise<T>): Promise<Either<L, T>> {
-    if (this.isLeft()) {
-      return Promise.resolve(Either.left<L, T>(this.value as L));
-    }
-    return f(this.value as R).then(v => Either.right<L, T>(v));
-  }
-
   chain<A, B>(f: (r: R) => Either<A, B>): Either<A | L, B> {
     if (this.isLeft()) {
       return Either.left<L, B>(this.value as L);
-    }
-    return f(this.value as R);
-  }
-
-  asyncChain<A, B>(f: (r: R) => Promise<Either<A, B>>): Promise<Either<A | L, B>> {
-    if (this.isLeft()) {
-      return Promise.resolve(Either.left<L, B>(this.value as L));
     }
     return f(this.value as R);
   }

@@ -1,7 +1,7 @@
-import { Maybe } from "./node_modules/@sweet-monads/maybe/index";
+import { Maybe } from "@sweet-monads/maybe";
 
 type IteratorCreator<T> = () => Iterator<T>;
-type FromIterator = <I>() => Iterable<I>;
+type FromIterator<I> = () => Iterable<I>;
 
 const GENERATE_WITH = Symbol("GENERATE_WITH");
 
@@ -12,16 +12,26 @@ const defaultFromIterator = function<I>(): Array<I> {
 };
 
 export class LazyIterator<I> implements Iterable<I> {
-  static from<I>(item: Iterable<I>, fromIterator?: FromIterator) {
-    return new LazyIterator<I>(item[Symbol.iterator].bind(item), fromIterator);
+  static from<I>(iterable: Iterable<I>): LazyIterator<I>;
+  static from<I>(
+    iterable: Iterable<I> & { fromIterator: FromIterator<I> }
+  ): LazyIterator<I>;
+  static from<I>(
+    iterable: Iterable<I>,
+    fromIterator: FromIterator<I>
+  ): LazyIterator<I>;
+  static from<I>(iterable: Iterable<I>, fromIterator?: FromIterator<I>) {
+    fromIterator =
+      fromIterator !== undefined ? fromIterator : iterable["fromIterator"];
+    return new LazyIterator<I>(iterable[Symbol.iterator].bind(iterable), fromIterator);
   }
 
-  private fromIterator: FromIterator;
+  private fromIterator: FromIterator<I>;
   public readonly [Symbol.iterator]: IteratorCreator<I>;
 
   constructor(
     initialIterator: IteratorCreator<I>,
-    fromIterator: FromIterator = defaultFromIterator
+    fromIterator: FromIterator<I> = defaultFromIterator
   ) {
     if (typeof initialIterator !== "function") {
       throw new Error(
@@ -38,28 +48,35 @@ export class LazyIterator<I> implements Iterable<I> {
   }
 
   [GENERATE_WITH]<T>(newIterator: IteratorCreator<T>) {
-    return new LazyIterator(newIterator, this.fromIterator);
+    return new LazyIterator(newIterator, (<any>(
+      this.fromIterator
+    )) as FromIterator<T>);
   }
 
-  all(predicat: (i: I) => boolean) {
+  all<T extends I>(
+    this: LazyIterator<I>,
+    predicate: (i: I) => i is T
+  ): this is LazyIterator<T>;
+  all(predicate: (i: I) => boolean);
+  all(predicate: (i: I) => boolean) {
     for (const item of this) {
-      if (!predicat(item)) {
+      if (!predicate(item)) {
         return false;
       }
     }
     return true;
   }
 
-  any(predicat: (i: I) => boolean) {
+  any(predicate: (i: I) => boolean) {
     for (const item of this) {
-      if (predicat(item)) {
+      if (predicate(item)) {
         return true;
       }
     }
     return false;
   }
 
-  chain(...otherIterators: Iterable<I>[]) {
+  chain(...otherIterators: Array<Iterable<I>>) {
     const iterators = [this, ...otherIterators];
     const newIterator = function*() {
       for (const iterator of iterators) {
@@ -120,13 +137,13 @@ export class LazyIterator<I> implements Iterable<I> {
     return first.done ? Maybe.none<I>() : Maybe.just<I>(first.value);
   }
 
-  filter<T extends I>(predicat: (i: I) => i is T): LazyIterator<T>;
-  filter(predicat: (i: I) => boolean): LazyIterator<I>;
-  filter<T extends I>(predicat: (i: I) => i is T): LazyIterator<T> {
+  filter<T extends I>(predicate: (i: I) => i is T): LazyIterator<T>;
+  filter(predicate: (i: I) => boolean): LazyIterator<I>;
+  filter<T extends I>(predicate: (i: I) => i is T): LazyIterator<T> {
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
-        if (predicat(item)) {
+        if (predicate(item)) {
           yield item;
         }
       }
@@ -134,23 +151,23 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  filterMap<T>(predicatMapper: (i: I) => Maybe<T>): LazyIterator<T>;
+  filterMap<T>(predicateMapper: (i: I) => Maybe<T>): LazyIterator<T>;
   filterMap<T>(
-    predicatMapper: (i: I) => Maybe<T>,
+    predicateMapper: (i: I) => Maybe<T>,
     withoutMaybe: false
   ): LazyIterator<T>;
   filterMap<T>(
-    predicatMapper: (i: I) => T | undefined,
+    predicateMapper: (i: I) => T | undefined,
     withoutMaybe: true
   ): LazyIterator<T>;
   filterMap<T>(
-    predicatMapper: (i: I) => Maybe<T> | T | undefined,
+    predicateMapper: (i: I) => Maybe<T> | T | undefined,
     withoutMaybe = false
   ) {
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
-        const maybeItem = predicatMapper(item);
+        const maybeItem = predicateMapper(item);
         if (
           (maybeItem instanceof Maybe && maybeItem.isNone()) ||
           maybeItem === undefined
@@ -163,6 +180,12 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
+  find<T extends I>(predicate: (i: I) => i is T): Maybe<T>;
+  find<T extends I>(predicate: (i: I) => i is T, withoutMaybe: false): Maybe<T>;
+  find<T extends I>(
+    predicate: (i: I) => i is T,
+    withoutMaybe: true
+  ): T | undefined;
   find(predicate: (i: I) => boolean): Maybe<I>;
   find(predicate: (i: I) => boolean, withoutMaybe: false): Maybe<I>;
   find(predicate: (i: I) => boolean, withoutMaybe: true): I | undefined;
@@ -175,18 +198,21 @@ export class LazyIterator<I> implements Iterable<I> {
     return withoutMaybe ? undefined : Maybe.none<I>();
   }
 
-  findMap<T>(mapper: (i: I) => Maybe<T> | T | undefined): Maybe<I>;
+  findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined): Maybe<I>;
   findMap<T>(
-    mapper: (i: I) => Maybe<T> | T | undefined,
+    predicateMapper: (i: I) => Maybe<T> | T | undefined,
     withoutMaybe: false
   ): Maybe<T>;
   findMap<T>(
-    mapper: (i: I) => Maybe<T> | T | undefined,
+    predicateMapper: (i: I) => Maybe<T> | T | undefined,
     withoutMaybe: true
   ): I | undefined;
-  findMap<T>(mapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe = false) {
+  findMap<T>(
+    predicateMapper: (i: I) => Maybe<T> | T | undefined,
+    withoutMaybe = false
+  ) {
     for (const item of this) {
-      const maybeItem = mapper(item);
+      const maybeItem = predicateMapper(item);
       if (
         (maybeItem instanceof Maybe && maybeItem.isNone()) ||
         maybeItem === undefined
@@ -208,12 +234,12 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  flatten(this: LazyIterator<I | LazyIterator<I>>): LazyIterator<I> {
+  flatten(this: LazyIterator<I | Iterable<I>>): LazyIterator<I> {
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
-        if (item instanceof LazyIterator) {
-          yield* item;
+        if (item != undefined && typeof item[Symbol.iterator] === "function") {
+          yield* item as Iterable<I>;
         } else {
           yield item;
         }
@@ -253,7 +279,7 @@ export class LazyIterator<I> implements Iterable<I> {
     const res = this.fold(
       (max, a) =>
         Maybe.just<I>(
-          max.isNone() || getValue(a) > getValue(max.value)
+          max.isNone() || getValue(a) >= getValue(max.value)
             ? a
             : (max.value as I)
         ),
@@ -290,6 +316,8 @@ export class LazyIterator<I> implements Iterable<I> {
     return withoutMaybe ? undefined : Maybe.none();
   }
 
+  partion<T extends I>(predicate: (i: I) => i is T): [T[], I[]];
+  partion(predicate: (i: I) => boolean): [I[], I[]];
   partion(fn: (i: I) => boolean): [I[], I[]] {
     const left = [];
     const right = [];
@@ -357,12 +385,12 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  skipWhile(predicat: (i: I) => boolean) {
+  skipWhile(predicate: (i: I) => boolean) {
     const oldIterator = this;
     let shouldYield = false;
     const newIterator = function*() {
       for (const item of oldIterator) {
-        if (!predicat(item) || shouldYield) {
+        if (!predicate(item) || shouldYield) {
           shouldYield = true;
           yield item;
         }
@@ -406,11 +434,11 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  takeWhile(predicat: (i: I) => boolean) {
+  takeWhile(predicate: (i: I) => boolean) {
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
-        if (!predicat(item)) {
+        if (!predicate(item)) {
           return;
         }
         yield item;
@@ -429,7 +457,7 @@ export class LazyIterator<I> implements Iterable<I> {
     return [left, right];
   }
 
-  zip<T>(other: LazyIterator<T>): LazyIterator<[I, T]> {
+  zip<T>(other: LazyIterator<T>) {
     const self = this;
     const newIterator = function*() {
       const selfIterator = self[Symbol.iterator]();
@@ -445,12 +473,16 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  compress(arrayOfBits: number[] | boolean[]) {
+  compress(mask: number[] | boolean[]) {
     const oldIterator = this;
     const newIterator = function*() {
       let index = 0;
       for (const item of oldIterator) {
-        if (arrayOfBits[index++]) {
+        const m = mask[index++];
+        if (m === undefined) {
+          return;
+        }
+        if (mask) {
           yield item;
         }
       }
@@ -516,7 +548,7 @@ export class LazyIterator<I> implements Iterable<I> {
     return this[GENERATE_WITH](newIterator);
   }
 
-  isEmpty() {
+  isEmpty(): boolean {
     return this.first().isNone();
   }
 
@@ -563,6 +595,6 @@ export class LazyIterator<I> implements Iterable<I> {
   }
 
   collect() {
-    return this.fromIterator<I>();
+    return this.fromIterator();
   }
 }

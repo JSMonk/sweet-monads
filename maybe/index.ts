@@ -50,23 +50,9 @@ export class Maybe<T> implements Monad<T> {
     return Maybe.none<V>();
   }
 
-  asyncMap<V>(f: (r: T) => Promise<V>): Promise<Maybe<V>> {
-    if (this.isNone()) {
-      return Promise.resolve(Maybe.none<V>());
-    }
-    return f(this.value as T).then(v => Maybe.just<V>(v));
-  }
-
   chain<V>(f: (r: T) => Maybe<V>): Maybe<V> {
     if (this.isNone()) {
       return Maybe.none<V>();
-    }
-    return f(this.value as T);
-  }
-
-  asyncChain<V>(f: (r: T) => Promise<Maybe<V>>): Promise<Maybe<V>> {
-    if (this.isNone()) {
-      return Promise.resolve(Maybe.none<V>());
     }
     return f(this.value as T);
   }

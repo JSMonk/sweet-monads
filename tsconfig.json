@@ -1,11 +1,14 @@
 {
   "compilerOptions": {
-    "lib": ["es2015", "es2019"],
+    "lib": ["es2018"],
     "target": "es2015",
     "declaration": true,
     "noImplicitAny": true,
     "removeComments": true,
+    "strictNullChecks": true,
     "preserveConstEnums": true,
     "downlevelIteration": true
-  }
+  },
+  "include": ["./maybe/index.ts"],
+  "exclude": ["node_modules"]
 }

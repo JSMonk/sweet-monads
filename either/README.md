@@ -12,6 +12,7 @@
 - Check out all libraries:
   [maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe),
   [iterator](https://github.com/JSMonk/sweet-monads/tree/master/iterator),
+  [interfaces](https://github.com/JSMonk/sweet-monads/tree/master/interfaces),
 
 ## Usage
 
@@ -33,17 +34,17 @@ const user = getUser(1).map(({ email }) => email);
 
 ## API
 
-- [`Either.merge(eithersArray)`](#eithermerge)
-- [`Either.left(someValue)`](#eitherleft)
-- [`Either.right(someValue)`](#eitherright)
-- [`Either#isLeft()`](#eitherisleft)
-- [`Either#isRight()`](#eitherisright)
-- [`Either#map(value => newValue)`](#eithermap)
-- [`Either#mapLeft(value => newValue)`](#eithermapleft)
-- [`Either#mapRight(value => newValue)`](#eithermapright)
-- [`Either#asyncMap(value => Promise(newValue))`](#eitherasyncmap)
-- [`Either#chain(value => Either(newValue))`](#eitherchain)
-- [`Either#asyncChain(value => Promise(Either(newValue)))`](#eitherasyncchain)
+- [`Either.merge`](#eithermerge)
+- [`Either.left`](#eitherleft)
+- [`Either.right`](#eitherright)
+- [`Either#isLeft`](#eitherisleft)
+- [`Either#isRight`](#eitherisright)
+- [`Either#map`](#eithermap)
+- [`Either#mapRight`](#eithermapright)
+- [`Either#mapLeft`](#eithermapleft)
+- [`Either#asyncMap`](#eitherasyncmap)
+- [`Either#chain`](#eitherchain)
+- [`Either#asyncChain`](#eitherasyncchain)
 - [Helpers](#helpers)
 
 ##### `Either.merge`
@@ -53,8 +54,8 @@ const user = getUser(1).map(({ email }) => email);
   function merge<L1, R1, L2, R2, L3, R3>(values: [Either<L1, R1>, Either<L2, R2>, Either<L3, R3>]): Either<L1 | L2 | L3, [R1, R2, R3]>;
 // ... until 10 elements
 ```
-- `values: Array<Either<L, R>>` - Array of Either values which will be merged into Either of Array elements 
-- Returns `Either<L, Array<R>>` Either of Array which will contain `Right<Array<R>>` if all of array elements was `Right<R>` else `Left<L>`. 
+- `values: Array<Either<L, R>>` - Array of Either values which will be merged into Either of Array 
+- Returns `Either<L, Array<R>>` which will contain `Right<Array<R>>` if all of array elements was `Right<R>` otherwise `Left<L>`. 
 
 Example:
 ```typescript
@@ -92,7 +93,7 @@ const v2 = Either.right<Error, number>(2); // Either<Error, number>.Right
 ```typescript
 function isLeft(): boolean;
 ```
-- Returns `true` if state of either instance is `Left` else return `false`
+- Returns `true` if state of `Either` is `Left` otherwise `false`
 Example:
 ```typescript
 const v1 = Either.right(2);
@@ -106,7 +107,7 @@ v2.isLeft() // true
 ```typescript
 function isRight(): boolean;
 ```
-- Returns `true` if state of either instance is `Right` else return `false`
+- Returns `true` if state of `Either` is `Right` otherwise `false`
 Example:
 ```typescript
 const v1 = Either.right(2);
@@ -134,7 +135,7 @@ const newVal2 = v2.map(a => a.toString()); // Either<Error, string>.Left with va
 ```typescript
 function mapRight<L, R, NewR>(fn: (val: R) => NewR): Either<L, NewR>;
 ```
-The same as `Either#map`
+The same as [`Either#map`](#eithermap)
 
 - Returns mapped by `fn` function value wrapped by `Either` if `Either` is `Right` otherwise `Left` with `L` value
 Example:
