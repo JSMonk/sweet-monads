@@ -11,18 +11,15 @@ const defaultFromIterator = function<I>(): Array<I> {
   return [...this];
 };
 
+type IterableWithFromIterator<I> = Iterable<I> & { fromIterator: FromIterator<I> };
+
 export class LazyIterator<I> implements Iterable<I> {
   static from<I>(iterable: Iterable<I>): LazyIterator<I>;
-  static from<I>(
-    iterable: Iterable<I> & { fromIterator: FromIterator<I> }
-  ): LazyIterator<I>;
-  static from<I>(
-    iterable: Iterable<I>,
-    fromIterator: FromIterator<I>
-  ): LazyIterator<I>;
-  static from<I>(iterable: Iterable<I>, fromIterator?: FromIterator<I>) {
+  static from<I>(iterable: IterableWithFromIterator<I>): LazyIterator<I>;
+  static from<I>( iterable: Iterable<I>, fromIterator: FromIterator<I>): LazyIterator<I>;
+  static from<I>(iterable: Iterable<I> | IterableWithFromIterator<I>, fromIterator?: FromIterator<I>) {
     fromIterator =
-      fromIterator !== undefined ? fromIterator : iterable["fromIterator"];
+      fromIterator !== undefined ? fromIterator : (iterable as IterableWithFromIterator<I>).fromIterator;
     return new LazyIterator<I>(iterable[Symbol.iterator].bind(iterable), fromIterator);
   }
 
@@ -57,7 +54,7 @@ export class LazyIterator<I> implements Iterable<I> {
     this: LazyIterator<I>,
     predicate: (i: I) => i is T
   ): this is LazyIterator<T>;
-  all(predicate: (i: I) => boolean);
+  all(predicate: (i: I) => boolean): boolean;
   all(predicate: (i: I) => boolean) {
     for (const item of this) {
       if (!predicate(item)) {
@@ -238,7 +235,7 @@ export class LazyIterator<I> implements Iterable<I> {
     const oldIterator = this;
     const newIterator = function*() {
       for (const item of oldIterator) {
-        if (item != undefined && typeof item[Symbol.iterator] === "function") {
+        if (item != undefined && typeof (item as Iterable<I>)[Symbol.iterator] === "function") {
           yield* item as Iterable<I>;
         } else {
           yield item;
