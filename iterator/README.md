@@ -15,7 +15,7 @@
 
 ## Why?
 
-All of these methods (except for reduce and toArray) are lazy. They will only consume the iterator when they need the next item from it.
+All of these methods (except methods which returns non-`LazyIterator` values) are lazy. They will only consume the iterator when they need the next item from it.
 
 ```typescript
 import { LazyIterator } from "@sweet-monads/iterator";
