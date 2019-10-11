@@ -9,6 +9,6 @@
     "preserveConstEnums": true,
     "downlevelIteration": true
   },
-  "include": ["./maybe/index.ts"],
+  "include": ["./index.ts"],
   "exclude": ["node_modules"]
 }
