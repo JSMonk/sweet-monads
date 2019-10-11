@@ -4,11 +4,13 @@ Easy-to-use monads implementation with static types definition and separated pac
 
 - No dependencies, one small file
 - Easily auditable TypeScript/JS code
-- Check out all libraries:
-  [maybe](https://github.com/JSMonk/sweet-monads/tree/master/either),
-  [either](https://github.com/JSMonk/sweet-monads/tree/master/either),
-  [iterator](https://github.com/JSMonk/sweet-monads/tree/master/iterator),
-  [interfaces](https://github.com/JSMonk/sweet-monads/tree/master/interfaces),
+
+## Libraries
+
+- [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/either),
+- [Either](https://github.com/JSMonk/sweet-monads/tree/master/either),
+- [Iterator](https://github.com/JSMonk/sweet-monads/tree/master/iterator),
+- [Interfaces](https://github.com/JSMonk/sweet-monads/tree/master/interfaces),
 
 ## License
 
