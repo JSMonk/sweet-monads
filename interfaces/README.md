@@ -135,12 +135,18 @@ Methods:
 function chain<A, B>(f: (x: A) => Monad<B>): Monad<B>;
 ```
 
+##### `Monad#join`
+```typescript
+function join<T>(this: Monad<Monad<T>>): Monad<T>;
+```
+
 #### Minimal Complete Definition
 
 [`Applicative`](#applicative) implementation.
 
 ```typescript
 chain<A, B>(f: (x: A) => Monad<B>): Monad<B>;
+join<T>(this: Monad<Monad<T>>): Monad<T>;
 ```
 
 #### Monad Laws

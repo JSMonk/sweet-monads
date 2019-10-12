@@ -37,12 +37,16 @@ const user = getUser(1).map(({ email }) => email);
 - [`Either.merge`](#eithermerge)
 - [`Either.left`](#eitherleft)
 - [`Either.right`](#eitherright)
+- [`Either.from`](#eitherfrom)
 - [`Either#isLeft`](#eitherisleft)
 - [`Either#isRight`](#eitherisright)
+- [`Either#join`](#eitherjoin)
 - [`Either#map`](#eithermap)
 - [`Either#mapRight`](#eithermapright)
 - [`Either#mapLeft`](#eithermapleft)
+- [`Either#asyncMap`](#eitherasyncmap)
 - [`Either#chain`](#eitherchain)
+- [`Either#asyncChain`](#eitherasyncchain)
 - [Helpers](#helpers)
 
 #### `Either.merge`
@@ -87,6 +91,19 @@ const v2 = Either.right(2); // Either<unknown, number>.Right
 const v2 = Either.right<Error, number>(2); // Either<Error, number>.Right
 ```
 
+#### `Either.from`
+
+Return only `Right` typed value.
+
+```typescript
+function from<R>(value: R): Either<unknown, R>;
+```
+- Returns `Either` with `Right` state which contain value with `R` type.
+Example:
+```typescript
+Either.from(2); // Either<unknown, number>.Right
+```
+
 #### `Either#isLeft`
 ```typescript
 function isLeft(): boolean;
@@ -113,6 +130,23 @@ const v2 = Either.left(2);
 
 v1.isRight() // true
 v2.isRight() // false
+```
+
+#### `Either#join`
+```typescript
+function join<L1, L2, R>(this: Either<L1, Either<L2, R>>): Either<L1 | L2, R>;
+```
+- `this: Either<L1, Either<L2, R>>` - `Either` instance which contains other `Either` instance as `Right` value.
+- Returns unwrapped `Either` - if current `Either` has `Right` state and inner `Either` has `Right` state then returns inner `Either` `Right`, if inner `Either` has `Left` state then return inner `Either` `Left` otherwise outer `Either` `Left`.
+Example:
+```typescript
+const v1 = Either.right(Either.right(2));
+const v2 = Either.right(Either.left(new Error()));
+const v3 = Either.left<TypeError, Either<Error, number>>(new TypeError());
+
+v1.join() // Either.Right with value 2
+v2.join() // Either.Left with value new Error 
+v3.join() // Either.Left with value new TypeError 
 ```
 
 #### `Either#map`
@@ -159,6 +193,22 @@ const newVal1 = v1.mapLeft(a => a.toString()); // Either<string, number>.Right w
 const newVal2 = v2.mapLeft(a => a.toString()); // Either<string, number>.Left with value "Error"
 ```
 
+##### `Either#asyncMap`
+```typescript
+function asyncMap<L, R, NewR>(fn: (val: R) => Promise<NewR>): Promise<Either<L, NewR>>;
+```
+- Returns `Promise` with mapped by `fn` function value wrapped by `Either` if `Either` is `Right` otherwise `Left` with value `L`
+Example:
+```typescript
+const v1 = Either.right<Error, number>(2);
+const v2 = Either.left<Error, number>(new Error());
+
+// Promise<Either<Error, string>.Right> with value "2"
+const newVal1 = v1.asyncMap(a => Promise.resolve(a.toString())); 
+// Promise<Either<Error, string>.Left> with value new Error()
+const newVal2 = v2.asyncMap(a => Promise.resolve(a.toString()));
+```
+
 #### `Either#chain`
 ```typescript
 function chain<L, R, NewL, NewR>(fn: (val: R) => Either<NewL, NewR>): Either<L | newL, NewR>;
@@ -176,6 +226,26 @@ const newVal2 = v1.chain(a => Either.left<TypeError, string>(new TypeError()));
 // Either<Error | TypeError, string>.Left with value new Error()
 const newVal3 = v2.chain(a => Either.right<TypeError, string>(a.toString()));
 // Either<Error | TypeError, string>.Left with value new Error()
+const newVal4 = v2.chain(a => Either.left<TypeError, string>(new TypeError()));
+```
+
+##### `Either#asyncChain`
+```typescript
+function chain<L, R, NewL, NewR>(fn: (val: R) => Promise<Either<NewL, NewR>>): Promise<Either<L | newL, NewR>>;
+```
+- Returns `Promise` with mapped by `fn` function value wrapped by `Either` if `Either` is `Right` and returned by `fn` value is `Right` too otherwise `Left`
+Example:
+```typescript
+const v1 = Either.right<Error, number>(2);
+const v2 = Either.left<Error, number>(new Error());
+
+// Promise<Either<Error | TypeError, string>.Right> with value "2"
+const newVal1 = v1.chain(a => Either.right<TypeError, string>(a.toString()));
+// Promise<Either<Error | TypeError, string>.Left> with value new TypeError()
+const newVal2 = v1.chain(a => Either.left<TypeError, string>(new TypeError()));
+// Promise<Either<Error | TypeError, string>.Left> with value new Error()
+const newVal3 = v2.chain(a => Either.right<TypeError, string>(a.toString()));
+// Promise<Either<Error | TypeError, string>.Left> with value new Error()
 const newVal4 = v2.chain(a => Either.left<TypeError, string>(new TypeError()));
 ```
 
