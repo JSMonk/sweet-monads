@@ -1,4 +1,4 @@
-import { Monad } from "./node_modules/@sweet-monads/interfaces/index";
+import { Monad } from "@sweet-monads/interfaces";
 
 enum MaybeState {
   Just = "Just",
