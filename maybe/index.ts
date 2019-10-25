@@ -1,4 +1,4 @@
-import { Monad } from "@sweet-monads/interfaces";
+import { Monad } from "./node_modules/@sweet-monads/interfaces/index";
 
 enum MaybeState {
   Just = "Just",
@@ -137,7 +137,7 @@ export class Maybe<T> implements Monad<T> {
   ): Maybe<B> {
     if (isWrappedFunction(this) && !isWrappedFunction(argOrFn)) {
       if (this.isJust()) {
-        return argOrFn.map(this.value);
+        return argOrFn.map(this.value as (a: A) => B);
       }
       return Maybe.none<B>();
     }
@@ -158,8 +158,7 @@ export class Maybe<T> implements Monad<T> {
   ): Promise<Maybe<B>> {
     if (isWrappedFunction(this) && !isWrappedFunction(argOrFn)) {
       if (this.isJust()) {
-        const { value: fn } = this;
-        return argOrFn.asyncMap(fn);
+        return argOrFn.asyncMap(this.value as (a: A | Promise<A>) => Promise<B>);
       }
       return Promise.resolve(Maybe.none<B>());
     }
