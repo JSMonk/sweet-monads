@@ -41,6 +41,8 @@ const user = getUser(1).map(({ email }) => email);
 - [`Maybe#join`](#maybejoin)
 - [`Maybe#map`](#maybemap)
 - [`Maybe#asyncMap`](#maybeasyncmap)
+- [`Maybe#apply`](#maybeapply)
+- [`Maybe#asyncApply`](#maybeasyncapply)
 - [`Maybe#chain`](#maybechain)
 - [`Maybe#asyncChain`](#maybeasyncchain)
 - [Helpers](#helpers)
@@ -174,6 +176,51 @@ const v2 = Maybe.none<number>();
 const newVal1 = v1.asyncMap(a => Promise.resolve(a.toString())); 
 // Promise<Maybe<string>.None> without value
 const newVal2 = v2.asyncMap(a => Promise.resolve(a.toString()));
+```
+
+##### `Maybe#apply`
+```typescript
+function apply<A, B>(this: Maybe<(a: A) => B>, arg: Maybe<A>): Maybe<B>;
+function apply<A, B>(this: Maybe<A>, fn: Maybe<(a: A) => B>): Maybe<B>;
+```
+- `this | fn` - function wrapped by Maybe, which should be applied to value `arg`
+- `arg | this` - value which should be applied to `fn`
+- Returns mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` otherwise `None`
+Example:
+```typescript
+const v1 = Maybe.just(2);
+const v2 = Maybe.none<number>();
+const fn1 = Maybe.just((a: number) => a * 2);
+const fn2 = Maybe.none<(a: number) => number>();
+
+const newVal1 = fn1.apply(v1); // Maybe<number>.Just with value 4 
+const newVal2 = fn1.apply(v2); // Maybe<number>.None without value
+const newVal3 = fn2.apply(v1); // Maybe<number>.None without value
+const newVal4 = fn2.apply(v2); // Maybe<number>.None without value
+```
+
+##### `Maybe#asyncApply`
+
+Async variant of [`Maybe#apply`](#maybeapply)
+
+```typescript
+function asyncApply<A, B>(this: Maybe<(a: Promise<A> | A) => Promise<B>>, arg: Maybe<Promise<A> | A>): Promise<Maybe<B>>;
+function asyncApply<A, B>(this: Maybe<Promise<A> | A>, fn: Maybe<(a: Promise<A> | A) => Promise<B>>): Promise<Maybe<B>>;
+```
+- `this | fn` - function wrapped by Maybe, which should be applied to value `arg`
+- `arg | this` - value which should be applied to `fn`
+- Returns `Promise` with mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` otherwise `None`
+Example:
+```typescript
+const v1 = Maybe.just(2);
+const v2 = Maybe.none<number>();
+const fn1 = Maybe.just((a: number) => Promise,resolve(a * 2));
+const fn2 = Maybe.none<(a: number) => Promise<number>>();
+
+const newVal1 = fn1.apply(v1); // Promise<Maybe<number>.Just> with value 4 
+const newVal2 = fn1.apply(v2); // Promise<Maybe<number>.None> without value
+const newVal3 = fn2.apply(v1); // Promise<Maybe<number>.None> without value
+const newVal4 = fn2.apply(v2); // Promise<Maybe<number>.None> without value
 ```
 
 #### `Maybe#chain`

@@ -45,6 +45,8 @@ const user = getUser(1).map(({ email }) => email);
 - [`Either#mapRight`](#eithermapright)
 - [`Either#mapLeft`](#eithermapleft)
 - [`Either#asyncMap`](#eitherasyncmap)
+- [`Either#apply`](#eitherapply)
+- [`Either#asyncApply`](#eitherasyncapply)
 - [`Either#chain`](#eitherchain)
 - [`Either#asyncChain`](#eitherasyncchain)
 - [Helpers](#helpers)
@@ -207,6 +209,51 @@ const v2 = Either.left<Error, number>(new Error());
 const newVal1 = v1.asyncMap(a => Promise.resolve(a.toString())); 
 // Promise<Either<Error, string>.Left> with value new Error()
 const newVal2 = v2.asyncMap(a => Promise.resolve(a.toString()));
+```
+
+##### `Either#apply`
+```typescript
+function asyncApply<A, B>(this: Either<L, (a: Promise<A> | A) => Promise<B>>, arg: Either<L, Promise<A>>): Promise<Either<L, B>>;
+function asyncApply<A, B>(this: Either<L, Promise<A>>, fn: Either<L, Promise<(a: Promise<A> | A) => B>>): Promise<Either<L, B>>;
+```
+- `this | fn` - function wrapped by Either, which should be applied to value `arg`
+- `arg | this` - value which should be applied to `fn`
+- Returns mapped by `fn` function value wrapped by `Either` if `Either` is `Right` otherwise `Left` with `L` value
+Example:
+```typescript
+const v1 = Either.right<Error, number>(2);
+const v2 = Either.left<Error, number>(new Error());
+const fn1 = Either.right<Error, (a: number) => number>((a: number) => a * 2);
+const fn2 = Either.left<Error, (a: number) => number>(new Error());
+
+const newVal1 = fn1.apply(v1); // Either<Error, number>.Right with value 4 
+const newVal2 = fn1.apply(v2); // Either<Error, number>.Left with value new Error()
+const newVal3 = fn2.apply(v1); // Either<Error, number>.Left with value new Error()
+const newVal4 = fn2.apply(v2); // Either<Error, number>.Left with value new Error()
+```
+
+##### `Either#asyncApply`
+
+Async variant of [`Either#apply`](#eitherapply)
+
+```typescript
+function asyncApply<A, B>(this: Maybe<(a: Promise<A> | A) => Promise<B>>, arg: Maybe<Promise<A> | A>): Promise<Maybe<B>>;
+function asyncApply<A, B>(this: Maybe<Promise<A> | A>, fn: Maybe<(a: Promise<A> | A) => Promise<B>>): Promise<Maybe<B>>;
+```
+- `this | fn` - function wrapped by Maybe, which should be applied to value `arg`
+- `arg | this` - value which should be applied to `fn`
+- Returns `Promise` with mapped by `fn` function value wrapped by `Either` if `Either` is `Right` otherwise `Left` with `L` value
+Example:
+```typescript
+const v1 = Either.right<Error, number>(2);
+const v2 = Either.left<Error, number>(new Error());
+const fn1 = Either.right<Error, (a: number) => Promise<number>>((a: number) => Promise.resolve(a * 2));
+const fn2 = Either.left<Error, (a: number) => Promise<number>>(new Error());
+
+const newVal1 = fn1.apply(v1); // Promise<Either<Error, number>.Right> with value 4 
+const newVal2 = fn1.apply(v2); // Promise<Either<Error, number>.Left> with value new Error()
+const newVal3 = fn2.apply(v1); // Promise<Either<Error, number>.Left> with value new Error()
+const newVal4 = fn2.apply(v2); // Promise<Either<Error, number>.Left> with value new Error()
 ```
 
 #### `Either#chain`

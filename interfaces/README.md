@@ -91,8 +91,10 @@ function from<A>(x: A): Applicative<A>;
 ```
 
 ##### `Applicative#apply`
-
-In development
+```typescript
+apply<A, B>(this: Applicative<(a: A) => B>, arg: Applicative<A>): Applicative<B>;
+apply<A, B>(this: Applicative<A>, fn: Applicative<(a: A) => B>): Applicative<B>;
+```
 
 #### Minimal Complete Definition
 
@@ -100,6 +102,10 @@ In development
 
 ```typescript
 static from<A>(x: A): Applicative<A>;
+```
+```typescript
+apply<A, B>(this: Applicative<(a: A) => B>, arg: Applicative<A>): Applicative<B>;
+apply<A, B>(this: Applicative<A>, fn: Applicative<(a: A) => B>): Applicative<B>;
 ```
 
 #### Applicative Laws
