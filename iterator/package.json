@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/iterator",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "Implement iterator with helper functions",
   "main": "index.js",
   "types": "index.d.ts",
