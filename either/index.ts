@@ -12,17 +12,17 @@ function isWrappedFunction<A, B, L>(
 }
 
 export class Either<L, R> implements Monad<R> {
-  static merge<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
-  static merge<L1, R1, L2, R2>(
+  static mergeInOne<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
+  static mergeInOne<L1, R1, L2, R2>(
     values: [Either<L1, R1>, Either<L2, R2>]
   ): Either<L1 | L2, [R1, R2]>;
-  static merge<L1, R1, L2, R2, L3, R3>(
+  static mergeInOne<L1, R1, L2, R2, L3, R3>(
     values: [Either<L1, R1>, Either<L2, R2>, Either<L3, R3>]
   ): Either<L1 | L2 | L3, [R1, R2, R3]>;
-  static merge<L1, R1, L2, R2, L3, R3, L4, R4>(
+  static mergeInOne<L1, R1, L2, R2, L3, R3, L4, R4>(
     values: [Either<L1, R1>, Either<L2, R2>, Either<L3, R3>, Either<L4, R4>]
   ): Either<L1 | L2 | L3 | L4, [R1, R2, R3, R4]>;
-  static merge<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5>(
+  static mergeInOne<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5>(
     values: [
       Either<L1, R1>,
       Either<L2, R2>,
@@ -31,7 +31,7 @@ export class Either<L, R> implements Monad<R> {
       Either<L5, R5>
     ]
   ): Either<L1 | L2 | L3 | L4 | L5, [R1, R2, R3, R4, R5]>;
-  static merge<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5, L6, R6>(
+  static mergeInOne<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5, L6, R6>(
     values: [
       Either<L1, R1>,
       Either<L2, R2>,
@@ -41,7 +41,7 @@ export class Either<L, R> implements Monad<R> {
       Either<L6, R6>
     ]
   ): Either<L1 | L2 | L3 | L4 | L5 | L6, [R1, R2, R3, R4, R5, R6]>;
-  static merge<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5, L6, R6, L7, R7>(
+  static mergeInOne<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5, L6, R6, L7, R7>(
     values: [
       Either<L1, R1>,
       Either<L2, R2>,
@@ -52,7 +52,24 @@ export class Either<L, R> implements Monad<R> {
       Either<L7, R7>
     ]
   ): Either<L1 | L2 | L3 | L4 | L5 | L6 | L7, [R1, R2, R3, R4, R5, R6, R7]>;
-  static merge<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5, L6, R6, L7, R7, L8, R8>(
+  static mergeInOne<
+    L1,
+    R1,
+    L2,
+    R2,
+    L3,
+    R3,
+    L4,
+    R4,
+    L5,
+    R5,
+    L6,
+    R6,
+    L7,
+    R7,
+    L8,
+    R8
+  >(
     values: [
       Either<L1, R1>,
       Either<L2, R2>,
@@ -67,7 +84,7 @@ export class Either<L, R> implements Monad<R> {
     L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8,
     [R1, R2, R3, R4, R5, R6, R7, R8]
   >;
-  static merge<
+  static mergeInOne<
     L1,
     R1,
     L2,
@@ -102,7 +119,7 @@ export class Either<L, R> implements Monad<R> {
     L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9,
     [R1, R2, R3, R4, R5, R6, R7, R8, R9]
   >;
-  static merge<
+  static mergeInOne<
     L1,
     R1,
     L2,
@@ -140,12 +157,177 @@ export class Either<L, R> implements Monad<R> {
     L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10,
     [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]
   >;
-  static merge(eithers: Array<Either<unknown, unknown>>) {
+  static mergeInOne(eithers: Array<Either<unknown, unknown>>) {
     return eithers.reduce(
       (res: Either<unknown, Array<unknown>>, v) =>
         v.chain(v => res.map(res => res.concat([v]))),
       Either.right<unknown, Array<unknown>>([])
     );
+  }
+
+  static merge = Either.mergeInOne;
+
+  static mergeInMany<L1, R1>(values: [Either<L1, R1>]): Either<Array<L1>, [R1]>;
+  static mergeInMany<L1, R1, L2, R2>(
+    values: [Either<L1, R1>, Either<L2, R2>]
+  ): Either<Array<L1 | L2>, [R1, R2]>;
+  static mergeInMany<L1, R1, L2, R2, L3, R3>(
+    values: [Either<L1, R1>, Either<L2, R2>, Either<L3, R3>]
+  ): Either<Array<L1 | L2 | L3>, [R1, R2, R3]>;
+  static mergeInMany<L1, R1, L2, R2, L3, R3, L4, R4>(
+    values: [Either<L1, R1>, Either<L2, R2>, Either<L3, R3>, Either<L4, R4>]
+  ): Either<Array<L1 | L2 | L3 | L4>, [R1, R2, R3, R4]>;
+  static mergeInMany<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5>(
+    values: [
+      Either<L1, R1>,
+      Either<L2, R2>,
+      Either<L3, R3>,
+      Either<L4, R4>,
+      Either<L5, R5>
+    ]
+  ): Either<Array<L1 | L2 | L3 | L4 | L5>, [R1, R2, R3, R4, R5]>;
+  static mergeInMany<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5, L6, R6>(
+    values: [
+      Either<L1, R1>,
+      Either<L2, R2>,
+      Either<L3, R3>,
+      Either<L4, R4>,
+      Either<L5, R5>,
+      Either<L6, R6>
+    ]
+  ): Either<Array<L1 | L2 | L3 | L4 | L5 | L6>, [R1, R2, R3, R4, R5, R6]>;
+  static mergeInMany<L1, R1, L2, R2, L3, R3, L4, R4, L5, R5, L6, R6, L7, R7>(
+    values: [
+      Either<L1, R1>,
+      Either<L2, R2>,
+      Either<L3, R3>,
+      Either<L4, R4>,
+      Either<L5, R5>,
+      Either<L6, R6>,
+      Either<L7, R7>
+    ]
+  ): Either<
+    Array<L1 | L2 | L3 | L4 | L5 | L6 | L7>,
+    [R1, R2, R3, R4, R5, R6, R7]
+  >;
+  static mergeInMany<
+    L1,
+    R1,
+    L2,
+    R2,
+    L3,
+    R3,
+    L4,
+    R4,
+    L5,
+    R5,
+    L6,
+    R6,
+    L7,
+    R7,
+    L8,
+    R8
+  >(
+    values: [
+      Either<L1, R1>,
+      Either<L2, R2>,
+      Either<L3, R3>,
+      Either<L4, R4>,
+      Either<L5, R5>,
+      Either<L6, R6>,
+      Either<L7, R7>,
+      Either<L8, R8>
+    ]
+  ): Either<
+    Array<L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8>,
+    [R1, R2, R3, R4, R5, R6, R7, R8]
+  >;
+  static mergeInMany<
+    L1,
+    R1,
+    L2,
+    R2,
+    L3,
+    R3,
+    L4,
+    R4,
+    L5,
+    R5,
+    L6,
+    R6,
+    L7,
+    R7,
+    L8,
+    R8,
+    L9,
+    R9
+  >(
+    values: [
+      Either<L1, R1>,
+      Either<L2, R2>,
+      Either<L3, R3>,
+      Either<L4, R4>,
+      Either<L5, R5>,
+      Either<L6, R6>,
+      Either<L7, R7>,
+      Either<L8, R8>,
+      Either<L9, R9>
+    ]
+  ): Either<
+    Array<L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9>,
+    [R1, R2, R3, R4, R5, R6, R7, R8, R9]
+  >;
+  static mergeInMany<
+    L1,
+    R1,
+    L2,
+    R2,
+    L3,
+    R3,
+    L4,
+    R4,
+    L5,
+    R5,
+    L6,
+    R6,
+    L7,
+    R7,
+    L8,
+    R8,
+    L9,
+    R9,
+    L10,
+    R10
+  >(
+    values: [
+      Either<L1, R1>,
+      Either<L2, R2>,
+      Either<L3, R3>,
+      Either<L4, R4>,
+      Either<L5, R5>,
+      Either<L6, R6>,
+      Either<L7, R7>,
+      Either<L8, R8>,
+      Either<L9, R9>,
+      Either<L10, R10>
+    ]
+  ): Either<
+    Array<L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10>,
+    [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]
+  >;
+  static mergeInMany(eithers: Array<Either<unknown, unknown>>) {
+    return eithers.reduce((res: Either<Array<unknown>, Array<unknown>>, v) => {
+      if (res.isLeft()) {
+        if (v.isLeft()) {
+          return Either.left(res.value.concat([v.value]));
+        }
+        return res;
+      }
+      if (v.isLeft()) {
+        return Either.left([v.value]);
+      }
+      return v.chain(v => res.map(res => res.concat([v])));
+    }, Either.right<Array<unknown>, Array<unknown>>([]));
   }
 
   static from<T>(v: T) {
