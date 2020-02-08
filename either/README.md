@@ -19,7 +19,7 @@
 > npm install @sweet-monads/either
 
 ```typescript
-import { Either } from "@sweet-monads/either";
+import Either from "@sweet-monads/either";
 
 class UserNotFoundError extends Error { name: "UserNotFoundError" };
 type User = { email: string, password: string };
