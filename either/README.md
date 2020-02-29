@@ -183,7 +183,7 @@ const newVal2 = v2.map(a => a.toString()); // Either<Error, string>.Left with va
 
 #### `Either#mapLeft`
 ```typescript
-function mapRight<L, R, NewL>(fn: (val: L) => NewL): Either<NewL, R>;
+function mapLeft<L, R, NewL>(fn: (val: L) => NewL): Either<NewL, R>;
 ```
 - Returns mapped by `fn` function value wrapped by `Either` if `Either` is `Left` otherwise `Right` with `R` value
 Example:
