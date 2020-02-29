@@ -1,6 +1,6 @@
 import * as fc from "fast-check";
-import { Maybe } from "../maybe/index";
-import { LazyIterator } from "../iterator/index";
+import Maybe from "@sweet-moands/maybe/index";
+import LazyIterator from "../iterator/index";
 
 describe("Iterator", () => {
   describe("all", () => {

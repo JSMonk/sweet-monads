@@ -1,4 +1,4 @@
-import { Maybe } from "@sweet-monads/maybe";
+import Maybe from "@sweet-monads/maybe";
 
 type IteratorCreator<T> = () => Iterator<T>;
 type FromIterator<I> = () => Iterable<I>;
@@ -7,13 +7,13 @@ const GENERATE_WITH = Symbol("GENERATE_WITH");
 
 const id = (x: any) => x;
 
-const defaultFromIterator = function<I>(): Array<I> {
+const defaultFromIterator = function<I>(this: Iterable<I>): Array<I> {
   return [...this];
 };
 
 type IterableWithFromIterator<I> = Iterable<I> & { fromIterator: FromIterator<I> };
 
-export class LazyIterator<I> implements Iterable<I> {
+export default class LazyIterator<I> implements Iterable<I> {
   static from<I>(iterable: Iterable<I>): LazyIterator<I>;
   static from<I>(iterable: IterableWithFromIterator<I>): LazyIterator<I>;
   static from<I>( iterable: Iterable<I>, fromIterator: FromIterator<I>): LazyIterator<I>;

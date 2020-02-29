@@ -11,7 +11,7 @@ function isWrappedFunction<A, B>(
   return typeof m.value === "function";
 }
 
-export class Maybe<T> implements Monad<T> {
+export default class Maybe<T> implements Monad<T> {
   static merge<V1>(values: [Maybe<V1>]): Maybe<[V1]>;
   static merge<V1, V2>(values: [Maybe<V1>, Maybe<V2>]): Maybe<[V1, V2]>;
   static merge<V1, V2, V3>(
@@ -158,13 +158,15 @@ export class Maybe<T> implements Monad<T> {
   ): Promise<Maybe<B>> {
     if (isWrappedFunction(this) && !isWrappedFunction(argOrFn)) {
       if (this.isJust()) {
-        return argOrFn.asyncMap(this.value as (a: A | Promise<A>) => Promise<B>);
+        return argOrFn.asyncMap(this.value as (
+          a: A | Promise<A>
+        ) => Promise<B>);
       }
       return Promise.resolve(Maybe.none<B>());
     }
-    return (argOrFn as Maybe<(a: A) => Promise<B>>).asyncApply(this as Maybe<
-      Promise<A>
-    >);
+    return (argOrFn as Maybe<(a: A | Promise<A>) => Promise<B>>).asyncApply(
+      this as Maybe<Promise<A>>
+    );
   }
 
   chain<V>(f: (r: T) => Maybe<V>): Maybe<V> {

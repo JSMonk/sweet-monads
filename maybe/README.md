@@ -18,7 +18,7 @@
 > npm install @sweet-monads/maybe
 
 ```typescript
-import { Maybe } from "@sweet-monads/maybe";
+import Maybe from "@sweet-monads/maybe";
 
 type User = { email: string, password: string };
 

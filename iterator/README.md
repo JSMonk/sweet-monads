@@ -18,7 +18,7 @@
 All of these methods (except methods which return non-`LazyIterator` values) are lazy. They will only consume the iterator when they need the next item from it.
 
 ```typescript
-import { LazyIterator } from "@sweet-monads/iterator";
+import LazyIterator from "@sweet-monads/iterator";
 
 // array from 1 to 10000
 const longArray = Array.from({ length: 10000 }).map((_, i) => i + 1);
@@ -44,7 +44,7 @@ const sum2 = lazyArray
 > npm install @sweet-monads/iterator
 
 ```typescript
-import { LazyIterator } from "@sweet-monads/iterator";
+import LazyIterator from "@sweet-monads/iterator";
 
 const lazyArray = LazyIterator.from<number>([1, 2, 3, 4, 5]);
 

@@ -11,7 +11,7 @@ function isWrappedFunction<A, B, L>(
   return typeof m.value === "function";
 }
 
-export class Either<L, R> implements Monad<R> {
+export default class Either<L, R> implements Monad<R> {
   static mergeInOne<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
   static mergeInOne<L1, R1, L2, R2>(
     values: [Either<L1, R1>, Either<L2, R2>]
@@ -316,18 +316,23 @@ export class Either<L, R> implements Monad<R> {
     [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]
   >;
   static mergeInMany(eithers: Array<Either<unknown, unknown>>) {
-    return eithers.reduce((res: Either<Array<unknown>, Array<unknown>>, v) => {
-      if (res.isLeft()) {
-        if (v.isLeft()) {
-          return Either.left(res.value.concat([v.value]));
+    return eithers.reduce(
+      (
+        res: Either<Array<unknown>, Array<unknown>>,
+        v
+      ): Either<Array<unknown>, Array<unknown>> => {
+        if (res.isLeft()) {
+          return v.isLeft() ? Either.left(res.value.concat([v.value])) : res;
         }
-        return res;
-      }
-      if (v.isLeft()) {
-        return Either.left([v.value]);
-      }
-      return v.chain(v => res.map(res => res.concat([v])));
-    }, Either.right<Array<unknown>, Array<unknown>>([]));
+        return v.isLeft()
+          ? Either.left([v.value])
+          : (v.chain(v => res.map(res => [...res, v])) as Either<
+              Array<unknown>,
+              Array<unknown>
+            >);
+      },
+      Either.right<Array<unknown>, Array<unknown>>([])
+    );
   }
 
   static from<T>(v: T) {
@@ -420,7 +425,7 @@ export class Either<L, R> implements Monad<R> {
       }
       return Promise.resolve(Either.left<L, B>(this.value as L));
     }
-    return (argOrFn as Either<L, (a: A) => Promise<B>>).asyncApply(
+    return (argOrFn as Either<L, (a: Promise<A> | A) => Promise<B>>).asyncApply(
       this as Either<L, Promise<A>>
     );
   }
