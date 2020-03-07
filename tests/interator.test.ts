@@ -1,5 +1,5 @@
 import * as fc from "fast-check";
-import Maybe from "@sweet-moands/maybe/index";
+import Maybe from "../maybe/index";
 import LazyIterator from "../iterator/index";
 
 describe("Iterator", () => {

@@ -135,13 +135,16 @@ export default class Maybe<T> implements Monad<T> {
     this: Maybe<A> | Maybe<(a: A) => B>,
     argOrFn: Maybe<A> | Maybe<(a: A) => B>
   ): Maybe<B> {
-    if (isWrappedFunction(this) && !isWrappedFunction(argOrFn)) {
-      if (this.isJust()) {
-        return argOrFn.map(this.value as (a: A) => B);
-      }
+    if (this.isNone() || argOrFn.isNone()) {
       return Maybe.none<B>();
     }
-    return (argOrFn as Maybe<(a: A) => B>).apply(this as Maybe<A>);
+    if (isWrappedFunction(this)) {
+      return (argOrFn as Maybe<A>).map(this.value as (a: A) => B);
+    }
+    if (isWrappedFunction(argOrFn)) {
+      return (argOrFn as Maybe<(a: A) => B>).apply(this as Maybe<A>);
+    }
+    throw new Error("Some of the arguments should be a function");
   }
 
   asyncApply<A, B>(
@@ -156,17 +159,20 @@ export default class Maybe<T> implements Monad<T> {
     this: Maybe<Promise<A>> | Maybe<(a: Promise<A> | A) => Promise<B>>,
     argOrFn: Maybe<Promise<A>> | Maybe<(a: Promise<A> | A) => Promise<B>>
   ): Promise<Maybe<B>> {
-    if (isWrappedFunction(this) && !isWrappedFunction(argOrFn)) {
-      if (this.isJust()) {
-        return argOrFn.asyncMap(this.value as (
-          a: A | Promise<A>
-        ) => Promise<B>);
-      }
+    if (this.isNone() || argOrFn.isNone()) {
       return Promise.resolve(Maybe.none<B>());
     }
-    return (argOrFn as Maybe<(a: A | Promise<A>) => Promise<B>>).asyncApply(
-      this as Maybe<Promise<A>>
-    );
+    if (isWrappedFunction(this)) {
+      return (argOrFn as Maybe<Promise<A>>).asyncMap(this.value as (
+        a: A | Promise<A>
+      ) => Promise<B>);
+    }
+    if (isWrappedFunction(argOrFn)) {
+      return (argOrFn as Maybe<(a: A | Promise<A>) => Promise<B>>).asyncApply(
+        this as Maybe<Promise<A>>
+      );
+    }
+    throw new Error("Some of the arguments should be a function");
   }
 
   chain<V>(f: (r: T) => Maybe<V>): Maybe<V> {

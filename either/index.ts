@@ -390,17 +390,20 @@ export default class Either<L, R> implements Monad<R> {
 
   apply<A, B>(this: Either<L, (a: A) => B>, arg: Either<L, A>): Either<L, B>;
   apply<A, B>(this: Either<L, A>, fn: Either<L, (a: A) => B>): Either<L, B>;
-  apply<A, B>(
-    this: Either<L, A> | Either<L, (a: A) => B>,
-    argOrFn: Either<L, A> | Either<L, (a: A) => B>
-  ): Either<L, B> {
-    if (isWrappedFunction(this) && !isWrappedFunction(argOrFn)) {
-      if (this.isRight()) {
-        return argOrFn.map(this.value as (a: A) => B);
-      }
+  apply<A, B>(this: Either<L, A> | Either<L, (a: A) => B>, argOrFn: Either<L, A> | Either<L, (a: A) => B>): Either<L, B> {
+    if (this.isLeft()) {
       return Either.left<L, B>(this.value as L);
     }
-    return (argOrFn as Either<L, (a: A) => B>).apply(this as Either<L, A>);
+    if (argOrFn.isLeft()) {
+      return Either.left<L, B>(argOrFn.value as L);
+    }
+    if (isWrappedFunction(this)) {
+      return (argOrFn as Either<L, A>).map(this.value as (a: A) => B);
+    }
+    if (isWrappedFunction(argOrFn)) {
+      return (argOrFn as Either<L, (a: A) => B>).apply(this as Either<L, A>);
+    }
+    throw new Error("Some of the arguments should be a function");
   }
 
   asyncApply<A, B>(
@@ -417,17 +420,23 @@ export default class Either<L, R> implements Monad<R> {
       | Either<L, Promise<A>>
       | Either<L, (a: Promise<A> | A) => Promise<B>>
   ): Promise<Either<L, B>> {
-    if (isWrappedFunction(this) && !isWrappedFunction(argOrFn)) {
-      if (this.isRight()) {
-        return argOrFn.asyncMap(this.value as (
-          a: A | Promise<A>
-        ) => Promise<B>);
-      }
+    if (this.isLeft()) {
       return Promise.resolve(Either.left<L, B>(this.value as L));
     }
-    return (argOrFn as Either<L, (a: Promise<A> | A) => Promise<B>>).asyncApply(
-      this as Either<L, Promise<A>>
-    );
+    if (argOrFn.isLeft()) {
+      return Promise.resolve(Either.left<L, B>(argOrFn.value as L));
+    }
+    if (isWrappedFunction(this)) {
+      return (argOrFn as Either<L, Promise<A>>).asyncMap(this.value as (
+        a: A | Promise<A>
+      ) => Promise<B>);
+    }
+    if (isWrappedFunction(argOrFn)) {
+      return (argOrFn as Either<L, (a: Promise<A> | A) => Promise<B>>).asyncApply(
+        this as Either<L, Promise<A>>
+      );
+    }
+    throw new Error("Some of the arguments should be a function");
   }
 
   chain<A, B>(f: (r: R) => Either<A, B>): Either<A | L, B> {
