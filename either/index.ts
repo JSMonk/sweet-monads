@@ -1,6 +1,6 @@
 import { Monad } from "@sweet-monads/interfaces";
 
-enum EitherType {
+const enum EitherType {
   Left = "Left",
   Right = "Right"
 }
