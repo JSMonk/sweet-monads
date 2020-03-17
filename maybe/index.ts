@@ -1,6 +1,6 @@
 import { Monad } from "@sweet-monads/interfaces";
 
-enum MaybeState {
+const enum MaybeState {
   Just = "Just",
   None = "None"
 }
