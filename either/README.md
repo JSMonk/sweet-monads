@@ -213,8 +213,8 @@ const newVal2 = v2.asyncMap(a => Promise.resolve(a.toString()));
 
 ##### `Either#apply`
 ```typescript
-function asyncApply<A, B>(this: Either<L, (a: Promise<A> | A) => Promise<B>>, arg: Either<L, Promise<A>>): Promise<Either<L, B>>;
-function asyncApply<A, B>(this: Either<L, Promise<A>>, fn: Either<L, Promise<(a: Promise<A> | A) => B>>): Promise<Either<L, B>>;
+function apply<A, B>(this: Either<L, (a: A) => B>, arg: Either<L, A>): Either<L, B>;
+function apply<A, B>(this: Either<L, A>, fn: Either<L, (a: A) => B>): Either<L, B>;
 ```
 - `this | fn` - function wrapped by Either, which should be applied to value `arg`
 - `arg | this` - value which should be applied to `fn`
