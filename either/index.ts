@@ -11,7 +11,7 @@ function isWrappedFunction<A, B, L>(
   return typeof m.value === "function";
 }
 
-export default class Either<L, R> implements Monad<R> {
+export default class EitherConstructor<L, R, T extends EitherType = EitherType> implements Monad<R> {
   static mergeInOne<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
   static mergeInOne<L1, R1, L2, R2>(
     values: [Either<L1, R1>, Either<L2, R2>]
@@ -161,11 +161,11 @@ export default class Either<L, R> implements Monad<R> {
     return eithers.reduce(
       (res: Either<unknown, Array<unknown>>, v) =>
         v.chain(v => res.map(res => res.concat([v]))),
-      Either.right<unknown, Array<unknown>>([])
+      EitherConstructor.right<unknown, Array<unknown>>([])
     );
   }
 
-  static merge = Either.mergeInOne;
+  static merge = EitherConstructor.mergeInOne;
 
   static mergeInMany<L1, R1>(values: [Either<L1, R1>]): Either<Array<L1>, [R1]>;
   static mergeInMany<L1, R1, L2, R2>(
@@ -322,16 +322,16 @@ export default class Either<L, R> implements Monad<R> {
         v
       ): Either<Array<unknown>, Array<unknown>> => {
         if (res.isLeft()) {
-          return v.isLeft() ? Either.left(res.value.concat([v.value])) : res;
+          return v.isLeft() ? EitherConstructor.left(res.value.concat([v.value])) : res;
         }
         return v.isLeft()
-          ? Either.left([v.value])
+          ? EitherConstructor.left([v.value])
           : (v.chain(v => res.map(res => [...res, v])) as Either<
               Array<unknown>,
               Array<unknown>
             >);
       },
-      Either.right<Array<unknown>, Array<unknown>>([])
+      EitherConstructor.right<Array<unknown>, Array<unknown>>([])
     );
   }
 
@@ -340,22 +340,29 @@ export default class Either<L, R> implements Monad<R> {
   }
 
   static right<L, T>(v: T) {
-    return new Either<L, T>(EitherType.Right, v);
+    return new EitherConstructor<L, T, EitherType.Right>(EitherType.Right, v);
   }
 
   static left<T, R>(v: T) {
-    return new Either<T, R>(EitherType.Left, v);
+    return new EitherConstructor<T, R, EitherType.Left>(EitherType.Left, v);
   }
 
   constructor(type: EitherType.Left, v: L);
   constructor(type: EitherType.Right, v: R);
-  constructor(public readonly type: EitherType, public readonly value: L | R) {}
+  constructor(
+    public readonly type: T,
+    public readonly value: T extends EitherType.Left 
+      ? L 
+      : T extends EitherType.Right
+        ? R
+        : L | R
+  ) {}
 
-  isLeft() {
+  isLeft(): this is EitherConstructor<L, R, EitherType.Left> {
     return this.type === EitherType.Left;
   }
 
-  isRight() {
+  isRight(): this is EitherConstructor<L, R, EitherType.Right> {
     return this.type === EitherType.Right;
   }
 
@@ -363,45 +370,45 @@ export default class Either<L, R> implements Monad<R> {
     return this.chain(x => x);
   }
 
-  mapRight<T>(f: (r: R) => T): Either<L, T> {
+  mapRight<T>(this: Either<L, R>, f: (r: R) => T): Either<L, T> {
     return this.map(f);
   }
 
-  mapLeft<T>(f: (l: L) => T): Either<T, R> {
+  mapLeft<T>(this: Either<L, R>, f: (l: L) => T): Either<T, R> {
     if (this.isLeft()) {
-      return Either.left<T, R>(f(this.value as L));
+      return EitherConstructor.left<T, R>(f(this.value));
     }
-    return Either.right<T, R>(this.value as R);
+    return EitherConstructor.right<T, R>(this.value);
   }
 
-  map<T>(f: (r: R) => T): Either<L, T> {
+  map<T>(this: Either<L, R>, f: (r: R) => T): Either<L, T> {
     if (this.isLeft()) {
-      return Either.left<L, T>(this.value as L);
+      return EitherConstructor.left<L, T>(this.value);
     }
-    return Either.right<L, T>(f(this.value as R));
+    return EitherConstructor.right<L, T>(f(this.value));
   }
 
-  asyncMap<T>(f: (r: R) => Promise<T>): Promise<Either<L, T>> {
+  asyncMap<T>(this: Either<L, R>, f: (r: R) => Promise<T>): Promise<Either<L, T>> {
     if (this.isLeft()) {
-      return Promise.resolve(Either.left<L, T>(this.value as L));
+      return Promise.resolve(EitherConstructor.left<L, T>(this.value));
     }
-    return f(this.value as R).then(v => Either.right<L, T>(v));
+    return f(this.value).then(v => EitherConstructor.right<L, T>(v));
   }
 
   apply<A, B>(this: Either<L, (a: A) => B>, arg: Either<L, A>): Either<L, B>;
   apply<A, B>(this: Either<L, A>, fn: Either<L, (a: A) => B>): Either<L, B>;
   apply<A, B>(this: Either<L, A> | Either<L, (a: A) => B>, argOrFn: Either<L, A> | Either<L, (a: A) => B>): Either<L, B> {
     if (this.isLeft()) {
-      return Either.left<L, B>(this.value as L);
+      return EitherConstructor.left<L, B>(this.value);
     }
     if (argOrFn.isLeft()) {
-      return Either.left<L, B>(argOrFn.value as L);
+      return EitherConstructor.left<L, B>(argOrFn.value);
     }
     if (isWrappedFunction(this)) {
-      return (argOrFn as Either<L, A>).map(this.value as (a: A) => B);
+      return (argOrFn as Either<L, A>).map(this.value);
     }
     if (isWrappedFunction(argOrFn)) {
-      return (argOrFn as Either<L, (a: A) => B>).apply(this as Either<L, A>);
+      return (argOrFn as Either<L, (a: A) => B>).apply(this);
     }
     throw new Error("Some of the arguments should be a function");
   }
@@ -421,10 +428,10 @@ export default class Either<L, R> implements Monad<R> {
       | Either<L, (a: Promise<A> | A) => Promise<B>>
   ): Promise<Either<L, B>> {
     if (this.isLeft()) {
-      return Promise.resolve(Either.left<L, B>(this.value as L));
+      return Promise.resolve(EitherConstructor.left<L, B>(this.value));
     }
     if (argOrFn.isLeft()) {
-      return Promise.resolve(Either.left<L, B>(argOrFn.value as L));
+      return Promise.resolve(EitherConstructor.left<L, B>(argOrFn.value));
     }
     if (isWrappedFunction(this)) {
       return (argOrFn as Either<L, Promise<A>>).asyncMap(this.value as (
@@ -439,19 +446,29 @@ export default class Either<L, R> implements Monad<R> {
     throw new Error("Some of the arguments should be a function");
   }
 
-  chain<A, B>(f: (r: R) => Either<A, B>): Either<A | L, B> {
+  chain<A, B>(this: Either<L, R>, f: (r: R) => Either<A, B>): Either<A | L, B> {
     if (this.isLeft()) {
-      return Either.left<L, B>(this.value as L);
+      return EitherConstructor.left<L, B>(this.value);
     }
-    return f(this.value as R);
+    return f(this.value);
   }
 
   asyncChain<A, B>(
+    this: Either<L, R>,
     f: (r: R) => Promise<Either<A, B>>
   ): Promise<Either<A | L, B>> {
     if (this.isLeft()) {
-      return Promise.resolve(Either.left<L, B>(this.value as L));
+      return Promise.resolve(EitherConstructor.left<L, B>(this.value));
     }
-    return f(this.value as R);
+    return f(this.value);
   }
 }
+
+export const mergeInOne = EitherConstructor.mergeInOne;
+export const merge = EitherConstructor.merge;
+export const mergeInMany = EitherConstructor.mergeInMany;
+export const from = EitherConstructor.from;
+export const right = EitherConstructor.right;
+export const left = EitherConstructor.left;
+
+export type Either<L, R> = EitherConstructor<L, R, EitherType.Right> | EitherConstructor<L, R, EitherType.Left>
