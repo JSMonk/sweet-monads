@@ -157,6 +157,7 @@ export default class Either<L, R> implements Monad<R> {
     L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10,
     [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]
   >;
+  static mergeInOne<L, R>(either: Array<Either<L, R>>): Either<L, R[]>;
   static mergeInOne(eithers: Array<Either<unknown, unknown>>) {
     return eithers.reduce(
       (res: Either<unknown, Array<unknown>>, v) =>
@@ -315,6 +316,7 @@ export default class Either<L, R> implements Monad<R> {
     Array<L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10>,
     [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]
   >;
+  static mergeInMany<L, R>(either: Array<Either<L, R>>): Either<L[], R[]>;
   static mergeInMany(eithers: Array<Either<unknown, unknown>>) {
     return eithers.reduce(
       (

@@ -76,6 +76,7 @@ export default class Maybe<T> implements Monad<T> {
       Maybe<V10>
     ]
   ): Maybe<[V1, V2, V3, V4, V5, V6, V7, V8, V9, V10]>;
+  static merge<T>(maybies: Array<Maybe<T>>): Maybe<T[]>;
   static merge(maybies: Array<Maybe<unknown>>) {
     return maybies.reduce(
       (res: Maybe<Array<unknown>>, v) =>
