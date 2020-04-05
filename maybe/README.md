@@ -18,12 +18,12 @@
 > npm install @sweet-monads/maybe
 
 ```typescript
-import Maybe from "@sweet-monads/maybe";
+import { Maybe, just, none } from "@sweet-monads/maybe";
 
 type User = { email: string, password: string };
 
 function getUser(id: number): Maybe<User> {
-  return Maybe.just({ email: "test@gmail.com", password: "test" });
+  return just({ email: "test@gmail.com", password: "test" });
 }
 
 // Maybe<string>
@@ -32,10 +32,11 @@ const user = getUser(1).map(({ email }) => email);
 
 ## API
 
-- [`Maybe.merge`](#maybemerge)
-- [`Maybe.none`](#maybenone)
-- [`Maybe.just`](#maybejust)
-- [`Maybe.from`](#maybefrom)
+- [`merge`](#merge)
+- [`none`](#none)
+- [`just`](#just)
+- [`from`](#from)
+- [`isMaybe`](#ismaybe)
 - [`Maybe#isNone`](#maybeisnone)
 - [`Maybe#isJust`](#maybeisjust)
 - [`Maybe#join`](#maybejoin)
@@ -47,7 +48,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`Maybe#asyncChain`](#maybeasyncchain)
 - [Helpers](#helpers)
 
-#### `Maybe.merge`
+#### `merge`
 ```typescript
 function merge<V1>(values: [Maybe<V1>]): Maybe<[V1]>;
 function merge<V1, V2>(values: [Maybe<V1>, Maybe<V2>]): Maybe<[V1, V2]>;
@@ -59,39 +60,39 @@ function merge<V1, V2, V3>(values: [Maybe<V1>, Maybe<V2>, Maybe<V3>]): Maybe<[V1
 
 Example:
 ```typescript
-const v1 = Maybe.just(2); // Maybe<number>.Just
-const v2 = Maybe.just("test"); // Maybe<string>.Just
-const v3 = Maybe.none<boolean>(); // Maybe<boolean>.None
+const v1 = just(2); // Maybe<number>.Just
+const v2 = just("test"); // Maybe<string>.Just
+const v3 = none<boolean>(); // Maybe<boolean>.None
 
-Maybe.merge([v1, v2]) // Maybe<[number, string]>.Just
-Maybe.merge([v1, v2, v3]) // Maybe<[number, string, boolean]>.None
+merge([v1, v2]) // Maybe<[number, string]>.Just
+merge([v1, v2, v3]) // Maybe<[number, string, boolean]>.None
 ```
 
-#### `Maybe.none`
+#### `none`
 ```typescript
 function none<T>(): Maybe<T>;
 ```
 - Returns `Maybe` with `None` state
 Example:
 ```typescript
-const v1 = Maybe.none(); // Maybe<unknown>.None
-const v2 = Maybe.none<number>(); // Maybe<number>.None
+const v1 = none(); // Maybe<unknown>.None
+const v2 = none<number>(); // Maybe<number>.None
 ```
 
-#### `Maybe.just`
+#### `just`
 ```typescript
 function just<T>(value: T): Maybe<T>;
 ```
 - Returns `Maybe` with `Just` state which contain value with `T` type.
 Example:
 ```typescript
-const v1 = Maybe.just(2); // Maybe<number>.Just
-const v2 = Maybe.just<2>(2); // Maybe<2>.Just
+const v1 = just(2); // Maybe<number>.Just
+const v2 = just<2>(2); // Maybe<2>.Just
 ```
 
-#### `Maybe.from`
+#### `from`
 
-The same as [`Maybe.just`](#maybejust)
+The same as [`just`](#just)
 
 ```typescript
 function from<T>(value: T): Maybe<T>;
@@ -99,8 +100,22 @@ function from<T>(value: T): Maybe<T>;
 - Returns `Maybe` with `Just` state which contain value with `T` type.
 Example:
 ```typescript
-const v1 = Maybe.from(2); // Maybe<number>.Just
-const v2 = Maybe.from<2>(2); // Maybe<2>.Just
+const v1 = from(2); // Maybe<number>.Just
+const v2 = from<2>(2); // Maybe<2>.Just
+```
+
+#### `isMaybe`
+
+```typescript
+function isMaybe<T>(value: unknown | Maybe<T>): value is Maybe<T>;
+``` 
+- Returns `boolean` if given `value` is instance of Maybe constructor.
+Example:
+```typescript
+const value: unknown = 2;
+if  (isMaybe(value)) {
+  // ... value is Maybe<unknown> at this block
+}
 ```
 
 #### `Maybe#isNone`
@@ -110,8 +125,8 @@ function isNone(): boolean;
 - Returns `true` if state of `Maybe` is `None` otherwise `false`
 Example:
 ```typescript
-const v1 = Maybe.just(2);
-const v2 = Maybe.none();
+const v1 = just(2);
+const v2 = none();
 
 v1.isNone() // false
 v2.isNone() // true
@@ -124,8 +139,8 @@ function isJust(): boolean;
 - Returns `true` if state of `Maybe` is `Just` otherwise `false`
 Example:
 ```typescript
-const v1 = Maybe.just(2);
-const v2 = Maybe.none();
+const v1 = just(2);
+const v2 = none();
 
 v1.isJust() // true
 v2.isJust() // false
@@ -139,9 +154,9 @@ function join<V>(this: Maybe<Maybe<V>>): Maybe<V>;
 - Returns unwrapped `Maybe` - if current `Maybe` has `Just` state and inner `Maybe` has `Just` state then returns inner `Maybe` `Just`, otherwise returns `Maybe` `None`.
 Example:
 ```typescript
-const v1 = Maybe.just(Maybe.just(2));
-const v2 = Maybe.just(Maybe.none());
-const v3 = Maybe.none<Maybe<number>>();
+const v1 = just(just(2));
+const v2 = just(none());
+const v3 = none<Maybe<number>>();
 
 v1.join() // Maybe.Just with value 2
 v2.join() // Maybe.None without value
@@ -155,8 +170,8 @@ function map<Val, NewVal>(fn: (val: Val) => NewVal): Maybe<NewVal>;
 - Returns mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` otherwise `None`
 Example:
 ```typescript
-const v1 = Maybe.just(2);
-const v2 = Maybe.none<number>();
+const v1 = just(2);
+const v2 = none<number>();
 
 const newVal1 = v1.map(a => a.toString()); // Maybe<string>.Just with value "2"
 const newVal2 = v2.map(a => a.toString()); // Maybe<string>.None without value
@@ -169,8 +184,8 @@ function asyncMap<Val, NewVal>(fn: (val: Val) => Promise<NewVal>): Promise<Maybe
 - Returns `Promise` with mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` otherwise `None`
 Example:
 ```typescript
-const v1 = Maybe.just(2);
-const v2 = Maybe.none<number>();
+const v1 = just(2);
+const v2 = none<number>();
 
 // Promise<Maybe<string>.Just> with value "2"
 const newVal1 = v1.asyncMap(a => Promise.resolve(a.toString())); 
@@ -188,10 +203,10 @@ function apply<A, B>(this: Maybe<A>, fn: Maybe<(a: A) => B>): Maybe<B>;
 - Returns mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` otherwise `None`
 Example:
 ```typescript
-const v1 = Maybe.just(2);
-const v2 = Maybe.none<number>();
-const fn1 = Maybe.just((a: number) => a * 2);
-const fn2 = Maybe.none<(a: number) => number>();
+const v1 = just(2);
+const v2 = none<number>();
+const fn1 = just((a: number) => a * 2);
+const fn2 = none<(a: number) => number>();
 
 const newVal1 = fn1.apply(v1); // Maybe<number>.Just with value 4 
 const newVal2 = fn1.apply(v2); // Maybe<number>.None without value
@@ -212,10 +227,10 @@ function asyncApply<A, B>(this: Maybe<Promise<A> | A>, fn: Maybe<(a: Promise<A> 
 - Returns `Promise` with mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` otherwise `None`
 Example:
 ```typescript
-const v1 = Maybe.just(2);
-const v2 = Maybe.none<number>();
-const fn1 = Maybe.just((a: number) => Promise,resolve(a * 2));
-const fn2 = Maybe.none<(a: number) => Promise<number>>();
+const v1 = just(2);
+const v2 = none<number>();
+const fn1 = just((a: number) => Promise,resolve(a * 2));
+const fn2 = none<(a: number) => Promise<number>>();
 
 const newVal1 = fn1.apply(v1); // Promise<Maybe<number>.Just> with value 4 
 const newVal2 = fn1.apply(v2); // Promise<Maybe<number>.None> without value
@@ -230,13 +245,13 @@ function chain<Val, NewVal>(fn: (val: Val) => Maybe<NewVal>): Maybe<NewVal>;
 - Returns mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` and returned by `fn` value is `Just` too otherwise `None`
 Example:
 ```typescript
-const v1 = Maybe.just(2);
-const v2 = Maybe.none<number>();
+const v1 = just(2);
+const v2 = none<number>();
 
-const newVal1 = v1.chain(a => Maybe.just(a.toString())); // Maybe<string>.Just with value "2"
-const newVal2 = v1.chain(a => Maybe.none()); // Maybe<string>.None without value
-const newVal3 = v2.chain(a => Maybe.just(a.toString())); // Maybe<string>.None without value
-const newVal4 = v2.chain(a => Maybe.none()); // Maybe<string>.None without value
+const newVal1 = v1.chain(a => just(a.toString())); // Maybe<string>.Just with value "2"
+const newVal2 = v1.chain(a => none()); // Maybe<string>.None without value
+const newVal3 = v2.chain(a => just(a.toString())); // Maybe<string>.None without value
+const newVal4 = v2.chain(a => none()); // Maybe<string>.None without value
 ```
 
 ##### `Maybe#asyncChain`
@@ -246,23 +261,23 @@ function asyncChain<Val, NewVal>(fn: (val: Val) => Promise<Maybe<NewVal>>): Prom
 - Returns `Promise` with mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` otherwise `None`
 Example:
 ```typescript
-const v1 = Maybe.just(2);
-const v2 = Maybe.none<number>();
+const v1 = just(2);
+const v2 = none<number>();
 // Promise<Maybe<string>>.Just with value "2"
-const newVal1 = v1.asyncChain(a => Promise.resolve(Maybe.just(a.toString())));
+const newVal1 = v1.asyncChain(a => Promise.resolve(just(a.toString())));
 // Promise<Maybe<string>>.None without value
-const newVal2 = v1.asyncChain(a => Promise.resolve(Maybe.none()));
+const newVal2 = v1.asyncChain(a => Promise.resolve(none()));
 // Promise<Maybe<string>>.None without value
-const newVal3 = v2.asyncChain(a => Promise.resolve(Maybe.just(a.toString())));
+const newVal3 = v2.asyncChain(a => Promise.resolve(just(a.toString())));
 // Promise<Maybe<string>>.None without value
-const newVal4 = v2.asyncChain(a => Promise.resolve(Maybe.none()));
+const newVal4 = v2.asyncChain(a => Promise.resolve(none()));
 ```
 
 #### Helpers
 
 ```typescript
 // Value from Maybe instance
-const { value } = Maybe.just(2); // number | undefined
+const { value } = just(2); // number | undefined
 ```
 
 ## License

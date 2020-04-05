@@ -355,14 +355,14 @@ function filterMap<I, T>(predicateMapper: (i: I) => T | undefined, withoutMaybe:
 ```
 - `predicateMapper: (i: I) => Maybe<T> | T | undefined` - function which must return an `Maybe<T>`or `T | undefined` if `withoutMaybe` is `true`.
 - `withoutMaybe` (default `false`) - regulate return type of `predicateMapper`, if `true` result should be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
-- Returns `LazyIterator` which calls `predicateMapper` on each element. If `predicateMapper` returns `Maybe.just(element)`, then that element is returned. If `predicateMapper` returns `Maybe.none`, it will try again, and call `predicateMapper` on the next element, seeing if it will return `Maybe.just`.
+- Returns `LazyIterator` which calls `predicateMapper` on each element. If `predicateMapper` returns `just(element)`, then that element is returned. If `predicateMapper` returns `none`, it will try again, and call `predicateMapper` on the next element, seeing if it will return `just`.
 
 Example:
 
 ```typescript
 const iterator = LazyIterator.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9]);
-const filtered1 = iterator.filterMap(i => i % 2 ? Maybe.just(i * i) : Maybe.none()); // LazyIterator<number>
-const filtered2 = iterator.filterMap(i => i % 2 ? Maybe.just(i * i) : Maybe.none(), false); // LazyIterator<number>
+const filtered1 = iterator.filterMap(i => i % 2 ? just(i * i) : none()); // LazyIterator<number>
+const filtered2 = iterator.filterMap(i => i % 2 ? just(i * i) : none(), false); // LazyIterator<number>
 const filtered3 = iterator.filterMap(i => i % 2 ? i * i : undefined, true); // LazyIterator<number>
 
 // filtered1 <-> filtered2 <-> filtered2 <-> [1, 9, 25, 49, 81]
@@ -418,11 +418,11 @@ Example:
 ```typescript
 const iterator = LazyIterator.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-const two1 = iterator.find(i => i === 2 ? Maybe.just(i) : Maybe.none()); // Maybe<number>.Just
-const two2 = iterator.find(i => i === 2 ? Maybe.just(i) : Maybe.none(), false); // Maybe<number>.Just
+const two1 = iterator.find(i => i === 2 ? just(i) : none()); // Maybe<number>.Just
+const two2 = iterator.find(i => i === 2 ? just(i) : none(), false); // Maybe<number>.Just
 const two3 = iterator.find(i => i === 2 ? i : undefined, true); // 2
-const two4 = iterator.find(i => i === 10 ? Maybe.just(i) : Maybe.none()); // Maybe<number>.None
-const two5 = iterator.find(i => i === 10 ? Maybe.just(i) : Maybe.none(), false); // Maybe<number>.None
+const two4 = iterator.find(i => i === 10 ? just(i) : none()); // Maybe<number>.None
+const two5 = iterator.find(i => i === 10 ? just(i) : none(), false); // Maybe<number>.None
 const two6 = iterator.find(i => i === 10 ? i : undefined, true); // undefined 
 ```
 

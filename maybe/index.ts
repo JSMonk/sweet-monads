@@ -11,7 +11,8 @@ function isWrappedFunction<A, B>(
   return typeof m.value === "function";
 }
 
-export default class Maybe<T> implements Monad<T> {
+export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
+  implements Monad<T> {
   static merge<V1>(values: [Maybe<V1>]): Maybe<[V1]>;
   static merge<V1, V2>(values: [Maybe<V1>, Maybe<V2>]): Maybe<[V1, V2]>;
   static merge<V1, V2, V3>(
@@ -81,7 +82,7 @@ export default class Maybe<T> implements Monad<T> {
     return maybies.reduce(
       (res: Maybe<Array<unknown>>, v) =>
         v.chain(v => res.map(res => res.concat([v]))),
-      Maybe.just<Array<unknown>>([])
+      MaybeConstructor.just<Array<unknown>>([])
     );
   }
 
@@ -89,27 +90,25 @@ export default class Maybe<T> implements Monad<T> {
     return this.just(v);
   }
 
-  static none<T>() {
-    return new Maybe<T>(MaybeState.None);
+  static none<T>(): Maybe<T> {
+    return new MaybeConstructor<T, MaybeState.None>(MaybeState.None, undefined);
   }
 
-  static just<T>(v: T) {
-    return new Maybe<T>(MaybeState.Just, v);
+  static just<T>(v: T): Maybe<T> {
+    return new MaybeConstructor<T, MaybeState.Just>(MaybeState.Just, v);
   }
 
-  private constructor(type: MaybeState.None);
-  private constructor(type: MaybeState.Just, v: T);
   private constructor(
-    private readonly state: MaybeState,
-    public readonly value?: T
+    private readonly type: S,
+    public readonly value: S extends MaybeState.Just ? T : undefined
   ) {}
 
-  isNone() {
-    return this.state === MaybeState.None;
+  isNone(): this is MaybeConstructor<T, MaybeState.None> {
+    return this.type === MaybeState.None;
   }
 
-  isJust() {
-    return this.state === MaybeState.Just;
+  isJust(): this is MaybeConstructor<T, MaybeState.Just> {
+    return this.type === MaybeState.Just;
   }
 
   join<V>(this: Maybe<Maybe<V>>): Maybe<V> {
@@ -118,16 +117,16 @@ export default class Maybe<T> implements Monad<T> {
 
   map<V>(f: (r: T) => V): Maybe<V> {
     if (this.isJust()) {
-      return Maybe.just<V>(f(this.value as T));
+      return MaybeConstructor.just<V>(f(this.value));
     }
-    return Maybe.none<V>();
+    return MaybeConstructor.none<V>();
   }
 
   asyncMap<V>(f: (r: T) => Promise<V>): Promise<Maybe<V>> {
     if (this.isNone()) {
-      return Promise.resolve(Maybe.none<V>());
+      return Promise.resolve(MaybeConstructor.none<V>());
     }
-    return f(this.value as T).then(v => Maybe.just<V>(v));
+    return f(this.value as T).then(v => MaybeConstructor.just<V>(v));
   }
 
   apply<A, B>(this: Maybe<(a: A) => B>, arg: Maybe<A>): Maybe<B>;
@@ -137,7 +136,7 @@ export default class Maybe<T> implements Monad<T> {
     argOrFn: Maybe<A> | Maybe<(a: A) => B>
   ): Maybe<B> {
     if (this.isNone() || argOrFn.isNone()) {
-      return Maybe.none<B>();
+      return MaybeConstructor.none<B>();
     }
     if (isWrappedFunction(this)) {
       return (argOrFn as Maybe<A>).map(this.value as (a: A) => B);
@@ -161,7 +160,7 @@ export default class Maybe<T> implements Monad<T> {
     argOrFn: Maybe<Promise<A>> | Maybe<(a: Promise<A> | A) => Promise<B>>
   ): Promise<Maybe<B>> {
     if (this.isNone() || argOrFn.isNone()) {
-      return Promise.resolve(Maybe.none<B>());
+      return Promise.resolve(MaybeConstructor.none<B>());
     }
     if (isWrappedFunction(this)) {
       return (argOrFn as Maybe<Promise<A>>).asyncMap(this.value as (
@@ -178,15 +177,24 @@ export default class Maybe<T> implements Monad<T> {
 
   chain<V>(f: (r: T) => Maybe<V>): Maybe<V> {
     if (this.isNone()) {
-      return Maybe.none<V>();
+      return MaybeConstructor.none<V>();
     }
     return f(this.value as T);
   }
 
   asyncChain<V>(f: (r: T) => Promise<Maybe<V>>): Promise<Maybe<V>> {
     if (this.isNone()) {
-      return Promise.resolve(Maybe.none<V>());
+      return Promise.resolve(MaybeConstructor.none<V>());
     }
     return f(this.value as T);
   }
 }
+
+export type Maybe<T> =
+  | MaybeConstructor<T, MaybeState.Just>
+  | MaybeConstructor<T, MaybeState.None>;
+
+export const { merge, just, none, from } = MaybeConstructor;
+
+export const isMaybe = <T>(value: unknown | Maybe<T>): value is Maybe<T> =>
+  value instanceof MaybeConstructor;

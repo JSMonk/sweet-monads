@@ -1,4 +1,4 @@
-import Maybe from "@sweet-monads/maybe";
+import { Maybe, none, just, isMaybe } from "@sweet-monads/maybe";
 
 type IteratorCreator<T> = () => Iterator<T>;
 type FromIterator<I> = () => Iterable<I>;
@@ -131,7 +131,7 @@ export default class LazyIterator<I> implements Iterable<I> {
     if (withoutMaybe) {
       return first.value;
     }
-    return first.done ? Maybe.none<I>() : Maybe.just<I>(first.value);
+    return first.done ? none<I>() : just<I>(first.value);
   }
 
   filter<T extends I>(predicate: (i: I) => i is T): LazyIterator<T>;
@@ -166,12 +166,12 @@ export default class LazyIterator<I> implements Iterable<I> {
       for (const item of oldIterator) {
         const maybeItem = predicateMapper(item);
         if (
-          (maybeItem instanceof Maybe && maybeItem.isNone()) ||
+          (isMaybe(maybeItem) && maybeItem.isNone()) ||
           maybeItem === undefined
         ) {
           continue;
         }
-        yield maybeItem instanceof Maybe ? maybeItem.value : maybeItem;
+        yield isMaybe(maybeItem) ? maybeItem.value : maybeItem;
       }
     };
     return this[GENERATE_WITH](newIterator);
@@ -189,10 +189,10 @@ export default class LazyIterator<I> implements Iterable<I> {
   find(predicate: (i: I) => boolean, withoutMaybe = false) {
     for (const item of this) {
       if (predicate(item)) {
-        return withoutMaybe ? item : Maybe.just<I>(item);
+        return withoutMaybe ? item : just<I>(item);
       }
     }
-    return withoutMaybe ? undefined : Maybe.none<I>();
+    return withoutMaybe ? undefined : none<I>();
   }
 
   findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined): Maybe<I>;
@@ -211,14 +211,14 @@ export default class LazyIterator<I> implements Iterable<I> {
     for (const item of this) {
       const maybeItem = predicateMapper(item);
       if (
-        (maybeItem instanceof Maybe && maybeItem.isNone()) ||
+        (isMaybe(maybeItem) && maybeItem.isNone()) ||
         maybeItem === undefined
       ) {
         continue;
       }
       return maybeItem;
     }
-    return withoutMaybe ? undefined : Maybe.none<I>();
+    return withoutMaybe ? undefined : none<I>();
   }
 
   flatMap<N>(fn: (i: I) => LazyIterator<N>): LazyIterator<N> {
@@ -255,7 +255,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   last(withoutMaybe: false): Maybe<I>;
   last(withoutMaybe: true): I | undefined;
   last(withoutMaybe = false) {
-    const result = this.fold((_, a) => Maybe.just<I>(a), Maybe.none<I>());
+    const result = this.fold((_, a) => just<I>(a), none<I>());
     return withoutMaybe ? result.value : result;
   }
 
@@ -275,12 +275,12 @@ export default class LazyIterator<I> implements Iterable<I> {
   max(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
     const res = this.fold(
       (max, a) =>
-        Maybe.just<I>(
+        just<I>(
           max.isNone() || getValue(a) >= getValue(max.value)
             ? a
             : (max.value as I)
         ),
-      Maybe.none<I>()
+      none<I>()
     );
     return withoutMaybe ? res.value : res;
   }
@@ -291,12 +291,12 @@ export default class LazyIterator<I> implements Iterable<I> {
   min(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
     const res = this.fold(
       (max, a) =>
-        Maybe.just<I>(
+        just<I>(
           max.isNone() || getValue(a) < getValue(max.value)
             ? a
             : (max.value as I)
         ),
-      Maybe.none<I>()
+      none<I>()
     );
     return withoutMaybe ? res.value : res;
   }
@@ -307,10 +307,10 @@ export default class LazyIterator<I> implements Iterable<I> {
   nth(n: number, withoutMaybe = false) {
     for (const item of this) {
       if (n-- <= 0) {
-        return withoutMaybe ? item : Maybe.just(item);
+        return withoutMaybe ? item : just(item);
       }
     }
-    return withoutMaybe ? undefined : Maybe.none();
+    return withoutMaybe ? undefined : none();
   }
 
   partion<T extends I>(predicate: (i: I) => i is T): [T[], I[]];
@@ -338,11 +338,11 @@ export default class LazyIterator<I> implements Iterable<I> {
     let index = 0;
     for (const item of this) {
       if (predicate(item)) {
-        return withoutMaybe ? index : Maybe.just(index);
+        return withoutMaybe ? index : just(index);
       }
       index++;
     }
-    return withoutMaybe ? undefined : Maybe.none();
+    return withoutMaybe ? undefined : none();
   }
 
   product(this: LazyIterator<number>) {
