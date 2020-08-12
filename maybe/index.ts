@@ -1,4 +1,4 @@
-import { Monad } from "@sweet-monads/interfaces";
+import { Monad, Alternative } from "@sweet-monads/interfaces";
 
 const enum MaybeState {
   Just = "Just",
@@ -12,7 +12,7 @@ function isWrappedFunction<A, B>(
 }
 
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
-  implements Monad<T> {
+  implements Monad<T>, Alternative<T> {
   static merge<V1>(values: [Maybe<V1>]): Maybe<[V1]>;
   static merge<V1, V2>(values: [Maybe<V1>, Maybe<V2>]): Maybe<[V1, V2]>;
   static merge<V1, V2, V3>(
@@ -187,6 +187,10 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
       return Promise.resolve(MaybeConstructor.none<V>());
     }
     return f(this.value as T);
+  }
+
+  or(x: Maybe<T>) {
+    return this.isNone() ? x : this as Maybe<T>;
   }
 }
 

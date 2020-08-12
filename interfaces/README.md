@@ -30,6 +30,7 @@ class Container<T> implements Functor<T> {
 ## Available Interfaces
 
 - [`Functor`](#functor)
+- [`Alternative`](#alternative)
 - [`Applicative`](#applicative)
 - [`Monad`](#monad)
 
@@ -75,6 +76,22 @@ declare function toString(x: number): string; // for all functions
 const f = new SomeFunctorImplementation<number>();
 
 expect( f.map(x => toString(twice(x))) ).toEqual( f.map(twice).map(toString) );
+```
+
+### Alternative
+
+https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus
+
+Several classes (Applicative, Monad) have "monoidal" subclasses, intended to model computations that support "failure" and "choice" (in some appropriate sense).
+The basic intuition is that `empty` represents some sort of "failure", and `or` represents a choice between alternatives. (However, this intuition does not fully capture the nuance possible; see the section on Laws below.) Of course, `or` should be associative and `empty` should be the identity element for it. Instances of Alternative must implement `empty` and `or`; some and many have default implementations but are included in the class since specialized implementations may be more efficient than the default.
+
+Current implementation is not fully port of `Alternative` from Haskell, because we don't make the interface an child interface of [`Applicative`](#applicative) and dropped `empty` static member for ability to implement `Alternative` for classes like `Either`.
+
+Methods:
+
+##### `Alternative#or`
+```typescript
+function or<T>(arg: Alternative<T>): Alternative<T>;
 ```
 
 ### Applicative

@@ -1,9 +1,9 @@
-import { Monad } from "@sweet-monads/interfaces";
+import { Monad, Alternative } from "@sweet-monads/interfaces";
 declare const enum MaybeState {
     Just = "Just",
     None = "None"
 }
-export default class MaybeConstructor<T, S extends MaybeState = MaybeState> implements Monad<T> {
+export default class MaybeConstructor<T, S extends MaybeState = MaybeState> implements Monad<T>, Alternative<T> {
     private readonly type;
     readonly value: S extends MaybeState.Just ? T : undefined;
     static merge<V1>(values: [Maybe<V1>]): Maybe<[V1]>;
@@ -32,6 +32,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
     asyncApply<A, B>(this: Maybe<Promise<A> | A>, fn: Maybe<(a: Promise<A> | A) => Promise<B>>): Promise<Maybe<B>>;
     chain<V>(f: (r: T) => Maybe<V>): Maybe<V>;
     asyncChain<V>(f: (r: T) => Promise<Maybe<V>>): Promise<Maybe<V>>;
+    or(x: Maybe<T>): Maybe<T>;
 }
 export declare type Maybe<T> = MaybeConstructor<T, MaybeState.Just> | MaybeConstructor<T, MaybeState.None>;
 export declare const merge: typeof MaybeConstructor.merge, just: typeof MaybeConstructor.just, none: typeof MaybeConstructor.none, from: typeof MaybeConstructor.from;

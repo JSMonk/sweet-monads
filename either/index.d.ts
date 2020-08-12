@@ -46,6 +46,7 @@ declare class EitherConstructor<L, R, T extends EitherType = EitherType> impleme
     asyncApply<A, B>(this: Either<L, Promise<A>>, fn: Either<L, Promise<(a: Promise<A> | A) => B>>): Promise<Either<L, B>>;
     chain<A, B>(f: (r: R) => Either<A, B>): Either<A | L, B>;
     asyncChain<A, B>(f: (r: R) => Promise<Either<A, B>>): Promise<Either<A | L, B>>;
+    or(x: Either<L, R>): Either<L, R>;
 }
 export declare type Either<L, R> = EitherConstructor<L, R, EitherType.Right> | EitherConstructor<L, R, EitherType.Left>;
 export declare const merge: typeof EitherConstructor.mergeInOne, mergeInOne: typeof EitherConstructor.mergeInOne, mergeInMany: typeof EitherConstructor.mergeInMany, left: typeof EitherConstructor.left, right: typeof EitherConstructor.right, from: typeof EitherConstructor.from;

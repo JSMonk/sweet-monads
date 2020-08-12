@@ -39,6 +39,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`isMaybe`](#ismaybe)
 - [`Maybe#isNone`](#maybeisnone)
 - [`Maybe#isJust`](#maybeisjust)
+- [`Maybe#or`](#maybeor)
 - [`Maybe#join`](#maybejoin)
 - [`Maybe#map`](#maybemap)
 - [`Maybe#asyncMap`](#maybeasyncmap)
@@ -144,6 +145,28 @@ const v2 = none();
 
 v1.isJust() // true
 v2.isJust() // false
+```
+
+#### `Maybe#or`
+```typescript
+function or<T>(x: Maybe<T>): Maybe<T>;
+```
+- Returns `Maybe<T>`. If state of `this` is `Just` then `this` will be returned otherwise `x` argument will be returned
+Example:
+```typescript
+const v1 = just(1);
+const v2 = none<number>();
+const v3 = none<number>();
+const v4 = just(4);
+
+v1.or(v2) // v1 will be returned
+v2.or(v1) // v1 will be returned
+v2.or(v3) // v3 will be returned
+v1.or(v4) // v1 will be returned
+
+v2.or(v3).or(v1) // v1 will be returned
+v2.or(v1).or(v3) // v1 will be returned
+v1.or(v2).or(v3) // v1 will be returned
 ```
 
 #### `Maybe#join`

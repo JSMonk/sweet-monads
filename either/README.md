@@ -41,6 +41,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`isEither`](#iseither)
 - [`Either#isLeft`](#eitherisleft)
 - [`Either#isRight`](#eitherisright)
+- [`Either#or`](#eitheror)
 - [`Either#join`](#eitherjoin)
 - [`Either#map`](#eithermap)
 - [`Either#mapRight`](#eithermapright)
@@ -149,6 +150,28 @@ const v2 = left(2);
 
 v1.isRight() // true
 v2.isRight() // false
+```
+
+#### `Either#or`
+```typescript
+function or<L, R>(x: Either<L, R>): Either<L, R>;
+```
+- Returns `Either<L, R>`. If state of `this` is `Right` then `this` will be returned otherwise `x` argument will be returned
+Example:
+```typescript
+const v1 = right<number, string>(2);
+const v2 = left<number, string>("Error 1");
+const v3 = left<number, string>("Error 2");
+const v4 = right<number, string>(3);
+
+v1.or(v2) // v1 will be returned
+v2.or(v1) // v1 will be returned
+v2.or(v3) // v3 will be returned
+v1.or(v4) // v1 will be returned
+
+v2.or(v3).or(v1) // v1 will be returned
+v2.or(v1).or(v3) // v1 will be returned
+v1.or(v2).or(v3) // v1 will be returned
 ```
 
 #### `Either#join`

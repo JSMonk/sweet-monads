@@ -1,4 +1,4 @@
-import { Monad } from "@sweet-monads/interfaces";
+import { Monad, Alternative } from "@sweet-monads/interfaces";
 
 const enum EitherType {
   Left = "Left",
@@ -463,6 +463,10 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
       return Promise.resolve(EitherConstructor.left<L, B>(this.value));
     }
     return f(this.value as R);
+  }
+
+  or(x: Either<L, R>) {
+    return this.isLeft() ? x : this as Either<L, R>;
   }
 }
 
