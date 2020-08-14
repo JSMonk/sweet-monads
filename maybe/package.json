@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/maybe",
-  "version": "2.1.2",
+  "version": "2.1.4",
   "description": "",
   "main": "index.js",
   "types": "index.d.ts",

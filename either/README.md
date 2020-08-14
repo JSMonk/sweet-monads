@@ -159,10 +159,10 @@ function or<L, R>(x: Either<L, R>): Either<L, R>;
 - Returns `Either<L, R>`. If state of `this` is `Right` then `this` will be returned otherwise `x` argument will be returned
 Example:
 ```typescript
-const v1 = right<number, string>(2);
-const v2 = left<number, string>("Error 1");
-const v3 = left<number, string>("Error 2");
-const v4 = right<number, string>(3);
+const v1 = right<string, number>(2);
+const v2 = left<string, number>("Error 1");
+const v3 = left<string, number>("Error 2");
+const v4 = right<string, number>(3);
 
 v1.or(v2) // v1 will be returned
 v2.or(v1) // v1 will be returned
