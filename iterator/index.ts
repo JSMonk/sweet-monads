@@ -27,7 +27,9 @@ export default class LazyIterator<I> implements Iterable<I> {
     fromIterator =
       fromIterator !== undefined
         ? fromIterator
-        : (iterable as IterableWithFromIterator<I>).fromIterator;
+        : "fromIterator" in iterable
+        ? iterable.fromIterator
+        : defaultFromIterator;
     return new LazyIterator<I>(
       iterable[Symbol.iterator].bind(iterable),
       fromIterator
@@ -158,12 +160,11 @@ export default class LazyIterator<I> implements Iterable<I> {
       for (const item of oldIterator) {
         const maybeItem = predicateMapper(item);
         if (
-          (isMaybe(maybeItem) && maybeItem.isNone()) ||
-          maybeItem === undefined
+          (isMaybe(maybeItem) && maybeItem.isJust()) ||
+          (!isMaybe(maybeItem) && maybeItem !== undefined)
         ) {
-          continue;
+          yield isMaybe(maybeItem) ? maybeItem.value : maybeItem;
         }
-        yield isMaybe(maybeItem) ? maybeItem.value : maybeItem;
       }
     });
   }
@@ -207,7 +208,13 @@ export default class LazyIterator<I> implements Iterable<I> {
       ) {
         continue;
       }
-      return maybeItem;
+      return withoutMaybe
+        ? isMaybe(maybeItem)
+          ? maybeItem.value
+          : maybeItem
+        : isMaybe(maybeItem)
+        ? maybeItem
+        : just(maybeItem);
     }
     return withoutMaybe ? undefined : none<I>();
   }
@@ -463,8 +470,7 @@ export default class LazyIterator<I> implements Iterable<I> {
         const m = mask[index++];
         if (m === undefined) {
           return;
-        }
-        if (mask) {
+        } else if (m) {
           yield item;
         }
       }
