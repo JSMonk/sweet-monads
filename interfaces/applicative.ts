@@ -1,4 +1,4 @@
-import { Functor } from "./functor";
+import type { Functor } from "./functor";
 
 export interface Applicative<I> extends Functor<I> {
   apply<A, B>(
