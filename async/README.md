@@ -1,4 +1,4 @@
-# @sweet-monads/either
+# @sweet-monads/async
 
 Package for better developer experience with `Promise` and [`@sweet-monad/interfaces/Monad`](https://github.com/JSMonk/sweet-monads/tree/master/interfaces#monad)
 
