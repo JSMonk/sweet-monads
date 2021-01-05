@@ -41,9 +41,9 @@ const fn = () =>
 Example:
 ```typescript
 declare function getUser(email: string): Promise<Either<UserNotFoundError, User>>;
-declare function arePasswordsMatched(password: string, user: User): Promise<Either<WrongCredentialsError, boolean>>;
+declare function isUserWithPassword(password: string, user: User): Promise<Either<WrongCredentialsError, void>>;
 
-// result is Promise<Either<UserNotFoundError | WrongCredentialsError, boolean>>
+// result is Promise<Either<UserNotFoundError | WrongCredentialsError, void>>
 const result = getUser("some@email.com")
   .then(chain(user => arePasswordsMatched("some password", user.password)));
 ```
