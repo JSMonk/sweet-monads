@@ -479,7 +479,7 @@ export default class LazyIterator<I> implements Iterable<I> {
         if (m === undefined) {
           return;
         }
-        if (mask) {
+        if (m) {
           yield item;
         }
       }

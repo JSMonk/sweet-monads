@@ -1,6 +1,6 @@
 import * as fc from "fast-check";
-import Maybe from "../maybe/index";
-import LazyIterator from "../iterator/index";
+import Maybe from "@sweet-monads/maybe";
+import LazyIterator from "@sweet-monads/iterator";
 
 describe("Iterator", () => {
   describe("all", () => {
@@ -628,7 +628,7 @@ describe("Iterator", () => {
               res.concat(
                 arr.filter((_, i2) => i1 !== i2).map(el2 => [el1, el2])
               ),
-            []
+            [] as Array<[number, number]>
           );
           expect([...permutated1]).toEqual(permutated2);
         })
@@ -686,7 +686,7 @@ describe("Iterator", () => {
           const unique1 = iterator.unique();
           const unique2 = arr.reduce(
             (res, el) => (res.includes(el) ? res : [...res, el]),
-            []
+            [] as number[]
           );
           expect([...unique1]).toEqual(unique2);
         })

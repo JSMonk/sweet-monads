@@ -123,10 +123,10 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
   }
 
   asyncMap<V>(f: (r: T) => Promise<V>): Promise<Maybe<V>> {
-    if (this.isNone()) {
-      return Promise.resolve(MaybeConstructor.none<V>());
+    if (this.isJust()) {
+      return f(this.value).then(MaybeConstructor.just);
     }
-    return f(this.value as T).then(v => MaybeConstructor.just<V>(v));
+    return Promise.resolve(MaybeConstructor.none<V>());
   }
 
   apply<A, B>(this: Maybe<(a: A) => B>, arg: Maybe<A>): Maybe<B>;
@@ -176,17 +176,17 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
   }
 
   chain<V>(f: (r: T) => Maybe<V>): Maybe<V> {
-    if (this.isNone()) {
-      return MaybeConstructor.none<V>();
+    if (this.isJust()) {
+      return f(this.value as T);
     }
-    return f(this.value as T);
+    return MaybeConstructor.none<V>();
   }
 
   asyncChain<V>(f: (r: T) => Promise<Maybe<V>>): Promise<Maybe<V>> {
-    if (this.isNone()) {
-      return Promise.resolve(MaybeConstructor.none<V>());
+    if (this.isJust()) {
+      return f(this.value as T);
     }
-    return f(this.value as T);
+    return Promise.resolve(MaybeConstructor.none<V>());
   }
 
   or(x: Maybe<T>) {
