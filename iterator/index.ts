@@ -470,7 +470,8 @@ export default class LazyIterator<I> implements Iterable<I> {
         const m = mask[index++];
         if (m === undefined) {
           return;
-        } else if (m) {
+        }
+        if (m) {
           yield item;
         }
       }

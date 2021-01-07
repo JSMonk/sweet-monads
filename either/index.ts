@@ -1,4 +1,4 @@
-import { Monad, Alternative } from "@sweet-monads/interfaces";
+import type { Monad, Alternative } from "@sweet-monads/interfaces";
 
 const enum EitherType {
   Left = "Left",
@@ -12,7 +12,7 @@ function isWrappedFunction<A, B, L>(
 }
 
 class EitherConstructor<L, R, T extends EitherType = EitherType>
-  implements Monad<R> {
+  implements Monad<R>, Alternative<T> {
   static mergeInOne<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
   static mergeInOne<L1, R1, L2, R2>(
     values: [Either<L1, R1>, Either<L2, R2>]

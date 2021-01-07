@@ -1,4 +1,4 @@
-import { Applicative, ApplicativeConstructor } from "./applicative";
+import type { Applicative, ApplicativeConstructor } from "./applicative";
 
 export interface Monad<T> extends Applicative<T> {
   chain<B>(f: (a: T) => Monad<B>): Monad<B>;
@@ -8,4 +8,5 @@ export interface Monad<T> extends Applicative<T> {
 
 export interface MonadConstructor extends ApplicativeConstructor {
   from<I>(item: I): Monad<I>;
+
 }

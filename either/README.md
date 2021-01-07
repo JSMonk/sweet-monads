@@ -327,11 +327,11 @@ const v1 = right<Error, number>(2);
 const v2 = left<Error, number>(new Error());
 
 // Promise<Either<Error | TypeError, string>.Right> with value "2"
-const newVal1 = v1.chain(a => right<TypeError, string>(a.toString()));
+const newVal1 = v1.asyncChain(a => right<TypeError, string>(a.toString()));
 // Promise<Either<Error | TypeError, string>.Left> with value new TypeError()
-const newVal2 = v1.chain(a => left<TypeError, string>(new TypeError()));
+const newVal2 = v1.asyncChain(a => left<TypeError, string>(new TypeError()));
 // Promise<Either<Error | TypeError, string>.Left> with value new Error()
-const newVal3 = v2.chain(a => right<TypeError, string>(a.toString()));
+const newVal3 = v2.asyncChain(a => right<TypeError, string>(a.toString()));
 // Promise<Either<Error | TypeError, string>.Left> with value new Error()
 const newVal4 = v2.chain(a => left<TypeError, string>(new TypeError()));
 ```
