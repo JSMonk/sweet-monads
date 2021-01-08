@@ -118,7 +118,7 @@ Example:
 
 ```typescript
 LazyIterator.from<number>([1, 2, 3]); // LazyIterator<number>
-LazyIterator.from([1, 2, 3]); // LazyIterator<unknown> because of TypeScript 😡
+LazyIterator.from([1, 2, 3]); // LazyIterator<number>
 ```
 
 #### `LazyIterator.all`
@@ -202,7 +202,7 @@ Example:
 
 ```typescript
 const iterator = LazyIterator.from([1, 2, 3, 4, 5]);
-const infinityIterator = LazyIterator.from(function*() { while(true) yield 0; });
+const infinityIterator = new LazyIterator(function* () { while(true) yield 0; });
 
 iterator.count() // 5
 infinityIterator.count() // Will lock your application
@@ -350,22 +350,18 @@ Creates an iterator that both filters and maps.
 
 ```typescript
 function filterMap<I, T>(predicateMapper: (i: I) => Maybe<T>): LazyIterator<T>;
-function filterMap<I, T>(predicateMapper: (i: I) => Maybe<T>, withoutMaybe: false): LazyIterator<T>;
-function filterMap<I, T>(predicateMapper: (i: I) => T | undefined, withoutMaybe: true): LazyIterator<T>;
+function filterMap<I, T>(predicateMapper: (i: I) => T | undefined): LazyIterator<T>;
 ```
 - `predicateMapper: (i: I) => Maybe<T> | T | undefined` - function which must return an `Maybe<T>`or `T | undefined` if `withoutMaybe` is `true`.
-- `withoutMaybe` (default `false`) - regulate return type of `predicateMapper`, if `true` result should be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns `LazyIterator` which calls `predicateMapper` on each element. If `predicateMapper` returns `just(element)`, then that element is returned. If `predicateMapper` returns `none`, it will try again, and call `predicateMapper` on the next element, seeing if it will return `just`.
 
 Example:
 
 ```typescript
 const iterator = LazyIterator.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9]);
-const filtered1 = iterator.filterMap(i => i % 2 ? just(i * i) : none()); // LazyIterator<number>
-const filtered2 = iterator.filterMap(i => i % 2 ? just(i * i) : none(), false); // LazyIterator<number>
-const filtered3 = iterator.filterMap(i => i % 2 ? i * i : undefined, true); // LazyIterator<number>
+const filtered = iterator.filterMap(i => i % 2 ? just(i * i) : none()); // LazyIterator<number>
 
-// filtered1 <-> filtered2 <-> filtered2 <-> [1, 9, 25, 49, 81]
+// filtered1 <-> [1, 9, 25, 49, 81]
 ```
 
 #### `LazyIterator.find`

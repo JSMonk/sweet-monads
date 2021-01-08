@@ -3,24 +3,37 @@ import { Maybe, none, just, isMaybe } from "@sweet-monads/maybe";
 type IteratorCreator<T> = () => Iterator<T>;
 type FromIterator<I> = () => Iterable<I>;
 
-const GENERATE_WITH = Symbol("GENERATE_WITH");
-
 const id = (x: any) => x;
 
-const defaultFromIterator = function<I>(this: Iterable<I>): Array<I> {
+const defaultFromIterator = function <I>(this: Iterable<I>): Array<I> {
   return [...this];
 };
 
-type IterableWithFromIterator<I> = Iterable<I> & { fromIterator: FromIterator<I> };
+type IterableWithFromIterator<I> = Iterable<I> & {
+  fromIterator: FromIterator<I>;
+};
 
 export default class LazyIterator<I> implements Iterable<I> {
   static from<I>(iterable: Iterable<I>): LazyIterator<I>;
   static from<I>(iterable: IterableWithFromIterator<I>): LazyIterator<I>;
-  static from<I>( iterable: Iterable<I>, fromIterator: FromIterator<I>): LazyIterator<I>;
-  static from<I>(iterable: Iterable<I> | IterableWithFromIterator<I>, fromIterator?: FromIterator<I>) {
+  static from<I>(
+    iterable: Iterable<I>,
+    fromIterator: FromIterator<I>
+  ): LazyIterator<I>;
+  static from<I>(
+    iterable: Iterable<I> | IterableWithFromIterator<I>,
+    fromIterator?: FromIterator<I>
+  ) {
     fromIterator =
-      fromIterator !== undefined ? fromIterator : (iterable as IterableWithFromIterator<I>).fromIterator;
-    return new LazyIterator<I>(iterable[Symbol.iterator].bind(iterable), fromIterator);
+      fromIterator !== undefined
+        ? fromIterator
+        : "fromIterator" in iterable
+        ? iterable.fromIterator
+        : defaultFromIterator;
+    return new LazyIterator<I>(
+      iterable[Symbol.iterator].bind(iterable),
+      fromIterator
+    );
   }
 
   private fromIterator: FromIterator<I>;
@@ -42,12 +55,6 @@ export default class LazyIterator<I> implements Iterable<I> {
     }
     this[Symbol.iterator] = initialIterator;
     this.fromIterator = fromIterator;
-  }
-
-  [GENERATE_WITH]<T>(newIterator: IteratorCreator<T>) {
-    return new LazyIterator(newIterator, (<any>(
-      this.fromIterator
-    )) as FromIterator<T>);
   }
 
   all<T extends I>(
@@ -75,21 +82,20 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   chain(...otherIterators: Array<Iterable<I>>) {
     const iterators = [this, ...otherIterators];
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const iterator of iterators) {
         yield* iterator;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   count() {
-    return this.fold(c => c + 1, 0);
+    return this.fold((c) => c + 1, 0);
   }
 
   cycle() {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       const iterator = oldIterator[Symbol.iterator]().next();
       if (iterator.done) {
         return;
@@ -97,8 +103,7 @@ export default class LazyIterator<I> implements Iterable<I> {
       while (true) {
         yield* oldIterator;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   enumarate() {
@@ -138,43 +143,30 @@ export default class LazyIterator<I> implements Iterable<I> {
   filter(predicate: (i: I) => boolean): LazyIterator<I>;
   filter<T extends I>(predicate: (i: I) => i is T): LazyIterator<T> {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         if (predicate(item)) {
           yield item;
         }
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   filterMap<T>(predicateMapper: (i: I) => Maybe<T>): LazyIterator<T>;
-  filterMap<T>(
-    predicateMapper: (i: I) => Maybe<T>,
-    withoutMaybe: false
-  ): LazyIterator<T>;
-  filterMap<T>(
-    predicateMapper: (i: I) => T | undefined,
-    withoutMaybe: true
-  ): LazyIterator<T>;
-  filterMap<T>(
-    predicateMapper: (i: I) => Maybe<T> | T | undefined,
-    withoutMaybe = false
-  ) {
+  filterMap<T>(predicateMapper: (i: I) => T | undefined): LazyIterator<T>;
+  filterMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         const maybeItem = predicateMapper(item);
         if (
-          (isMaybe(maybeItem) && maybeItem.isNone()) ||
-          maybeItem === undefined
+          (isMaybe(maybeItem) && maybeItem.isJust()) ||
+          (!isMaybe(maybeItem) && maybeItem !== undefined)
         ) {
-          continue;
+          yield isMaybe(maybeItem) ? maybeItem.value : maybeItem;
         }
-        yield isMaybe(maybeItem) ? maybeItem.value : maybeItem;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   find<T extends I>(predicate: (i: I) => i is T): Maybe<T>;
@@ -216,33 +208,41 @@ export default class LazyIterator<I> implements Iterable<I> {
       ) {
         continue;
       }
-      return maybeItem;
+      return withoutMaybe
+        ? isMaybe(maybeItem)
+          ? maybeItem.value
+          : maybeItem
+        : isMaybe(maybeItem)
+        ? maybeItem
+        : just(maybeItem);
     }
     return withoutMaybe ? undefined : none<I>();
   }
 
   flatMap<N>(fn: (i: I) => LazyIterator<N>): LazyIterator<N> {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         yield* fn(item);
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   flatten(this: LazyIterator<I | Iterable<I>>): LazyIterator<I> {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
-        if (item != undefined && typeof (item as Iterable<I>)[Symbol.iterator] === "function") {
+        if (
+          item != undefined &&
+          typeof item === "object" &&
+          Symbol.iterator in item
+        ) {
           yield* item as Iterable<I>;
         } else {
-          yield item;
+          yield item as I;
         }
       }
-    };
-    return this[GENERATE_WITH](newIterator as IteratorCreator<I>);
+    });
   }
 
   forEach(fn: (i: I) => unknown) {
@@ -261,12 +261,11 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   map<T>(fn: (i: I) => T) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         yield fn(item);
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   max(f?: (i: I) => number): Maybe<I>;
@@ -351,58 +350,55 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   reverse(): LazyIterator<I> {
     const oldIterator = this instanceof Array ? this : [...this];
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (let i = oldIterator.length - 1; i >= 0; i -= 1) {
         yield oldIterator[i];
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   scan<A>(fn: (a: A, i: I) => A, accumulator: A) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         accumulator = fn(accumulator, item);
         yield accumulator;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   skip(n: number) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         if (n-- <= 0) {
           yield item;
         }
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   skipWhile(predicate: (i: I) => boolean) {
     const oldIterator = this;
-    let shouldYield = false;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
+      let shouldYield = false;
       for (const item of oldIterator) {
         if (!predicate(item) || shouldYield) {
           shouldYield = true;
           yield item;
         }
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   stepBy(step: number) {
     if (step <= 0) {
       throw new Error("step should be greater than 0");
     }
-    let n = 0;
+
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
+      let n = 0;
       for (const item of oldIterator) {
         if (--n > 0) {
           continue;
@@ -410,8 +406,7 @@ export default class LazyIterator<I> implements Iterable<I> {
         n = step;
         yield item;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   sum(this: LazyIterator<number>) {
@@ -420,28 +415,26 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   take(n: number) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         if (n-- <= 0) {
           return;
         }
         yield item;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   takeWhile(predicate: (i: I) => boolean) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         if (!predicate(item)) {
           return;
         }
         yield item;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   unzip<A, B>(this: LazyIterator<[A, B]>): [A[], B[]] {
@@ -456,7 +449,7 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   zip<T>(other: LazyIterator<T>) {
     const self = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       const selfIterator = self[Symbol.iterator]();
       const otherIterator = other[Symbol.iterator]();
       let first = selfIterator.next();
@@ -466,13 +459,12 @@ export default class LazyIterator<I> implements Iterable<I> {
         first = selfIterator.next();
         second = otherIterator.next();
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   compress(mask: number[] | boolean[]) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       let index = 0;
       for (const item of oldIterator) {
         const m = mask[index++];
@@ -483,13 +475,12 @@ export default class LazyIterator<I> implements Iterable<I> {
           yield item;
         }
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   permutations() {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       let i1 = 0;
       for (const item1 of oldIterator) {
         let i2 = 0;
@@ -501,13 +492,12 @@ export default class LazyIterator<I> implements Iterable<I> {
         }
         i1 += 1;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   slice(start = 0, end?: number) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       let index = 0;
       for (const item of oldIterator) {
         if (end !== undefined && index >= end) {
@@ -518,8 +508,7 @@ export default class LazyIterator<I> implements Iterable<I> {
         }
         index += 1;
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   compact<I>(this: LazyIterator<I | undefined>) {
@@ -527,22 +516,20 @@ export default class LazyIterator<I> implements Iterable<I> {
   }
 
   contains(elem: I) {
-    return this.any(a => a === elem);
+    return this.any((a) => a === elem);
   }
 
   unique() {
     const oldIterator = this;
-    const newIterator = function*() {
-      const yieldedMap = new Map();
+    return new LazyIterator(function* () {
+      const yieldedSet = new Set<I>();
       for (const item of oldIterator) {
-        const yielded = yieldedMap.get(item);
-        if (yielded === undefined) {
-          yieldedMap.set(item, true);
+        if (!yieldedSet.has(item)) {
+          yieldedSet.add(item);
           yield item;
         }
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   isEmpty(): boolean {
@@ -551,47 +538,43 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   except(other: LazyIterator<I>) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         if (!other.contains(item)) {
           yield item;
         }
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   intersect(other: LazyIterator<I>) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       for (const item of oldIterator) {
         if (other.contains(item)) {
           yield item;
         }
       }
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   prepend(item: I) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       yield item;
       yield* oldIterator;
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
   append(item: I) {
     const oldIterator = this;
-    const newIterator = function*() {
+    return new LazyIterator(function* () {
       yield* oldIterator;
       yield item;
-    };
-    return this[GENERATE_WITH](newIterator);
+    });
   }
 
-  collect() {
+  collect(): Iterable<I> {
     return this.fromIterator();
   }
 }
