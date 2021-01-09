@@ -8,6 +8,7 @@
     "removeComments": true,
     "strictNullChecks": true,
     "preserveConstEnums": true,
+    "experimentalDecorators": true,
     "downlevelIteration": true
   },
   "include": ["./index.ts"],

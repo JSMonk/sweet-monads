@@ -1,8 +1,15 @@
-import type { Monad, Alternative } from "@sweet-monads/interfaces";
+import { ClassImplements } from "@sweet-monads/interfaces";
+import type {
+  Monad,
+  Alternative,
+  AsyncChainable,
+  MonadConstructor,
+  ApplicativeConstructor,
+} from "@sweet-monads/interfaces";
 
 const enum EitherType {
   Left = "Left",
-  Right = "Right"
+  Right = "Right",
 }
 
 function isWrappedFunction<A, B, L>(
@@ -11,8 +18,15 @@ function isWrappedFunction<A, B, L>(
   return typeof m.value === "function";
 }
 
+@ClassImplements<MonadConstructor>()
+@ClassImplements<ApplicativeConstructor>()
+@ClassImplements<AsyncChainable<Either<any, any>>>()
 class EitherConstructor<L, R, T extends EitherType = EitherType>
   implements Monad<R>, Alternative<T> {
+  static chain<L, R, NL, NR>(f: (v: R) => Promise<Either<NL, NR>>) {
+    return (m: Either<L, R>): Promise<Either<L | NL, NR>> => m.asyncChain(f);
+  }
+
   static mergeInOne<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
   static mergeInOne<L1, R1, L2, R2>(
     values: [Either<L1, R1>, Either<L2, R2>]
@@ -162,7 +176,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
   static mergeInOne(eithers: Array<Either<unknown, unknown>>) {
     return eithers.reduce(
       (res: Either<unknown, Array<unknown>>, v) =>
-        v.chain(v => res.map(res => res.concat([v]))),
+        v.chain((v) => res.map((res) => res.concat([v]))),
       EitherConstructor.right<unknown, Array<unknown>>([])
     );
   }
@@ -331,7 +345,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
         }
         return v.isLeft()
           ? EitherConstructor.left([v.value])
-          : (v.chain(v => res.map(res => [...res, v])) as EitherConstructor<
+          : (v.chain((v) => res.map((res) => [...res, v])) as EitherConstructor<
               Array<unknown>,
               Array<unknown>
             >);
@@ -366,7 +380,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
   }
 
   join<L1, L2, R>(this: Either<L1, Either<L2, R>>): Either<L1 | L2, R> {
-    return this.chain(x => x);
+    return this.chain((x) => x);
   }
 
   mapRight<T>(f: (r: R) => T): Either<L, T> {
@@ -391,7 +405,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
     if (this.isLeft()) {
       return Promise.resolve(EitherConstructor.left<L, T>(this.value as L));
     }
-    return f(this.value as R).then(v => EitherConstructor.right<L, T>(v));
+    return f(this.value as R).then((v) => EitherConstructor.right<L, T>(v));
   }
 
   apply<A, B>(this: Either<L, (a: A) => B>, arg: Either<L, A>): Either<L, B>;
@@ -436,9 +450,9 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
       return Promise.resolve(EitherConstructor.left<L, B>(argOrFn.value as L));
     }
     if (isWrappedFunction(this)) {
-      return (argOrFn as Either<L, Promise<A>>).asyncMap(this.value as (
-        a: A | Promise<A>
-      ) => Promise<B>);
+      return (argOrFn as Either<L, Promise<A>>).asyncMap(
+        this.value as (a: A | Promise<A>) => Promise<B>
+      );
     }
     if (isWrappedFunction(argOrFn)) {
       return (argOrFn as Either<
@@ -466,7 +480,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
   }
 
   or(x: Either<L, R>) {
-    return this.isLeft() ? x : this as Either<L, R>;
+    return this.isLeft() ? x : (this as Either<L, R>);
   }
 }
 
@@ -480,7 +494,8 @@ export const {
   mergeInMany,
   left,
   right,
-  from
+  from,
+  chain,
 } = EitherConstructor;
 
 export const isEither = <L, R>(

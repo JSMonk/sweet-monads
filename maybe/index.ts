@@ -1,4 +1,11 @@
-import type { Monad, Alternative } from "@sweet-monads/interfaces";
+import { ClassImplements } from "@sweet-monads/interfaces";
+import type {
+  Monad,
+  Alternative,
+  AsyncChainable,
+  MonadConstructor,
+  ApplicativeConstructor,
+} from "@sweet-monads/interfaces";
 
 const enum MaybeState {
   Just = "Just",
@@ -11,8 +18,15 @@ function isWrappedFunction<A, B>(
   return typeof m.value === "function";
 }
 
+@ClassImplements<MonadConstructor>()
+@ClassImplements<ApplicativeConstructor>()
+@ClassImplements<AsyncChainable<Maybe<any>>>()
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
   implements Monad<T>, Alternative<T> {
+  static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
+    return (m: Maybe<A>): Promise<Maybe<B>> => m.asyncChain(f);
+  }
+
   static merge<V1>(values: [Maybe<V1>]): Maybe<[V1]>;
   static merge<V1, V2>(values: [Maybe<V1>, Maybe<V2>]): Maybe<[V1, V2]>;
   static merge<V1, V2, V3>(
@@ -198,7 +212,7 @@ export type Maybe<T> =
   | MaybeConstructor<T, MaybeState.Just>
   | MaybeConstructor<T, MaybeState.None>;
 
-export const { merge, just, none, from } = MaybeConstructor;
+export const { merge, just, none, from, chain } = MaybeConstructor;
 
 export const isMaybe = <T>(value: unknown | Maybe<T>): value is Maybe<T> =>
   value instanceof MaybeConstructor;
