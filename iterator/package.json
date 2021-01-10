@@ -11,7 +11,7 @@
   },
   "scripts": {
     "build": "npm run build:clean && npm run build:start && npm run build:copy",
-    "build:start": "tsc --strict --downlevelIteration --declaration --lib es2015 --outDir ./build ./*.ts",
+    "build:start": "tsc --project tsconfig.json",
     "build:clean": "rm -rf build && mkdir build",
     "build:copy": "cp ./package.json ./build/package.json && cp ./README.md ./build/README.md"
   },
