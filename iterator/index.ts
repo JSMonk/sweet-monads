@@ -34,6 +34,14 @@ export default class LazyIterator<I> implements Iterable<I> {
   ) {}
 
   /* Intermediate Operations */
+  compact<I>(this: LazyIterator<I | undefined>) {
+    return this.filter((a: I | undefined): a is I => a !== undefined);
+  }
+
+  enumarate() {
+    let index = 0;
+    return this.map((item): [number, I] => [index++, item]);
+  }
 
   filter<T extends I>(predicate: (i: I) => i is T): LazyIterator<T>;
   filter(predicate: (i: I) => boolean): LazyIterator<I>;
@@ -46,6 +54,10 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   map<T>(fn: (i: I) => T): LazyIterator<T> {
     return LazyIterator.withOperation(this, new MapOperation<I, T>(fn));
+  }
+
+  skip(n: number) {
+    return this.filter(() => n === 0 || n-- > 0 );
   }
 
   /* Terminal Operations */
@@ -138,11 +150,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //       yield* oldIterator;
   //     }
   //   });
-  // }
-
-  // enumarate() {
-  //   let index = 0;
-  //   return this.map((item): [number, I] => [index++, item]);
   // }
 
   // first(): Maybe<I>;
@@ -362,17 +369,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //   });
   // }
 
-  // skip(n: number) {
-  //   const oldIterator = this;
-  //   return new LazyIterator(function* () {
-  //     for (const item of oldIterator) {
-  //       if (n-- <= 0) {
-  //         yield item;
-  //       }
-  //     }
-  //   });
-  // }
-
   // skipWhile(predicate: (i: I) => boolean) {
   //   const oldIterator = this;
   //   return new LazyIterator(function* () {
@@ -504,10 +500,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //       index += 1;
   //     }
   //   });
-  // }
-
-  // compact<I>(this: LazyIterator<I | undefined>) {
-  //   return this.filter((a: I | undefined): a is I => a !== undefined);
   // }
 
   // contains(elem: I) {
