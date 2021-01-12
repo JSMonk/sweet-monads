@@ -1,6 +1,7 @@
 import { MapOperation } from "./map-operation";
 import { FilterOperation } from "./filter-operation";
 import { IntermidiateOperation } from "./intermediate-operation";
+import MaybeConstructor, { Maybe, just, none } from "@sweet-monads/maybe";
 
 type FromIterator<
   A,
@@ -12,6 +13,8 @@ const defaultFromIterator = function <I>(original: LazyIterator<I>): Array<I> {
   return [...original];
 };
 
+const id: any = (x: number) => x;
+
 export default class LazyIterator<I> implements Iterable<I> {
   static from<I>(iterable: Iterable<I> | LazyIterator<I>) {
     return new LazyIterator<I>(iterable);
@@ -22,10 +25,7 @@ export default class LazyIterator<I> implements Iterable<I> {
     operation: IntermidiateOperation<A, B>
   ): LazyIterator<B> {
     // @ts-expect-error
-    return new LazyIterator<B>(from.source, [
-      ...from.operations,
-      operation,
-    ]);
+    return new LazyIterator<B>(from.source, [...from.operations, operation]);
   }
 
   private constructor(
@@ -57,7 +57,12 @@ export default class LazyIterator<I> implements Iterable<I> {
   }
 
   skip(n: number) {
-    return this.filter(() => n === 0 || n-- > 0 );
+    return this.filter(() => n === 0 || n-- > 0);
+  }
+
+  skipWhile(predicate: (i: I) => boolean) {
+    let hasBeenTrue = false;
+    return this.filter((i) => hasBeenTrue || (hasBeenTrue = predicate(i)));
   }
 
   /* Terminal Operations */
@@ -83,9 +88,36 @@ export default class LazyIterator<I> implements Iterable<I> {
     }
   }
 
-  fold(fn: (a: I, i: I) => I): I;
-  fold<A>(fn: (a: A, i: I) => A, accumulator: A): A;
-  fold<A>(fn: (a: A | I, i: I) => A | I, accumulator?: A | I) {
+  all<T extends I>(
+    this: LazyIterator<I>,
+    predicate: (i: I) => i is T
+  ): this is LazyIterator<T>;
+  all(predicate: (i: I) => boolean): boolean;
+  all(predicate: (i: I) => boolean) {
+    let result = true;
+    this.forEach((value) =>
+      (result = predicate(value)) ? just(undefined) : none()
+    );
+    return result;
+  }
+
+  any(predicate: (i: I) => boolean) {
+    let result = false;
+    this.forEach((value) =>
+      (result = predicate(value)) ? none() : just(undefined)
+    );
+    return result;
+  }
+
+  count() {
+    return this.fold((c) => c + 1, 0);
+  }
+
+  contains(elem: I) {
+    return this.any((a) => a === elem);
+  }
+
+  forEach(fn: (i: I) => void | Maybe<void>) {
     outer: for (let value of this.source) {
       for (let i = 0; i < this.operations.length; i++) {
         const operation = this.operations[i];
@@ -93,38 +125,101 @@ export default class LazyIterator<I> implements Iterable<I> {
         if (maybeValue.isNone()) continue outer;
         value = maybeValue.value as I;
       }
+      const result = fn(value);
+      if (result instanceof MaybeConstructor && result.isNone()) {
+        return;
+      }
+    }
+  }
+  
+  first(): Maybe<I>;
+  first(withoutMaybe: false): Maybe<I>;
+  first(withoutMaybe: true): I | undefined;
+  first(withoutMaybe = false): Maybe<I> | I | undefined {
+    const first = this[Symbol.iterator]().next();
+    if (withoutMaybe) {
+      return first.value;
+    }
+    return first.done ? none<I>() : just<I>(first.value);
+  }
+
+  fold(fn: (a: I, i: I) => I): I;
+  fold<A>(fn: (a: A, i: I) => A, accumulator: A): A;
+  fold<A>(fn: (a: A | I, i: I) => A | I, accumulator?: A | I) {
+    this.forEach((value) => {
       if (accumulator === undefined) {
         accumulator = value;
       } else {
         accumulator = fn(accumulator, value);
       }
-    }
+    });
     return accumulator;
   }
 
+  isEmpty(): boolean {
+    return this.first().isNone();
+  }
 
-  // all<T extends I>(
-  //   this: LazyIterator<I>,
-  //   predicate: (i: I) => i is T
-  // ): this is LazyIterator<T>;
-  // all(predicate: (i: I) => boolean): boolean;
-  // all(predicate: (i: I) => boolean) {
-  //   for (const item of this) {
-  //     if (!predicate(item)) {
-  //       return false;
-  //     }
-  //   }
-  //   return true;
-  // }
+  last(): Maybe<I>;
+  last(withoutMaybe: false): Maybe<I>;
+  last(withoutMaybe: true): I | undefined;
+  last(withoutMaybe = false) {
+    const result = this.fold((_, a) => just<I>(a), none<I>());
+    return withoutMaybe ? result.value : result;
+  }
 
-  // any(predicate: (i: I) => boolean) {
-  //   for (const item of this) {
-  //     if (predicate(item)) {
-  //       return true;
-  //     }
-  //   }
-  //   return false;
-  // }
+  max(this: LazyIterator<number>): Maybe<I>;
+  max(f: (i: I) => number): Maybe<I>;
+  max(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
+  max(f: (i: I) => number, withoutMaybe: true): I | undefined;
+  max(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
+    const res = this.fold(
+      (max, a) =>
+        just<I>(
+          max.isNone() || getValue(a) >= getValue(max.value)
+            ? a
+            : (max.value as I)
+        ),
+      none<I>()
+    );
+    return withoutMaybe ? res.value : res;
+  }
+
+  min(this: LazyIterator<number>): Maybe<I>;
+  min(f?: (i: I) => number): Maybe<I>;
+  min(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
+  min(f: (i: I) => number, withoutMaybe: true): I | undefined;
+  min(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
+    const res = this.fold(
+      (max, a) =>
+        just<I>(
+          max.isNone() || getValue(a) < getValue(max.value)
+            ? a
+            : (max.value as I)
+        ),
+      none<I>()
+    );
+    return withoutMaybe ? res.value : res;
+  }
+
+  nth(n: number): Maybe<I>;
+  nth(n: number, withoutMaybe: false): Maybe<I>;
+  nth(n: number, withoutMaybe: true): I | undefined;
+  nth(n: number, withoutMaybe = false) {
+    let result = none<I>();
+    this.forEach((value) => {
+      if (n-- <= 0) {
+        result = just(value);
+        return none();
+      }
+      return just(undefined);
+    });
+    return withoutMaybe ? result.value : result;
+  }
+
+  product(this: LazyIterator<number>) {
+    return this.fold((res, a) => res * a, 1);
+  }
 
   // chain(...otherIterators: Array<Iterable<I>>) {
   //   const iterators = [this, ...otherIterators];
@@ -133,10 +228,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //       yield* iterator;
   //     }
   //   });
-  // }
-
-  // count() {
-  //   return this.fold((c) => c + 1, 0);
   // }
 
   // cycle() {
@@ -150,17 +241,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //       yield* oldIterator;
   //     }
   //   });
-  // }
-
-  // first(): Maybe<I>;
-  // first(withoutMaybe: false): Maybe<I>;
-  // first(withoutMaybe: true): I | undefined;
-  // first(withoutMaybe = false): Maybe<I> | I | undefined {
-  //   const first = this[Symbol.iterator]().next();
-  //   if (withoutMaybe) {
-  //     return first.value;
-  //   }
-  //   return first.done ? none<I>() : just<I>(first.value);
   // }
 
   // filterMap<T>(predicateMapper: (i: I) => Maybe<T>): LazyIterator<T>;
@@ -255,65 +335,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //     }
   //   });
   // }
-
-  // forEach(fn: (i: I) => unknown) {
-  //   for (const item of this) {
-  //     fn(item);
-  //   }
-  // }
-
-  // last(): Maybe<I>;
-  // last(withoutMaybe: false): Maybe<I>;
-  // last(withoutMaybe: true): I | undefined;
-  // last(withoutMaybe = false) {
-  //   const result = this.fold((_, a) => just<I>(a), none<I>());
-  //   return withoutMaybe ? result.value : result;
-  // }
-
-  // max(f?: (i: I) => number): Maybe<I>;
-  // max(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
-  // max(f: (i: I) => number, withoutMaybe: true): I | undefined;
-  // max(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
-  //   const res = this.fold(
-  //     (max, a) =>
-  //       just<I>(
-  //         max.isNone() || getValue(a) >= getValue(max.value)
-  //           ? a
-  //           : (max.value as I)
-  //       ),
-  //     none<I>()
-  //   );
-  //   return withoutMaybe ? res.value : res;
-  // }
-
-  // min(f?: (i: I) => number): Maybe<I>;
-  // min(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
-  // min(f: (i: I) => number, withoutMaybe: true): I | undefined;
-  // min(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
-  //   const res = this.fold(
-  //     (max, a) =>
-  //       just<I>(
-  //         max.isNone() || getValue(a) < getValue(max.value)
-  //           ? a
-  //           : (max.value as I)
-  //       ),
-  //     none<I>()
-  //   );
-  //   return withoutMaybe ? res.value : res;
-  // }
-
-  // nth(n: number): Maybe<I>;
-  // nth(n: number, withoutMaybe: false): Maybe<I>;
-  // nth(n: number, withoutMaybe: true): I | undefined;
-  // nth(n: number, withoutMaybe = false) {
-  //   for (const item of this) {
-  //     if (n-- <= 0) {
-  //       return withoutMaybe ? item : just(item);
-  //     }
-  //   }
-  //   return withoutMaybe ? undefined : none();
-  // }
-
   // partion<T extends I>(predicate: (i: I) => i is T): [T[], I[]];
   // partion(predicate: (i: I) => boolean): [I[], I[]];
   // partion(fn: (i: I) => boolean): [I[], I[]] {
@@ -346,10 +367,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //   return withoutMaybe ? undefined : none();
   // }
 
-  // product(this: LazyIterator<number>) {
-  //   return this.fold((res, a) => res * a, 1);
-  // }
-
   // reverse(): LazyIterator<I> {
   //   const oldIterator = this instanceof Array ? this : [...this];
   //   return new LazyIterator(function* () {
@@ -365,19 +382,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //     for (const item of oldIterator) {
   //       accumulator = fn(accumulator, item);
   //       yield accumulator;
-  //     }
-  //   });
-  // }
-
-  // skipWhile(predicate: (i: I) => boolean) {
-  //   const oldIterator = this;
-  //   return new LazyIterator(function* () {
-  //     let shouldYield = false;
-  //     for (const item of oldIterator) {
-  //       if (!predicate(item) || shouldYield) {
-  //         shouldYield = true;
-  //         yield item;
-  //       }
   //     }
   //   });
   // }
@@ -502,10 +506,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //   });
   // }
 
-  // contains(elem: I) {
-  //   return this.any((a) => a === elem);
-  // }
-
   // unique() {
   //   const oldIterator = this;
   //   return new LazyIterator(function* () {
@@ -517,10 +517,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //       }
   //     }
   //   });
-  // }
-
-  // isEmpty(): boolean {
-  //   return this.first().isNone();
   // }
 
   // except(other: LazyIterator<I>) {
