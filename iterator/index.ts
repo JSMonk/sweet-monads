@@ -34,6 +34,22 @@ export default class LazyIterator<I> implements Iterable<I> {
   ) {}
 
   /* Intermediate Operations */
+  // prepend(item: I) {
+  //   const oldIterator = this;
+  //   return new LazyIterator(function* () {
+  //     yield item;
+  //     yield* oldIterator;
+  //   });
+  // }
+
+  // append(item: I) {
+  //   const oldIterator = this;
+  //   return new LazyIterator(function* () {
+  //     yield* oldIterator;
+  //     yield item;
+  //   });
+  // }
+
   compact<I>(this: LazyIterator<I | undefined>) {
     return this.filter((a: I | undefined): a is I => a !== undefined);
   }
@@ -329,6 +345,19 @@ export default class LazyIterator<I> implements Iterable<I> {
     return this.fold((sum, a) => sum + a, 0);
   }
 
+  unzip<A, B>(this: LazyIterator<[A, B]>): [A[], B[]] {
+    const left: A[] = [];
+    const right: B[] = [];
+    return this.fold(
+      ([left, right], [a, b]) => {
+        left.push(a);
+        right.push(b);
+        return [left, right];
+      },
+      [left as A[], right as B[]]
+    );
+  }
+
   // chain(...otherIterators: Array<Iterable<I>>) {
   //   const iterators = [this, ...otherIterators];
   //   return new LazyIterator(function* () {
@@ -459,16 +488,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //   });
   // }
 
-  // unzip<A, B>(this: LazyIterator<[A, B]>): [A[], B[]] {
-  //   const left: A[] = [];
-  //   const right: B[] = [];
-  //   for (const [a, b] of this) {
-  //     left.push(a);
-  //     right.push(b);
-  //   }
-  //   return [left, right];
-  // }
-
   // zip<T>(other: LazyIterator<T>) {
   //   const self = this;
   //   return new LazyIterator(function* () {
@@ -514,22 +533,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //       }
   //       index += 1;
   //     }
-  //   });
-  // }
-
-  // prepend(item: I) {
-  //   const oldIterator = this;
-  //   return new LazyIterator(function* () {
-  //     yield item;
-  //     yield* oldIterator;
-  //   });
-  // }
-
-  // append(item: I) {
-  //   const oldIterator = this;
-  //   return new LazyIterator(function* () {
-  //     yield* oldIterator;
-  //     yield item;
   //   });
   // }
 }
