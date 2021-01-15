@@ -1,5 +1,15 @@
 import type { Maybe } from "@sweet-monads/maybe";
 
-export interface IntermidiateOperation<A, B> {
-  execute(v: A): Maybe<B>;
+export abstract class IntermidiateOperation<A, B> {
+  protected terminated: boolean = false;
+
+  public get isTerminated(): boolean {
+    return this.terminated;
+  }
+
+  abstract execute(v: A): Maybe<B>;
+
+  protected terminate() {
+    this.terminated = true;
+  }
 }
