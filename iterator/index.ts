@@ -22,6 +22,7 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   private static withOperation<A, B>(
     from: LazyIterator<A>,
+    isCycled: boolean,
     ...operations: Array<IntermidiateOperation<A, B>>
   ): LazyIterator<B> {
     // @ts-expect-error
@@ -33,7 +34,8 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   private constructor(
     private readonly source: Iterable<I>,
-    private readonly operations: Array<IntermidiateOperation<I, unknown>> = []
+    private readonly operations: Array<IntermidiateOperation<I, unknown>> = [],
+    private readonly isCycled: boolean = false
   ) {}
 
   /* Intermediate Operations */
@@ -62,6 +64,10 @@ export default class LazyIterator<I> implements Iterable<I> {
     return this.filter(() => Boolean(mask[index++]));
   }
 
+  cycle() {
+    return new LazyIterator(this.source, this.operations, true);
+  }
+
   enumarate() {
     let index = 0;
     return this.map((item): [number, I] => [index++, item]);
@@ -82,6 +88,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   filter<T extends I>(predicate: (i: I) => i is T): LazyIterator<T> {
     return LazyIterator.withOperation(
       this,
+      this.isCycled,
       new FilterOperation<I, T>((v): v is T => predicate(v))
     );
   }
@@ -91,7 +98,8 @@ export default class LazyIterator<I> implements Iterable<I> {
   filterMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined) {
     return LazyIterator.withOperation(
       this,
-      new MapOperation(predicateMapper),
+      this.isCycled,
+      new MapOperation((i) => predicateMapper(i)),
       new FilterOperation((v: I): v is I =>
         v instanceof MaybeConstructor ? v.isJust() : v !== undefined
       ),
@@ -102,8 +110,18 @@ export default class LazyIterator<I> implements Iterable<I> {
   map<T>(fn: (i: I) => T): LazyIterator<T> {
     return LazyIterator.withOperation(
       this,
+      this.isCycled,
       new MapOperation<I, T>((x) => fn(x))
     );
+  }
+
+  reverse(): LazyIterator<I> {
+    if (this.isCycled) {
+      throw new Error("Reverse can work only at finite iterable sequence.");
+    }
+    const oldIterator = this instanceof Array ? this : [...this];
+    let i = oldIterator.length - 1;
+    return this.map(() => oldIterator[i--]);
   }
 
   skip(n: number) {
@@ -123,6 +141,7 @@ export default class LazyIterator<I> implements Iterable<I> {
     let index = 0;
     return LazyIterator.withOperation(
       this,
+      end === undefined && this.isCycled,
       new FilterOperation((_, terminate): _ is I => {
         if (end !== undefined && index >= end) {
           terminate();
@@ -152,6 +171,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   take(n: number) {
     return LazyIterator.withOperation(
       this,
+      false,
       new FilterOperation((_, terminate): _ is I => {
         if (n-- <= 0) {
           terminate();
@@ -164,7 +184,8 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   takeWhile(predicate: (i: I) => boolean) {
     return LazyIterator.withOperation(
-      this,
+      this, 
+      false,
       new FilterOperation((x, terminate): x is I => {
         if (!predicate(x)) {
           terminate();
@@ -186,6 +207,20 @@ export default class LazyIterator<I> implements Iterable<I> {
     });
   }
 
+  zip<T>(other: LazyIterator<T>): LazyIterator<[I, T]> {
+    const otherIterator = other[Symbol.iterator]();
+    return LazyIterator.withOperation(
+      this,
+      this.isCycled,
+      new MapOperation((first, terminate) => {
+        const second = otherIterator.next();
+        if (second.done) {
+          terminate();
+        }
+        return [first, second.value];
+      })
+    );
+  }
   /* Terminal Operations */
 
   collect(fromIterator: FromIterator<I> = defaultFromIterator): Iterable<I> {
@@ -198,23 +233,28 @@ export default class LazyIterator<I> implements Iterable<I> {
   }
 
   public *[Symbol.iterator](): Iterator<I> {
-    outer: for (let value of this.source) {
-      for (let i = 0; i < this.operations.length; i++) {
-        const operation = this.operations[i];
-        const maybeValue = operation.execute(value);
-        if (maybeValue.isNone()) {
-          if (operation.isTerminated) {
-            return;
+    do {
+      outer: for (let value of this.source) {
+        for (let i = 0; i < this.operations.length; i++) {
+          const operation = this.operations[i];
+          const maybeValue = operation.execute(value);
+          if (maybeValue.isNone()) {
+            if (operation.isTerminated) {
+              return;
+            }
+            continue outer;
           }
-          continue outer;
+          value = maybeValue.value as I;
         }
-        value = maybeValue.value as I;
+        yield value;
       }
-      yield value;
-    }
+    } while (this.isCycled);
   }
 
   forEach(fn: (i: I) => void | Maybe<void>) {
+    if (this.isCycled) {
+      throw new Error("All terminated methods will be infinity executed!");
+    }
     outer: for (let value of this.source) {
       for (let i = 0; i < this.operations.length; i++) {
         const operation = this.operations[i];
@@ -469,19 +509,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //   });
   // }
 
-  // cycle() {
-  //   const oldIterator = this;
-  //   return new LazyIterator(function* () {
-  //     const iterator = oldIterator[Symbol.iterator]().next();
-  //     if (iterator.done) {
-  //       return;
-  //     }
-  //     while (true) {
-  //       yield* oldIterator;
-  //     }
-  //   });
-  // }
-
   // flatMap<N>(fn: (i: I) => LazyIterator<N>): LazyIterator<N> {
   //   const oldIterator = this;
   //   return new LazyIterator(function* () {
@@ -504,30 +531,6 @@ export default class LazyIterator<I> implements Iterable<I> {
   //       } else {
   //         yield item as I;
   //       }
-  //     }
-  //   });
-  // }
-
-  // reverse(): LazyIterator<I> {
-  //   const oldIterator = this instanceof Array ? this : [...this];
-  //   return new LazyIterator(function* () {
-  //     for (let i = oldIterator.length - 1; i >= 0; i -= 1) {
-  //       yield oldIterator[i];
-  //     }
-  //   });
-  // }
-
-  // zip<T>(other: LazyIterator<T>) {
-  //   const self = this;
-  //   return new LazyIterator(function* () {
-  //     const selfIterator = self[Symbol.iterator]();
-  //     const otherIterator = other[Symbol.iterator]();
-  //     let first = selfIterator.next();
-  //     let second = otherIterator.next();
-  //     while (!first.done && !second.done) {
-  //       yield [first.value, second.value] as [I, T];
-  //       first = selfIterator.next();
-  //       second = otherIterator.next();
   //     }
   //   });
   // }

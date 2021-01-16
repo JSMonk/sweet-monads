@@ -3,11 +3,11 @@ import { IntermidiateOperation } from "./intermediate-operation";
 import type { Maybe } from "@sweet-monads/maybe";
 
 export class MapOperation<A, B> extends IntermidiateOperation<A, B> {
-  constructor(private readonly fn: (v: A) => B) {
+  constructor(private readonly fn: (v: A, terminate: () => void) => B) {
     super();
   }
 
   execute(value: A): Maybe<B> {
-    return just(this.fn(value));
+    return just(this.fn(value, () => this.terminate()));
   }
 }
