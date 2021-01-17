@@ -75,7 +75,6 @@ describe("Iterator", () => {
     it("should create infinity link", () => {
       fc.assert(
         fc.property(fc.array(fc.nat()), (arr: number[]) => {
-          debugger;
           const iterator: LazyIterator<number> = LazyIterator.from(arr).cycle();
           if (arr.length === 0) {
             expect(iterator[Symbol.iterator]().next().done).toBe(true);
