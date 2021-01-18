@@ -1,5 +1,7 @@
 # @sweet-monads
 
+![Mmmm, sweet](logo.svg)
+
 Easy-to-use monads implementation with static types definition and separated packages.
 
 - No dependencies, one small file
