@@ -1,6 +1,6 @@
 # @sweet-monads
 
-![Mmmm, sweet](logo.svg)
+<img src="./logo.svg" alt="Mmmm, sweet" width="150" />
 
 Easy-to-use monads implementation with static types definition and separated packages.
 
