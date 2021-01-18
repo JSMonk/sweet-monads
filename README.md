@@ -1,6 +1,10 @@
 # @sweet-monads
 
-<img src="./logo.svg" alt="Mmmm, sweet" width="150" />
+<p align="center">
+  <a href="#" target="blank">
+    <img src="./logo.svg" alt="Mmmm, sweet" width="200" style="display: block; margin: 0 auto;" />
+  </a>
+</p>
 
 Easy-to-use monads implementation with static types definition and separated packages.
 
