@@ -1,14 +1,14 @@
 {
   "name": "@sweet-monads/either",
-  "version": "2.1.4",
+  "version": "2.2.0",
   "description": "Either monad",
   "main": "index.js",
   "types": "index.d.ts",
   "scripts": {
     "build": "npm run build:clean && npm run build:start && npm run build:copy",
-    "build:start": "tsc --strict --declaration --lib es2015 --outDir ./build ./*.ts",
+    "build:start": "cp ../tsconfig.json tsconfig.json && tsc --project ./tsconfig.json",
     "build:clean": "rm -rf build && mkdir build",
-    "build:copy": "cp ./package.json ./build/package.json && cp ./README.md ./build/README.md"
+    "build:copy": "cp ./package.json ./build/package.json && cp ./README.md ./build/README.md && rm ./tsconfig.json"
   },
   "homepage": "https://github.com/JSMonk/sweet-monads/tree/master/either",
   "repository": {
