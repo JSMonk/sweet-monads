@@ -34,6 +34,7 @@ const user = getUser(1).map(({ email }) => email);
 
 ## API
 
+- [`chain`](#chain)
 - [`merge`](#merge)
 - [`left`](#left)
 - [`right`](#right)
@@ -52,6 +53,23 @@ const user = getUser(1).map(({ email }) => email);
 - [`Either#chain`](#eitherchain)
 - [`Either#asyncChain`](#eitherasyncchain)
 - [Helpers](#helpers)
+
+#### `chain`
+```typescript
+  function chain<L, R, NL, NR>(fn: (v: R) => Promise<Either<NL, NR>>): (m: Either<L, R>) => Promise<Either<L | NL, NR>>
+```
+- `fn: (v: R) => Promise<Either<NL, NR>>` - function which should be applied asynchronously to `Either<L, R>` value
+- Returns function with `Either<L, R>` argument and promisied `Either` with new error or maped by `fn` value (could be used inside `Promise#then` function).
+
+Example:
+```typescript
+const getValue = async () => right(1);
+
+// Either<TypeError, right>
+const result = await getValue()
+  .then(Either.chain(async v => right(v * 2)))
+  .then(Either.chain(async v => left(new TypeError("Unexpected"))));
+```
 
 #### `merge`
 ```typescript

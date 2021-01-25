@@ -32,6 +32,7 @@ const user = getUser(1).map(({ email }) => email);
 
 ## API
 
+- [`chain`](#chain)
 - [`merge`](#merge)
 - [`none`](#none)
 - [`just`](#just)
@@ -48,6 +49,23 @@ const user = getUser(1).map(({ email }) => email);
 - [`Maybe#chain`](#maybechain)
 - [`Maybe#asyncChain`](#maybeasyncchain)
 - [Helpers](#helpers)
+
+#### `chain`
+```typescript
+  function chain<A, B>(fn: (v: A) => Promise<Maybe<B>>): (m: Maybe<A>) => Promise<Maybe<B>>
+```
+- `fn: (v: A) => Promise<Maybe<B>>` - function which should be applied asynchronously to `Maybe<A>` value
+- Returns function with `Maybe<A>` argument and promisied `Maybe` with `Maybe.None` or maped by `fn` value (could be used inside `Promise#then` function).
+
+Example:
+```typescript
+const getValue = async () => just(1);
+
+// Maybe<number>
+const result = await getValue()
+  .then(Maybe.chain(async v => just(v * 2)))
+  .then(Maybe.chain(async v => none()));
+```
 
 #### `merge`
 ```typescript
