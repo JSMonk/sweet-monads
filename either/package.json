@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/either",
-  "version": "2.2.0",
+  "version": "2.2.2",
   "description": "Either monad",
   "main": "index.js",
   "types": "index.d.ts",
