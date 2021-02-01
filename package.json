@@ -11,7 +11,8 @@
     "either",
     "interfaces",
     "iterator",
-    "maybe"
+    "maybe",
+    "result"
   ],
   "scripts": {
     "test": "jest"
