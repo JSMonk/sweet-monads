@@ -1,10 +1,10 @@
-import { ClassImplements } from "@sweet-monads/interfaces";
+// import { ClassImplements } from "@sweet-monads/interfaces";
 import type {
   Monad,
   Alternative,
-  AsyncChainable,
-  MonadConstructor,
-  ApplicativeConstructor,
+  // AsyncChainable,
+  // MonadConstructor,
+  // ApplicativeConstructor,
 } from "@sweet-monads/interfaces";
 
 const enum MaybeState {
@@ -18,9 +18,10 @@ function isWrappedFunction<A, B>(
   return typeof m.value === "function";
 }
 
-@ClassImplements<MonadConstructor>()
-@ClassImplements<ApplicativeConstructor>()
-@ClassImplements<AsyncChainable<Maybe<any>>>()
+// TODO: Write AST converter to eliminate these checks from the runtime
+// @ClassImplements<MonadConstructor>()
+// @ClassImplements<ApplicativeConstructor>()
+// @ClassImplements<AsyncChainable<Maybe<any>>>()
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
   implements Monad<T>, Alternative<T> {
   static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
