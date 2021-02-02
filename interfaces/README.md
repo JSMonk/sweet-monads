@@ -2,7 +2,7 @@
 
 Collection of interfaces which describe functional programming abstractions.
 
-### This library belongs to *sweet-monads* project
+### This library belongs to _sweet-monads_ project
 
 > **sweet-monads** — easy-to-use monads implementation with static types definition and separated packages.
 
@@ -34,7 +34,6 @@ class Container<T> implements Functor<T> {
 - [`Applicative`](#applicative)
 - [`Monad`](#monad)
 
-
 ### Functor
 
 https://wiki.haskell.org/Functor
@@ -46,6 +45,7 @@ Functors are required to obey certain laws in regards to their mapping. Ensuring
 Methods:
 
 ##### `Functor#map`
+
 ```typescript
 function map<A, B>(f: (x: A) => B): Functor<B>;
 ```
@@ -64,7 +64,7 @@ map<A, B>(f: (x: A) => B): Functor<B>;
 const f = new SomeFunctorImplementation(); // for all functors
 const id = x => x;
 
-expect( f.map(id) ).toEqual( f );
+expect(f.map(id)).toEqual(f);
 ```
 
 ##### Functors preserve composition of morphisms
@@ -75,7 +75,7 @@ declare function toString(x: number): string; // for all functions
 
 const f = new SomeFunctorImplementation<number>();
 
-expect( f.map(x => toString(twice(x))) ).toEqual( f.map(twice).map(toString) );
+expect(f.map(x => toString(twice(x)))).toEqual(f.map(twice).map(toString));
 ```
 
 ### Alternative
@@ -90,6 +90,7 @@ Current implementation is not fully port of `Alternative` from Haskell, because 
 Methods:
 
 ##### `Alternative#or`
+
 ```typescript
 function or<T>(arg: Alternative<T>): Alternative<T>;
 ```
@@ -103,11 +104,13 @@ This module describes a structure intermediate between a functor and a monad (te
 Methods:
 
 ##### `Applicative.from`
+
 ```typescript
 function from<A>(x: A): Applicative<A>;
 ```
 
 ##### `Applicative#apply`
+
 ```typescript
 apply<A, B>(this: Applicative<(a: A) => B>, arg: Applicative<A>): Applicative<B>;
 apply<A, B>(this: Applicative<A>, fn: Applicative<(a: A) => B>): Applicative<B>;
@@ -120,6 +123,7 @@ apply<A, B>(this: Applicative<A>, fn: Applicative<(a: A) => B>): Applicative<B>;
 ```typescript
 static from<A>(x: A): Applicative<A>;
 ```
+
 ```typescript
 apply<A, B>(this: Applicative<(a: A) => B>, arg: Applicative<A>): Applicative<B>;
 apply<A, B>(this: Applicative<A>, fn: Applicative<(a: A) => B>): Applicative<B>;
@@ -133,7 +137,7 @@ apply<A, B>(this: Applicative<A>, fn: Applicative<(a: A) => B>): Applicative<B>;
 declare var x: Applicative<unknown>;
 const id = x => x;
 
-expect( SomeApplicative.from(id).apply(x) ).toEqual( x );
+expect(SomeApplicative.from(id).apply(x)).toEqual(x);
 ```
 
 ##### Homomorphism Law
@@ -142,7 +146,7 @@ expect( SomeApplicative.from(id).apply(x) ).toEqual( x );
 declare var x: unknown;
 declare var f: (x: unknown) => unknown;
 
-expect( SomeApplicative.from(f).apply(x) ).toEqual( SomeApplicative.from(f(x)) );
+expect(SomeApplicative.from(f).apply(x)).toEqual(SomeApplicative.from(f(x)));
 ```
 
 ### Monad
@@ -154,11 +158,13 @@ Monads can be thought of as composable computation descriptions. The essence of 
 Methods:
 
 ##### `Monad#chain`
+
 ```typescript
 function chain<A, B>(f: (x: A) => Monad<B>): Monad<B>;
 ```
 
 ##### `Monad#join`
+
 ```typescript
 function join<T>(this: Monad<Monad<T>>): Monad<T>;
 ```
@@ -180,7 +186,7 @@ join<T>(this: Monad<Monad<T>>): Monad<T>;
 declare var x: unknown;
 declare function f(x: unknown): Monad<unknown>;
 
-expect( SomeMonad.from(x).chain(f) ).toEqual( f(x) );
+expect(SomeMonad.from(x).chain(f)).toEqual(f(x));
 ```
 
 ##### Right identity Law
@@ -189,7 +195,7 @@ expect( SomeMonad.from(x).chain(f) ).toEqual( f(x) );
 declare var mx: Monad<unknown>;
 declare function f(x: unknown): Monad<unknown>;
 
-expect( mx.chain(SomeMonad.from) ).toEqual( mx );
+expect(mx.chain(SomeMonad.from)).toEqual(mx);
 ```
 
 ##### Associativity Law
@@ -199,7 +205,7 @@ declare var mx: Monad<unknown>;
 declare function f(x: unknown): Monad<unknown>;
 declare function g(x: unknown): Monad<unknown>;
 
-expect( mx.chain(x => f(x).chain(g)) ).toEqual( mx.chain(f).chain(g) );
+expect(mx.chain(x => f(x).chain(g))).toEqual(mx.chain(f).chain(g));
 ```
 
 ## License

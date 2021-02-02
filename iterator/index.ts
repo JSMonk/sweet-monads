@@ -3,11 +3,7 @@ import { FilterOperation } from "./filter-operation";
 import { IntermidiateOperation } from "./intermediate-operation";
 import MaybeConstructor, { Maybe, just, none } from "@sweet-monads/maybe";
 
-type FromIterator<
-  A,
-  S extends Iterable<A> = Iterable<A>,
-  T extends Iterable<A> = Iterable<A>
-> = (source: S) => T;
+type FromIterator<A, S extends Iterable<A> = Iterable<A>, T extends Iterable<A> = Iterable<A>> = (source: S) => T;
 
 const defaultFromIterator = function <I>(original: LazyIterator<I>): Array<I> {
   return [...original];
@@ -17,9 +13,7 @@ const id: any = (x: number) => x;
 
 export default class LazyIterator<I> implements Iterable<I> {
   static from<I>(iterable: Iterable<I> | LazyIterator<I>) {
-    return iterable instanceof LazyIterator
-      ? iterable
-      : new LazyIterator<I>(iterable);
+    return iterable instanceof LazyIterator ? iterable : new LazyIterator<I>(iterable);
   }
 
   private static withOperation<A, B>(
@@ -28,7 +22,7 @@ export default class LazyIterator<I> implements Iterable<I> {
     ...operations: Array<IntermidiateOperation<A, B>>
   ): LazyIterator<B> {
     return new LazyIterator<B>(
-      // @ts-expect-error
+      // @ts-expect-error Not sure why
       from.source,
       [...from.operations, ...operations],
       isCycled
@@ -47,9 +41,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   }
 
   chain(...otherIterators: Array<Iterable<I>>): LazyIterator<I> {
-    return LazyIterator.from([this, ...otherIterators]).flatMap(
-      LazyIterator.from
-    );
+    return LazyIterator.from([this, ...otherIterators]).flatMap(LazyIterator.from);
   }
 
   compact<I>(this: LazyIterator<I | undefined>) {
@@ -72,7 +64,7 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   except(other: LazyIterator<I>) {
     const existed = new Set<I>(other);
-    return this.filter((value) => !existed.has(value));
+    return this.filter(value => !existed.has(value));
   }
 
   filter<T extends I>(predicate: (i: I) => i is T): LazyIterator<T>;
@@ -91,44 +83,36 @@ export default class LazyIterator<I> implements Iterable<I> {
     return LazyIterator.withOperation(
       this,
       this.isCycled,
-      new MapOperation((i) => predicateMapper(i)),
-      new FilterOperation((v: I): v is I =>
-        v instanceof MaybeConstructor ? v.isJust() : v !== undefined
-      ),
-      new MapOperation((v) => (v instanceof MaybeConstructor ? v.value : v))
+      new MapOperation(i => predicateMapper(i)),
+      new FilterOperation((v: I): v is I => (v instanceof MaybeConstructor ? v.isJust() : v !== undefined)),
+      new MapOperation(v => (v instanceof MaybeConstructor ? v.value : v))
     );
   }
 
   flatten(this: LazyIterator<I | LazyIterator<I>>): LazyIterator<I> {
-    return this.flatMap((x) => x as LazyIterator<I>);
+    return this.flatMap(x => x as LazyIterator<I>);
   }
 
   flatMap<N>(fn: (i: I) => LazyIterator<N>): LazyIterator<N> {
-    return LazyIterator.withOperation(
-      this,
-      this.isCycled,
-      new MapOperation((x) => fn(x), true)
-    );
+    return LazyIterator.withOperation(this, this.isCycled, new MapOperation(x => fn(x), true));
   }
 
   intersect(other: LazyIterator<I>) {
     const existed = new Set<I>(other);
-    return this.filter((value) => existed.has(value));
+    return this.filter(value => existed.has(value));
   }
 
   map<T>(fn: (i: I) => T): LazyIterator<T> {
     return LazyIterator.withOperation(
       this,
       this.isCycled,
-      new MapOperation<I, T>((x) => fn(x))
+      new MapOperation<I, T>(x => fn(x))
     );
   }
 
   permutations(): LazyIterator<[I, I]> {
     return this.enumarate().flatMap(([i, x1]) =>
-      this.enumarate().filterMap(([j, x2]) =>
-        i !== j ? just([x1, x2]) : none()
-      )
+      this.enumarate().filterMap(([j, x2]) => (i !== j ? just([x1, x2]) : none()))
     );
   }
 
@@ -150,12 +134,12 @@ export default class LazyIterator<I> implements Iterable<I> {
   }
 
   scan<A>(fn: (a: A, i: I) => A, accumulator: A) {
-    return this.map((value) => (accumulator = fn(accumulator, value)));
+    return this.map(value => (accumulator = fn(accumulator, value)));
   }
 
   skipWhile(predicate: (i: I) => boolean) {
     let hasBeenFalse = false;
-    return this.filter((i) => hasBeenFalse || (hasBeenFalse = !predicate(i)));
+    return this.filter(i => hasBeenFalse || (hasBeenFalse = !predicate(i)));
   }
 
   slice(start = 0, end?: number) {
@@ -219,7 +203,7 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   unique() {
     const existedValues = new Set<I>();
-    return this.filter((value) => {
+    return this.filter(value => {
       if (existedValues.has(value)) {
         return false;
       }
@@ -246,9 +230,7 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   collect(fromIterator: FromIterator<I> = defaultFromIterator): Iterable<I> {
     if (typeof fromIterator !== "function") {
-      throw new Error(
-        "fromIteartor should be implemented as function for lazy iterating"
-      );
+      throw new Error("fromIteartor should be implemented as function for lazy iterating");
     }
     return fromIterator(this);
   }
@@ -313,47 +295,39 @@ export default class LazyIterator<I> implements Iterable<I> {
     }
   }
 
-  all<T extends I>(
-    this: LazyIterator<I>,
-    predicate: (i: I) => i is T
-  ): this is LazyIterator<T>;
+  all<T extends I>(this: LazyIterator<I>, predicate: (i: I) => i is T): this is LazyIterator<T>;
   all(predicate: (i: I) => boolean): boolean;
   all(predicate: (i: I) => boolean) {
     let result = true;
-    this.forEach((value) =>
-      (result = predicate(value)) ? just(undefined) : none()
-    );
+    // eslint-disable-next-line no-cond-assign
+    this.forEach(value => ((result = predicate(value)) ? just(undefined) : none()));
     return result;
   }
 
   any(predicate: (i: I) => boolean) {
     let result = false;
-    this.forEach((value) =>
-      (result = predicate(value)) ? none() : just(undefined)
-    );
+    // eslint-disable-next-line no-cond-assign
+    this.forEach(value => ((result = predicate(value)) ? none() : just(undefined)));
     return result;
   }
 
   count() {
-    return this.fold((c) => c + 1, 0);
+    return this.fold(c => c + 1, 0);
   }
 
   contains(elem: I) {
-    return this.any((a) => a === elem);
+    return this.any(a => a === elem);
   }
 
   find<T extends I>(predicate: (i: I) => i is T): Maybe<T>;
   find<T extends I>(predicate: (i: I) => i is T, withoutMaybe: false): Maybe<T>;
-  find<T extends I>(
-    predicate: (i: I) => i is T,
-    withoutMaybe: true
-  ): T | undefined;
+  find<T extends I>(predicate: (i: I) => i is T, withoutMaybe: true): T | undefined;
   find(predicate: (i: I) => boolean): Maybe<I>;
   find(predicate: (i: I) => boolean, withoutMaybe: false): Maybe<I>;
   find(predicate: (i: I) => boolean, withoutMaybe: true): I | undefined;
   find(predicate: (i: I) => boolean, withoutMaybe = false) {
     let foundValue = none<I>();
-    this.forEach((value) => {
+    this.forEach(value => {
       if (predicate(value)) {
         foundValue = just(value);
         return none();
@@ -364,32 +338,17 @@ export default class LazyIterator<I> implements Iterable<I> {
   }
 
   findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined): Maybe<I>;
-  findMap<T>(
-    predicateMapper: (i: I) => Maybe<T> | T | undefined,
-    withoutMaybe: false
-  ): Maybe<T>;
-  findMap<T>(
-    predicateMapper: (i: I) => Maybe<T> | T | undefined,
-    withoutMaybe: true
-  ): I | undefined;
-  findMap<T>(
-    predicateMapper: (i: I) => Maybe<T> | T | undefined,
-    withoutMaybe = false
-  ) {
+  findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe: false): Maybe<T>;
+  findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe: true): I | undefined;
+  findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe = false) {
     let result = none<T>();
 
-    this.forEach((item) => {
+    this.forEach(item => {
       const maybeItem = predicateMapper(item);
-      if (
-        (maybeItem instanceof MaybeConstructor && maybeItem.isNone()) ||
-        maybeItem === undefined
-      ) {
+      if ((maybeItem instanceof MaybeConstructor && maybeItem.isNone()) || maybeItem === undefined) {
         return just(undefined);
       }
-      result =
-        maybeItem instanceof MaybeConstructor
-          ? maybeItem
-          : just(maybeItem as T);
+      result = maybeItem instanceof MaybeConstructor ? maybeItem : just(maybeItem as T);
       return none();
     });
 
@@ -410,7 +369,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   fold(fn: (a: I, i: I) => I): I;
   fold<A>(fn: (a: A, i: I) => A, accumulator: A): A;
   fold<A>(fn: (a: A | I, i: I) => A | I, accumulator?: A | I) {
-    this.forEach((value) => {
+    this.forEach(value => {
       if (accumulator === undefined) {
         accumulator = value;
       } else {
@@ -438,12 +397,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   max(f: (i: I) => number, withoutMaybe: true): I | undefined;
   max(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
     const res = this.fold(
-      (max, a) =>
-        just<I>(
-          max.isNone() || getValue(a) >= getValue(max.value)
-            ? a
-            : (max.value as I)
-        ),
+      (max, a) => just<I>(max.isNone() || getValue(a) >= getValue(max.value) ? a : (max.value as I)),
       none<I>()
     );
     return withoutMaybe ? res.value : res;
@@ -455,12 +409,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   min(f: (i: I) => number, withoutMaybe: true): I | undefined;
   min(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
     const res = this.fold(
-      (max, a) =>
-        just<I>(
-          max.isNone() || getValue(a) < getValue(max.value)
-            ? a
-            : (max.value as I)
-        ),
+      (max, a) => just<I>(max.isNone() || getValue(a) < getValue(max.value) ? a : (max.value as I)),
       none<I>()
     );
     return withoutMaybe ? res.value : res;
@@ -471,7 +420,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   nth(n: number, withoutMaybe: true): I | undefined;
   nth(n: number, withoutMaybe = false) {
     let result = none<I>();
-    this.forEach((value) => {
+    this.forEach(value => {
       if (n-- <= 0) {
         result = just(value);
         return none();
@@ -499,14 +448,11 @@ export default class LazyIterator<I> implements Iterable<I> {
 
   position(predicate: (i: I) => boolean): Maybe<number>;
   position(predicate: (i: I) => boolean, withoutMaybe: false): Maybe<number>;
-  position(
-    predicate: (i: I) => boolean,
-    withoutMaybe: true
-  ): number | undefined;
+  position(predicate: (i: I) => boolean, withoutMaybe: true): number | undefined;
   position(predicate: (i: I) => boolean, withoutMaybe = false) {
     let index = 0;
     let hasFound = false;
-    this.forEach((value) => {
+    this.forEach(value => {
       if (predicate(value)) {
         hasFound = true;
         return none();

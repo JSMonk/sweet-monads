@@ -5,7 +5,7 @@ const DECORATOR_SOURCE_PATH = "@sweet-monads/interfaces";
 
 function eliminateAllStaticClassImplementsCheck(filepath) {
   return transformFileAsync(filepath, {
-    plugins: [staticClassImplementsEliminator],
+    plugins: [staticClassImplementsEliminator]
   });
 }
 
@@ -38,7 +38,7 @@ function staticClassImplementsEliminator() {
           }
           state.opts.isInsideInterfaces = false;
           state.opts.isChanged = false;
-        },
+        }
       },
       Decorator(path, state) {
         const name = state.opts.decoratorLocalName;
@@ -46,6 +46,6 @@ function staticClassImplementsEliminator() {
         if (path.node.expression?.callee?.name !== name) return;
         path.remove();
       }
-    },
+    }
   };
 }

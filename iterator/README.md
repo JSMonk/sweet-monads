@@ -111,7 +111,7 @@ function from<I>(iterable: Iterable<I>, fromIterator: FromIterator<I>): LazyIter
 ```
 
 - `iterable: Iterable<I>` - Iterable object which will be wrapped by `LazyIterator`
-- `fromIterator: () => Iterable<I>` (default is `function() { return [...this] }`) - function which define conversion from `LazyIterator` to iterable object (default is `Array`), it could be defined inside `iterable` object. 
+- `fromIterator: () => Iterable<I>` (default is `function() { return [...this] }`) - function which define conversion from `LazyIterator` to iterable object (default is `Array`), it could be defined inside `iterable` object.
 - Returns `LazyIterator` which contains all elements from `iterable`
 
 Example:
@@ -125,11 +125,12 @@ LazyIterator.from([1, 2, 3]); // LazyIterator<number>
 
 Tests if every element of the `LazyIterator` matches a predicate.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function all<I>(predicate: (i: I) => boolean): boolean;
 ```
+
 - `predicate: (i: I) => boolean` - takes a function that returns `true` or `false`. It applies this function to each element of the iterator, and if they all return `true`, then so does `all()`. If any of them return `false`, it returns `false`.
 
 - Returns `true` if `predicate` return `true` for all elements of `LazyIterator` or `LazyIterator` is empty otherwise `false`
@@ -138,27 +139,28 @@ Example:
 
 ```typescript
 const iterator = LazyIterator.from([1, 2, 3, 4, 5]);
-iterator.all(a => typeof a === "number") // true
-iterator.all(a => a % 2 === 0) // false
+iterator.all(a => typeof a === "number"); // true
+iterator.all(a => a % 2 === 0); // false
 ```
 
 #### `LazyIterator.any`
 
 Tests if any element of the `LazyIterator` a predicate.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function any<I>(predicate: (i: I) => boolean): boolean;
 ```
+
 - `predicate: (i: I) => boolean` - takes a function that returns `true` or `false`. It applies this function to each element of the iterator, and if any of them return `true`, then so does `any()`. If they all return `false`, it returns `false`.
 - Returns `true` if exist element from `LazyIterator` for which `predicate` return `true` otherwise `false`
   Example:
 
 ```typescript
 const iterator = LazyIterator.from([1, 2, 3, 4, 5]);
-iterator.any(a => a % 2 === 0) // true
-iterator.any(a => a === 0) // false
+iterator.any(a => a % 2 === 0); // true
+iterator.any(a => a === 0); // false
 ```
 
 #### `LazyIterator.chain`
@@ -168,6 +170,7 @@ Takes two iterators and creates a new iterator over both in sequence.
 ```typescript
 function chain<I>(...otherIterators: Array<Iterable<I>>): LazyIterator<I>;
 ```
+
 - `iterables: Array<Iterable<I>>` - array of iterable objects with same type which should be merged in one
 - Returns a new `LazyIterator` which will first iterate over values from the first `LazyIterator` and then over values from the second iterator.
 
@@ -177,7 +180,9 @@ Example:
 const iterator = LazyIterator.from([1, 2, 3, 4, 5]);
 const newIterator = iterator.chain([6, 7]);
 
-for (const i of newIterator) { console.log(i) }
+for (const i of newIterator) {
+  console.log(i);
+}
 // 1
 // 2
 // 3
@@ -191,21 +196,24 @@ for (const i of newIterator) { console.log(i) }
 
 Consumes the iterator, counting the number of iterations and returning it.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function count(): number;
 ```
+
 - Returns count of elements in `LazyIterator`
 
 Example:
 
 ```typescript
 const iterator = LazyIterator.from([1, 2, 3, 4, 5]);
-const infinityIterator = new LazyIterator(function* () { while(true) yield 0; });
+const infinityIterator = new LazyIterator(function* () {
+  while (true) yield 0;
+});
 
-iterator.count() // 5
-infinityIterator.count() // Will lock your application
+iterator.count(); // 5
+infinityIterator.count(); // Will lock your application
 ```
 
 #### `LazyIterator.cycle`
@@ -215,6 +223,7 @@ Instead of stopping at `done: true`, the `LazyIterator` will instead start again
 ```typescript
 function cycle<I>(): LazyIterator<I>;
 ```
+
 - Returns repeated an `LazyIterator` endlessly if it is not empty.
 
 Example:
@@ -225,17 +234,17 @@ const empty = LazyIterator.from([]).cycle();
 
 let i = iterator[Symbol.iterator]();
 
-i.next().value // 1
-i.next().value // 2
-i.next().value // 3
-i.next().value // 1
-i.next().value // 2
-i.next().value // 3
-i.next().value // 1
+i.next().value; // 1
+i.next().value; // 2
+i.next().value; // 3
+i.next().value; // 1
+i.next().value; // 2
+i.next().value; // 3
+i.next().value; // 1
 
 let i = empty[Symbol.iterator]();
 
-i.next().done // true
+i.next().done; // true
 
 for (const a of iterator); // Will lock your application
 for (const a of empty); // Will not computed
@@ -244,10 +253,11 @@ for (const a of empty); // Will not computed
 #### `LazyIterator.enumarate`
 
 Creates an `LazyIterator` which gives the current iteration count as well as the next value.
-    
+
 ```typescript
 function enumarate<I>(): LazyIterator<[number, I]>;
 ```
+
 - Returns the `LazyIterator` which yields pairs `(i, val)`, where `i` is the current index of iteration and `val` is the value returned by the iterator.
 
 Example:
@@ -255,7 +265,9 @@ Example:
 ```typescript
 const iterator = LazyIterator.from([6, 7, 8, 9]).enumerate();
 
-for (const [index, element] of iterator) { console.log(index, element) };
+for (const [index, element] of iterator) {
+  console.log(index, element);
+}
 // 0, 6
 // 1, 7
 // 2, 8
@@ -266,12 +278,13 @@ for (const [index, element] of iterator) { console.log(index, element) };
 
 An `LazyIterator` method that applies a function as long as it returns successfully, producing a single, final value. Folding is useful whenever you have a collection of something, and want to produce a single value from it.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
-    
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+
 ```typescript
 function fold<I>(fn: (a: I, i: I) => I): I;
 function fold<I, A>(fn: (a: A, i: I) => A, accumulator: A): A;
 ```
+
 - `fn: (a: A, i: I) => A` - accumulator function which fold elements in some value
 - `accumulator: A` (default `LazyItertor#first()`) - the initial value the `fn` will have on the first call.
 - Returns value which are computed by invokation of `fn` with each element of the `LazyIterator` and `accumulator` which was computed at previous step of iteration.
@@ -288,13 +301,14 @@ const sum = iterator.fold((sum, i) => sum + i, 0); // number 20
 
 An `LazyIterator` method that return first element of the `LazyIterator`.
 
-*Info:* more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
+_Info:_ more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
 
 ```typescript
 function first(): Maybe<I>;
 function first(withoutMaybe: false): Maybe<I>;
 function first(withoutMaybe: true): I | undefined;
 ```
+
 - `withoutMaybe` (default `false`) - regulate return type, if `true` result will be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns `Maybe<I>.Just` (or `I` if `withoutMaybe` is `true`) if `LazyIterator` is not empty otherwise `Maybe<I>.None` (of `undefined` if `withoutMaybe` is `true`)
 
@@ -304,12 +318,12 @@ Example:
 const iterator = LazyIterator.from([1, 1, 2, 3, 5, 8]);
 const empty = LazyIterator.from([]);
 
-const f1 = iterator.first() // Maybe<number>.Just with value 1
-const f2 = iterator.first(false) // Maybe<number>.Just with value 1
-const f3 = iterator.first(true) // 1
-const f4 = empty.first() // Maybe<number>.None without value 
-const f5 = empty.first(false) // Maybe<number>.None without value 
-const f6 = empty.first(true) // undefined
+const f1 = iterator.first(); // Maybe<number>.Just with value 1
+const f2 = iterator.first(false); // Maybe<number>.Just with value 1
+const f3 = iterator.first(true); // 1
+const f4 = empty.first(); // Maybe<number>.None without value
+const f5 = empty.first(false); // Maybe<number>.None without value
+const f6 = empty.first(true); // undefined
 ```
 
 #### `LazyIterator.filter`
@@ -320,7 +334,8 @@ Creates an `LazyIterator` which uses a function to determine if an element shoul
 function filter<I, T extends I>(predicate: (i: I) => i is T): LazyIterator<T>;
 function filter<I>(predicate: (i: I) => boolean): LazyIterator<I>;
 ```
-- `predicate: (i: I) => boolean` - function which must return `true` or `false`. 
+
+- `predicate: (i: I) => boolean` - function which must return `true` or `false`.
 - Returns `LazyIterator<T>` which calls `fn` function on each element. If `fn` returns `true`, then the element is returned. If `fn` returns `false`, it will try again, and call `fn` on the next element, seeing if it passes the test.
 
 Example:
@@ -346,12 +361,13 @@ for (const i of twos) console.log(i);
 
 Creates an iterator that both filters and maps.
 
-*Info:* more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
+_Info:_ more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
 
 ```typescript
 function filterMap<I, T>(predicateMapper: (i: I) => Maybe<T>): LazyIterator<T>;
 function filterMap<I, T>(predicateMapper: (i: I) => T | undefined): LazyIterator<T>;
 ```
+
 - `predicateMapper: (i: I) => Maybe<T> | T | undefined` - function which must return an `Maybe<T>`or `T | undefined` if `withoutMaybe` is `true`.
 - Returns `LazyIterator` which calls `predicateMapper` on each element. If `predicateMapper` returns `just(element)`, then that element is returned. If `predicateMapper` returns `none`, it will try again, and call `predicateMapper` on the next element, seeing if it will return `just`.
 
@@ -359,23 +375,24 @@ Example:
 
 ```typescript
 const iterator = LazyIterator.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9]);
-const filtered = iterator.filterMap(i => i % 2 ? just(i * i) : none()); // LazyIterator<number>
+const filtered = iterator.filterMap(i => (i % 2 ? just(i * i) : none())); // LazyIterator<number>
 
 // filtered1 <-> [1, 9, 25, 49, 81]
 ```
 
 #### `LazyIterator.find`
 
-Searches for an element of an `LazyIterator` that satisfies a predicate. 
+Searches for an element of an `LazyIterator` that satisfies a predicate.
 `find()` is short-circuiting; in other words, it will stop processing as soon as the predicate returns `true`. But, it will lock your application if your `LazyIterator` is cycled and doesn't contain element which will satisfied a predicate.
 
-*Info:* more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
+_Info:_ more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
 
 ```typescript
 function find<I>(predicate: (i: I) => boolean): Maybe<I>;
 function find<I>(predicate: (i: I) => boolean, withoutMaybe: false): Maybe<I>;
 function find<I>(predicate: (i: I) => boolean, withoutMaybe: true): I | undefined;
 ```
+
 - `predicate: (i: I) => boolean` - function that return `true` or `false`.
 - `withoutMaybe` (default `false`) - regulate return type if `true` result should be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns `Maybe<I>.Just` (or `I` if `withoutMaybe` is `true`) if `LazyIterator` is not empty and contain element for which `predicate` return `true` otherwise `Maybe<I>.None` (of `undefined` if `withoutMaybe` is `true`)
@@ -397,14 +414,15 @@ const two6 = iterator.find(i => i === 10, true); // undefined
 
 Applies function to the elements of `LazyIterator` and returns the first non-none result.
 `findMap()` is short-circuiting; in other words, it will stop processing as soon as the predicate returns `Maybe.Just` or non-`undefined` value. But, it will lock your application if your `LazyIterator` is cycled and doesn't contain element which will satisfied a predicate.
-    
-*Info:* more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
+
+_Info:_ more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
 
 ```typescript
 function findMap<I, T>(predicateMapper: (i: I) => Maybe<T> | T | undefined): Maybe<I>;
 function findMap<I, T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe: false): Maybe<T>;
 function findMap<I, T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe: true): I | undefined;
 ```
+
 - `predicateMapper: (i: I) => Maybe<T> | T | undefined` - predicate mapper function which return `Maybe<T>` or `T | undefined`.
 - `withoutMaybe` (default `false`) - regulate return type of `predicateMapper`, if `true` result should be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns mapped by `predicateMapper` `Maybe<I>.Just` (or `I` if `withoutMaybe` is `true`) if `LazyIterator` is not empty and contain element for which `predicateMapper` return `Maybe<I>.Just` (or not `undefined` if `withoutMaybe` is `true`) otherwise `Maybe<I>.None` (of `undefined` if `withoutMaybe` is `true`)
@@ -414,12 +432,12 @@ Example:
 ```typescript
 const iterator = LazyIterator.from([1, 2, 2, 3, 4, 5, 6, 7, 8, 9]);
 
-const two1 = iterator.find(i => i === 2 ? just(i) : none()); // Maybe<number>.Just
-const two2 = iterator.find(i => i === 2 ? just(i) : none(), false); // Maybe<number>.Just
-const two3 = iterator.find(i => i === 2 ? i : undefined, true); // 2
-const two4 = iterator.find(i => i === 10 ? just(i) : none()); // Maybe<number>.None
-const two5 = iterator.find(i => i === 10 ? just(i) : none(), false); // Maybe<number>.None
-const two6 = iterator.find(i => i === 10 ? i : undefined, true); // undefined 
+const two1 = iterator.find(i => (i === 2 ? just(i) : none())); // Maybe<number>.Just
+const two2 = iterator.find(i => (i === 2 ? just(i) : none()), false); // Maybe<number>.Just
+const two3 = iterator.find(i => (i === 2 ? i : undefined), true); // 2
+const two4 = iterator.find(i => (i === 10 ? just(i) : none())); // Maybe<number>.None
+const two5 = iterator.find(i => (i === 10 ? just(i) : none()), false); // Maybe<number>.None
+const two6 = iterator.find(i => (i === 10 ? i : undefined), true); // undefined
 ```
 
 #### `LazyIterator.flatMap`
@@ -429,8 +447,9 @@ Creates an `LazyIterator` that works like map, but flattens nested structure.
 ```typescript
 function flatMap<I, N>(fn: (i: I) => LazyIterator<N>): LazyIterator<N>;
 ```
+
 - `fn: (i: I) => LazyIterator<N>` - mapper function which return `LazyIterator<N>`
-- Returns flattened `LazyIterator<N>` 
+- Returns flattened `LazyIterator<N>`
 
 Example:
 
@@ -450,8 +469,9 @@ This is useful when you have an `LazyIterator` of `LazyIterator` or an `LazyIter
 ```typescript
 function flatten<I>(this: LazyIterator<I | LazyIterator<I>>): LazyIterator<I>;
 ```
+
 - `this: LazyIterator<I | LazyIterator<I>>` - `this` context should be presented as `LazyIterator` of `LazyIterator` of `I` items.
-- Returns flattened at 1 level `LazyIterator<I>` 
+- Returns flattened at 1 level `LazyIterator<I>`
 
 Example:
 
@@ -465,11 +485,12 @@ const flatten = mapped.flatten(); // LazyIterator<string>
 #### `LazyIterator.forEach`
 
 Calls a function on each element of an `LazyIterator`.
-This is equivalent to using a `for..of` loop on the `LazyIterator`, although `break` and `continue` are not possible from a function. It's generally more idiomatic to use a `for..of` loop, but `forEach` may be more legible when processing items at the end of longer `LazyIterator` chains. 
+This is equivalent to using a `for..of` loop on the `LazyIterator`, although `break` and `continue` are not possible from a function. It's generally more idiomatic to use a `for..of` loop, but `forEach` may be more legible when processing items at the end of longer `LazyIterator` chains.
 
 ```typescript
 function forEach<I>(fn: (i: I) => unknown): void;
 ```
+
 - `fn: (i: I) => unknown` - function which will be invoked with each element of `LazyIterator<I>`
 - Returns `undefined`
 
@@ -490,15 +511,16 @@ iterator.forEach(console.log);
 
 An `LazyIterator` method that return last element of the `LazyIterator`.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
-*Info:* more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
+_Info:_ more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
 
 ```typescript
 function last<I>(): Maybe<I>;
 function last<I>(withoutMaybe: false): Maybe<I>;
 function last<I>(withoutMaybe: true): I | undefined;
 ```
+
 - `withoutMaybe` (default `false`) - regulate return type, if `true` result will be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns `Maybe<I>.Just` (or `I` if `withoutMaybe` is `true`) if `LazyIterator` is not empty otherwise `Maybe<I>.None` (of `undefined` if `withoutMaybe` is `true`)
 
@@ -509,23 +531,24 @@ const iterator = LazyIterator.from([1, 1, 2, 3, 5, 8]);
 const empty = LazyIterator.from([]);
 const cycled = LazyIterator.from([1, 2]).cycle();
 
-const f1 = iterator.last() // Maybe<number>.Just with value 8
-const f2 = iterator.last(false) // Maybe<number>.Just with value 8
-const f3 = iterator.last(true) // 8
-const f4 = empty.last() // Maybe<number>.None without value 
-const f5 = empty.last(false) // Maybe<number>.None without value 
-const f6 = empty.last(true) // undefined
-const f7 = cycled.last(true) // Lock your application
+const f1 = iterator.last(); // Maybe<number>.Just with value 8
+const f2 = iterator.last(false); // Maybe<number>.Just with value 8
+const f3 = iterator.last(true); // 8
+const f4 = empty.last(); // Maybe<number>.None without value
+const f5 = empty.last(false); // Maybe<number>.None without value
+const f6 = empty.last(true); // undefined
+const f7 = cycled.last(true); // Lock your application
 ```
 
 #### `LazyIterator.map`
 
 Takes a function and creates an `LazyIterator` which calls that function on each element. `map()` transforms one `LazyIterator` into another.
 If you are good at thinking in types, you can think of `map()` like this: If you have an `LazyIterator` that gives you elements of some type `I`, and you want an `LazyIterator` of some other type `T`, you can use `map()`, passing a function that takes an `I` and returns a `T`.
-    
+
 ```typescript
 function map<I, T>(fn: (i: I) => T): LazyIterator<T>;
 ```
+
 - `fn: (i: I) => T` - function which will called whith each element of `LazyIterator`
 - Returns `LazyIterator` which contains all values which was transformed by `fn`
 
@@ -549,12 +572,13 @@ for (const i of mapped) console.log(i);
 
 Returns the maximum element of an `LazyIterator`.
 If several elements are equally maximum, the last element is returned.
-    
+
 ```typescript
 function max<I>(f?: (i: I) => number): Maybe<I>;
 function max<I>(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
 function max<I>(f: (i: I) => number, withoutMaybe: true): I | undefined;
 ```
+
 - `fn: (i: I) => T` - function which will convert item `i` in `number`.
 - `withoutMaybe` (default `false`) - regulate return type, if `true` result will be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns maximum element of in `LazyIterator`. If the `LazyIterator` is empty, `Maybe<number>.None` will be returned (or `undefined` if `withoutMaybe` is `true`).
@@ -565,26 +589,27 @@ Example:
 const iterator = LazyIterator.from([1, 1, 2, 3, 5, 8]);
 const empty = LazyIterator.from([]);
 
-iterator.max() // Maybe<number>.Just with value 8 
-iterator.max(a => a) // Maybe<number>.Just with value 8
-iterator.max(a => a, false) // Maybe<number>.Just with value 8
-iterator.max(a => a, true) // 8
-empty.max() // Maybe<number>.None without value
-empty.max(a => a) // Maybe<number>.None without value
-empty.max(a => a, false) // Maybe<number>.None without value
-empty.max(a => a, true) // undefined
+iterator.max(); // Maybe<number>.Just with value 8
+iterator.max(a => a); // Maybe<number>.Just with value 8
+iterator.max(a => a, false); // Maybe<number>.Just with value 8
+iterator.max(a => a, true); // 8
+empty.max(); // Maybe<number>.None without value
+empty.max(a => a); // Maybe<number>.None without value
+empty.max(a => a, false); // Maybe<number>.None without value
+empty.max(a => a, true); // undefined
 ```
 
 #### `LazyIterator.min`
 
 Returns the minimum element of an `LazyIterator`.
 If several elements are equally minimum, the first element is returned.
-    
+
 ```typescript
 function min<I>(f?: (i: I) => number): Maybe<I>;
 function min<I>(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
 function min<I>(f: (i: I) => number, withoutMaybe: true): I | undefined;
 ```
+
 - `fn: (i: I) => T` - function which will convert item `i` in `number`.
 - `withoutMaybe` (default `false`) - regulate return type, if `true` result will be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns minimum element of in `LazyIterator`. If the `LazyIterator` is empty, `Maybe<number>.None` will be returned (or `undefined` if `withoutMaybe` is `true`).
@@ -595,26 +620,27 @@ Example:
 const iterator = LazyIterator.from([1, 1, 2, 3, 5, 8]);
 const empty = LazyIterator.from([]);
 
-iterator.min() // Maybe<number>.Just with value 1 
-iterator.min(a => a) // Maybe<number>.Just with value 1
-iterator.min(a => a, false) // Maybe<number>.Just with value 1
-iterator.min(a => a, true) // 1
-empty.min() // Maybe<number>.None without value
-empty.min(a => a) // Maybe<number>.None without value
-empty.min(a => a, false) // Maybe<number>.None without value
-empty.min(a => a, true) // undefined
+iterator.min(); // Maybe<number>.Just with value 1
+iterator.min(a => a); // Maybe<number>.Just with value 1
+iterator.min(a => a, false); // Maybe<number>.Just with value 1
+iterator.min(a => a, true); // 1
+empty.min(); // Maybe<number>.None without value
+empty.min(a => a); // Maybe<number>.None without value
+empty.min(a => a, false); // Maybe<number>.None without value
+empty.min(a => a, true); // undefined
 ```
 
 #### `LazyIterator.nth`
 
 Returns the `n`th element of the `LazyIterator`.
 Like most indexing operations, the count starts from zero, so `nth(0)` returns the first value, `nth(1)` the second, and so on.
-    
+
 ```typescript
 function nth<I>(n: number): Maybe<I>;
 function nth<I>(n: number, withoutMaybe: false): Maybe<I>;
 function nth<I>(n: number, withoutMaybe: true): I | undefined;
 ```
+
 - `n: number` - position of element in `LazyIterator`
 - `withoutMaybe` (default `false`) - regulate return type, if `true` result will be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns the `n`th element of the `LazyIterator`. If `n` is greater than or equals to `LazyIterator#count` or `LazyIterator` is empty, `Maybe<number>.None` will be returned (or `undefined` if `withoutMaybe` is `true`).
@@ -625,15 +651,15 @@ Example:
 const iterator = LazyIterator.from([1, 1, 2, 3, 5, 8]);
 const empty = LazyIterator.from([]);
 
-iterator.nth(0) // Maybe<number>.Just with value 1 
-iterator.nth(0, false) // Maybe<number>.Just with value 1 
-iterator.nth(0, true) // 1 
-iterator.nth(6) // Maybe<number>.None without value
-iterator.nth(6, false) // Maybe<number>.None without value
-iterator.nth(6, true) // undefined
-empty.nth(0) // Maybe<number>.None without value
-empty.nth(0, false) // Maybe<number>.None without value
-empty.nth(0, true) // undefined
+iterator.nth(0); // Maybe<number>.Just with value 1
+iterator.nth(0, false); // Maybe<number>.Just with value 1
+iterator.nth(0, true); // 1
+iterator.nth(6); // Maybe<number>.None without value
+iterator.nth(6, false); // Maybe<number>.None without value
+iterator.nth(6, true); // undefined
+empty.nth(0); // Maybe<number>.None without value
+empty.nth(0, false); // Maybe<number>.None without value
+empty.nth(0, true); // undefined
 ```
 
 #### `LazyIterator.partion`
@@ -644,7 +670,8 @@ Returns a 2-elements tuple of arrays. Splits the elements in the input iterable 
 function partion<I, T extends I>(predicate: (i: I) => i is T): [T[], I[]];
 function partion<I>(predicate: (i: I) => boolean): [I[], I[]];
 ```
-- `predicate: (i: I) => boolean` - function which must return `true` or `false`. 
+
+- `predicate: (i: I) => boolean` - function which must return `true` or `false`.
 - Returns a 2-elements tuple of arrays which contains elements which satisfy `predicate` (first array) and which not (second array)
 
 Example:
@@ -688,13 +715,14 @@ for (const i of notTwos) console.log(i);
 Searches for an element in an iterator, returning its index.
 `position()` is short-circuiting; in other words, it will stop processing as soon as the predicate returns `true`. But, it will lock your application if your `LazyIterator` is cycled and doesn't contain element which will satisfied a predicate.
 
-*Info:* more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
+_Info:_ more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
 
 ```typescript
 function position<I>(predicate: (i: I) => boolean): Maybe<number>;
 function position<I>(predicate: (i: I) => boolean, withoutMaybe: false): Maybe<number>;
 function position<I>(predicate: (i: I) => boolean, withoutMaybe: true): number | undefined;
 ```
+
 - `predicate: (i: I) => boolean` - function that return `true` or `false`.
 - `withoutMaybe` (default `false`) - regulate return type if `true` result should be "undefinable" item type else `Maybe<I>` which could be presented as `Just` value or `None`.
 - Returns `Maybe<I>.Just` (or `I` if `withoutMaybe` is `true`) if `LazyIterator` is not empty and contain element for which `predicate` return `true` otherwise `Maybe<I>.None` (of `undefined` if `withoutMaybe` is `true`)
@@ -716,11 +744,12 @@ const two6 = iterator.position(i => i === 10, true); // undefined
 
 Iterates over the entire iterator, multiplying all the elements.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function product(this: LazyIterator<number>): number;
 ```
+
 - `this: LazyIterator<number>` - `LazyIterator` should contain `number` elements
 - Returns product of each elements in `LazyIterator`. An empty `LazyIterator` returns the one value of the type.
 
@@ -731,20 +760,21 @@ const iterator = LazyIterator.from([1, 2, 3, 4, 5]);
 const empty = LazyIterator.from([]);
 const cycled = LazyIterator.from([1]).cycle();
 
-const product1 = iterator.product() // 120
-const product2 = empty.product() // 1
-const product3 = cycled.product() // Will lock your application 
+const product1 = iterator.product(); // 120
+const product2 = empty.product(); // 1
+const product3 = cycled.product(); // Will lock your application
 ```
 
 #### `LazyIterator.reverse`
 
 Reverses an iterator's direction. Usually, `LazyIterator`s iterate from left to right. After using `reverse()`, an `LazyIterator` will instead iterate from right to left.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function reverse<I>(): LazyIterator<I>;
 ```
+
 - Returns reverse `LazyIterator`
 
 Example:
@@ -772,6 +802,7 @@ An `LazyIterator` adaptor similar to [`LazyIterator#fold`](#lazyiteratorfold) th
 ```typescript
 function scan<A, I>(fn: (a: A, i: I) => A, accumulator: A): A;
 ```
+
 - `fn: (a: A, i: I) => A` - a function with two arguments, the first being the internal state and the second an `LazyIterator` element. The function can assign to the internal state to share state between iterations.
 - `accumulator: A` - an initial value which seeds the internal state
 - Returns the `LazyIterator` which yields `accumulator` per each iteration which computed by `fn` invokation.
@@ -798,6 +829,7 @@ After they have been consumed, the rest of the elements are yielded.
 ```typescript
 function skip<I>(n: number): LazyIterator<I>;
 ```
+
 - `n: number` - count of element which should be skipped.
 - Returns the `LazyIterator` which yields all elements after `n` elements.
 
@@ -820,6 +852,7 @@ Creates an `LazyIterator` that [`LazyIterator#skip`](#lazyiteratorskip) s elemen
 ```typescript
 function skipWhile<I>(predicate: (i: I) => boolean): LazyIterator<I>;
 ```
+
 - `predicate: (i: I) => boolean` - function which will be called on each element of the `LazyIterator`, and ignore elements until it returns `false`.
 - Returns the `LazyIterator` which yields the rest of the elements after first `false` from `predicate` invokation.
 
@@ -839,13 +872,14 @@ for (const a of skipped) console.log(a);
 
 Creates an `LazyIterator` starting at the same point, but stepping by the given amount at each iteration.
 
-*Note*: The first element of the `LazyIterator` will always be returned, regardless of the step given.
-*Note*: If step will be less than 1 then method will throw an Error.
+_Note_: The first element of the `LazyIterator` will always be returned, regardless of the step given.
+_Note_: If step will be less than 1 then method will throw an Error.
 
 ```typescript
 function stepBy<I>(step: number): LazyIterator<I>;
 ```
-- `step: number` - number (greater than 0) of each element which should be yielded. 
+
+- `step: number` - number (greater than 0) of each element which should be yielded.
 - Returns the `LazyIterator` starting at the same point, but stepping by the given amount at each iteration.
 
 Example:
@@ -865,11 +899,12 @@ for (const a of skipped) console.log(a);
 Sums the elements of an iterator.
 Takes each element, adds them together, and returns the result.
 
-*Warrning*: Be careful, `LazyIterator` should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, `LazyIterator` should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
-function sum(this: LazyIterator<number>): number ;
+function sum(this: LazyIterator<number>): number;
 ```
+
 - `this: LazyIterator<number>` - `LazyIterator` should contain `number` elements
 - Returns sum of each elements in `LazyIterator`. An empty `LazyIterator` returns the zero value of the type.
 
@@ -880,9 +915,9 @@ const iterator = LazyIterator.from([1, 2, 3, 4, 5]);
 const empty = LazyIterator.from([]);
 const cycled = LazyIterator.from([1]).cycle();
 
-const product1 = iterator.sum() // 15
-const product2 = empty.sum() // 0
-const product3 = cycled.sum() // Will lock your application 
+const product1 = iterator.sum(); // 15
+const product2 = empty.sum(); // 0
+const product3 = cycled.sum(); // Will lock your application
 ```
 
 #### `LazyIterator.take`
@@ -892,6 +927,7 @@ Creates an `LazyIterator` that yields its first `n` elements.
 ```typescript
 function take<I>(n: number): LazyIterator<I>;
 ```
+
 - `n: number` - count of element which should be takken.
 - Returns the `LazyIterator` which yields first `n` elements.
 
@@ -913,6 +949,7 @@ Creates an `LazyIterator` that [`LazyIterator#take`](#lazyiteratortake) s elemen
 ```typescript
 function takeWhile<I>(predicate: (i: I) => boolean): LazyIterator<I>;
 ```
+
 - `predicate: (i: I) => boolean` - function which will be called on each element of the `LazyIterator`, and yield elements until it returns `false`.
 - Returns the `LazyIterator` which yields elements before first `false` from `predicate` invokation.
 
@@ -936,16 +973,22 @@ This function is, in some sense, the opposite of [`LazyIterator#zip`](#lazyitera
 ```typescript
 function unzip<A, B>(this: LazyIterator<[A, B]>): [A[], B[]];
 ```
-- `this: LazyIterator<[A, B]>` - the `LazyIterator` which will be an context of the function should contain pair(array with two elements) as element. 
+
+- `this: LazyIterator<[A, B]>` - the `LazyIterator` which will be an context of the function should contain pair(array with two elements) as element.
 - Returns two arrays: first contains elements from the left elements of the pairs, and second contains elements from the right elements.
 
 Example:
 
 ```typescript
-const iterator = LazyIterator.from([[1, 2], [3, 4], [5, 6], [7, 8]]);
+const iterator = LazyIterator.from([
+  [1, 2],
+  [3, 4],
+  [5, 6],
+  [7, 8]
+]);
 const [odd, even] = iterator.unzip();
-odd // [1, 3, 5, 7]
-even // [2, 4, 6, 8]
+odd; // [1, 3, 5, 7]
+even; // [2, 4, 6, 8]
 ```
 
 #### `LazyIterator.zip`
@@ -955,6 +998,7 @@ even // [2, 4, 6, 8]
 ```typescript
 function zip<I, T>(other: LazyIterator<T>): LazyIterator<[I, T]>;
 ```
+
 - `other: LazyIterator<T>` - the `LazyIterator` which elements will be the right element of each yielded pair(array with two elements).
 - Returns `LazyIterator` that will iterate over two other `LazyIterator`s, returning a pair(array with two elements) where the first element comes from the first `LazyIterator` (which was context for the method), and the second element comes from the second `LazyIterator` (which came from argument).
 
@@ -965,8 +1009,8 @@ const iterator1 = LazyIterator.from([1, 3, 5, 7]);
 const iterator2 = LazyIterator.from([2, 4, 6, 8]);
 const iterator3 = LazyIterator.from([15]);
 
-const zipped1 = iterator1.zip(iterator2)
-const zipped2 = iterator1.zip(iterator3)
+const zipped1 = iterator1.zip(iterator2);
+const zipped2 = iterator1.zip(iterator3);
 
 for (const a of zipped1) console.log(a);
 // [1, 2]
@@ -985,6 +1029,7 @@ Pick items for `LazyIterator` by mask which will be provided as argument.
 ```typescript
 function compress<I>(mask: number[] | boolean[]): LazyIterator<I>;
 ```
+
 - `mask: boolean[] | number[]` - mask which determine which elements will be yielded by new `LazyIterator`.
 - Returns `LazyIterator` that filters elements from data returning only those that have a corresponding element in selectors that evaluates to true. Stops when either the data or selectors iterables has been exhausted.
 
@@ -1015,7 +1060,8 @@ Return successive permutations of elements in the iterable.
 ```typescript
 function permutations<I>(): LazyIterator<[I, I]>;
 ```
-- Returns `LazyIterator` that yield pair (array with two elements) which contains combination of each elements. 
+
+- Returns `LazyIterator` that yield pair (array with two elements) which contains combination of each elements.
 
 Example:
 
@@ -1039,6 +1085,7 @@ Create `LazyIterator` without undefined elements.
 ```typescript
 function compact<I>(this: LazyIterator<I | undefined>): LazyIterator<I>;
 ```
+
 - Returns `LazyIterator` that contains only non-undefined elements.
 
 Example:
@@ -1059,18 +1106,20 @@ for (const a of compacted) console.log(a);
 
 Tests if any element of the `LazyIterator` matches provided element.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function contains<I>(elem: I): boolean;
 ```
+
 - Returns `LazyIterator` that contains only non-undefined elements.
 
-*Warrning*: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function contains<I>(elem: I): boolean;
 ```
+
 - `elem: I` - element which are testing for existing in the `LazyIterator`.
 - Returns `true` if `elem` is existed in `LazyIterator` then return `true` otherwise `false`
 
@@ -1078,19 +1127,20 @@ Example:
 
 ```typescript
 const iterator = LazyIterator.from([1, 2, 3, 4, 5]);
-iterator.contains(2) // true
-iterator.contains(7) // false
+iterator.contains(2); // true
+iterator.contains(7); // false
 ```
 
 #### `LazyIterator.unique`
 
 Create `LazyIterator` which contains only unique elements.
 
-*Warrning*: Be careful, iterator should save previous elements for the computation. So it create memmory leak with large `LazyIterator`.
+_Warrning_: Be careful, iterator should save previous elements for the computation. So it create memmory leak with large `LazyIterator`.
 
 ```typescript
 function unique<I>(): LazyIterator<I>;
 ```
+
 - Returns `LazyIterator` that contains only unique elements.
 
 ```typescript
@@ -1102,7 +1152,7 @@ for (const a of unique) console.log(a);
 // 2
 // 3
 // 4
-// 12 
+// 12
 // 6
 // 5
 ```
@@ -1114,25 +1164,27 @@ Check `LazyIterator` for emptiness.
 ```typescript
 function isEmpty(): boolean;
 ```
+
 - Returns `true` if `LazyIterator` doesn't contain any item otherwise `false`.
 
 ```typescript
 const iterator1 = LazyIterator.from([1, 2, 3, 4, 5]);
 const iterator2 = LazyIterator.from([]);
 
-iterator1.isEmpty() // false
-iterator2.isEmpty() // true
+iterator1.isEmpty(); // false
+iterator2.isEmpty(); // true
 ```
 
 #### `LazyIterator.except`
 
 Create `LazyIterator` without element which was contained in provided `LazyIterator`.
 
-*Warrning*: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function except<I>(other: LazyIterator<I>): LazyIterator<I>;
 ```
+
 - `other: LazyIterator<I>` - `LazyIterator` whith element which should be excluded from `this` `LazyIterator`
 - Returns `LazyIterator` that doesn't contain elements from `other` `LazyIterator`.
 
@@ -1152,11 +1204,12 @@ for (const a of excepted) console.log(a);
 
 Create `LazyIterator` only with elements which was existed in both `LazyIterator`s.
 
-*Warrning*: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function except<I>(other: LazyIterator<I>): LazyIterator<I>;
 ```
+
 - `other: LazyIterator<I>` - `LazyIterator` whith element which should be existed in `this` `LazyIterator`
 - Returns `LazyIterator` that containss elements from both `other` and `this` `LazyIterator`.
 
@@ -1181,25 +1234,27 @@ Check `LazyIterator` for emptiness.
 ```typescript
 function isEmpty(): boolean;
 ```
+
 - Returns `true` if `LazyIterator` doesn't contain any item otherwise `false`.
 
 ```typescript
 const iterator1 = LazyIterator.from([1, 2, 3, 4, 5]);
 const iterator2 = LazyIterator.from([]);
 
-iterator1.isEmpty() // false
-iterator2.isEmpty() // true
+iterator1.isEmpty(); // false
+iterator2.isEmpty(); // true
 ```
 
 #### `LazyIterator.except`
 
 Convert `LazyIterator` without element which was contained in provided `LazyIterator`.
 
-*Warrning*: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warrning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function except<I>(other: LazyIterator<I>): LazyIterator<I>;
 ```
+
 - Returns `Iterable` object which contains all `LazyIterator` elements.
 
 ```typescript
@@ -1208,8 +1263,8 @@ const iterator1 = LazyIterator.from([1, 2, 3, 4, 5], function* (lazy) {
 });
 const iterator2 = LazyIterator.from([1, 2, 3, 4, 5]);
 
-iterator1.collect() // iterable object
-iterator2.collect() // array [1, 2, 3, 4, 5]
+iterator1.collect(); // iterable object
+iterator2.collect(); // array [1, 2, 3, 4, 5]
 ```
 
 #### `LazyIterator.prepend`
@@ -1219,6 +1274,7 @@ Create `LazyIterator` with new element at the head position.
 ```typescript
 function prepend<I>(item: I): LazyIterator<I>;
 ```
+
 - `item: I` - element which should be added at the head position of `LazyIterator`
 - Returns `LazyIterator` which contains `item` at the head position.
 
@@ -1242,6 +1298,7 @@ Create `LazyIterator` with new element in the end.
 ```typescript
 function append<I>(item: I): LazyIterator<I>;
 ```
+
 - `item: I` - element which should be added at the end position of `LazyIterator`
 - Returns `LazyIterator` which contains `item` at the end position.
 
@@ -1261,11 +1318,12 @@ for (const a of iterator2) console.log(a);
 #### `LazyIterator.collect`
 
 Convert `LazyIterator` in initial iterable object or array.
-If initial iterable object had `fromIterator` method  or `fromIterator` was provided as second argument of [`LazyIterator.from`](#lazyiteratorfrom) function `fromIterator` will be called for convertion, otherwise convert `LazyIterator` in array.
+If initial iterable object had `fromIterator` method or `fromIterator` was provided as second argument of [`LazyIterator.from`](#lazyiteratorfrom) function `fromIterator` will be called for convertion, otherwise convert `LazyIterator` in array.
 
 ```typescript
 function collect<I>(): Iterable<I>;
 ```
+
 - Returns `Iterable` object which contains all `LazyIterator` elements.
 
 ```typescript
@@ -1274,8 +1332,8 @@ const iterator1 = LazyIterator.from([1, 2, 3, 4, 5], function* (lazy) {
 });
 const iterator2 = LazyIterator.from([1, 2, 3, 4, 5]);
 
-iterator1.collect() // iterable object
-iterator2.collect() // array [1, 2, 3, 4, 5]
+iterator1.collect(); // iterable object
+iterator2.collect(); // array [1, 2, 3, 4, 5]
 ```
 
 ## License
