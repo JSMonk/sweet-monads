@@ -1,5 +1,5 @@
 import * as fc from 'fast-check';
-import Result from '@sweet-monads/Result';
+import Result from '@sweet-monads/result';
 
 describe('Result', () => {
 

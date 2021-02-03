@@ -1,10 +1,6 @@
-import { ClassImplements } from "@sweet-monads/interfaces";
 import type {
   Monad,
-  Alternative,
-  AsyncChainable,
-  MonadConstructor,
-  ApplicativeConstructor,
+  Alternative
 } from "@sweet-monads/interfaces";
 
 const enum ResultType {
@@ -20,9 +16,6 @@ function isWrappedFunction<A, B, L>(
   return !m.isInitial() && !m.isPending() && typeof m.value === "function";
 }
 
-@ClassImplements<MonadConstructor>()
-@ClassImplements<ApplicativeConstructor>()
-@ClassImplements<AsyncChainable<Result<any, any>>>()
 export default class ResultConstructor<F, S, T extends ResultType = ResultType> implements Monad<S>, Alternative<T>  {
     static chain<F, R, NL, NR>(f: (v: R) => Promise<Result<NL, NR>>) {
         return (m: Result<F, R>): Promise<Result<F | NL, NR>> => m.asyncChain(f);
