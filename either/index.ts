@@ -1,10 +1,10 @@
-import { ClassImplements } from "@sweet-monads/interfaces";
+// import { ClassImplements } from "@sweet-monads/interfaces";
 import type {
   Monad,
-  Alternative,
-  AsyncChainable,
-  MonadConstructor,
-  ApplicativeConstructor
+  Alternative
+  // AsyncChainable,
+  // MonadConstructor,
+  // ApplicativeConstructor,
 } from "@sweet-monads/interfaces";
 
 const enum EitherType {
@@ -16,9 +16,10 @@ function isWrappedFunction<A, B, L>(m: Either<L, A> | Either<L, (a: A) => B>): m
   return typeof m.value === "function";
 }
 
-@ClassImplements<MonadConstructor>()
-@ClassImplements<ApplicativeConstructor>()
-@ClassImplements<AsyncChainable<Either<any, any>>>()
+// TODO: Write AST converter to eliminate these checks from the runtime
+// @ClassImplements<MonadConstructor>()
+// @ClassImplements<ApplicativeConstructor>()
+// @ClassImplements<AsyncChainable<Either<any, any>>>()
 class EitherConstructor<L, R, T extends EitherType = EitherType> implements Monad<R>, Alternative<T> {
   static chain<L, R, NL, NR>(f: (v: R) => Promise<Either<NL, NR>>) {
     return (m: Either<L, R>): Promise<Either<L | NL, NR>> => m.asyncChain(f);

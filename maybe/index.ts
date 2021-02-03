@@ -1,10 +1,10 @@
-import { ClassImplements } from "@sweet-monads/interfaces";
+// import { ClassImplements } from "@sweet-monads/interfaces";
 import type {
   Monad,
-  Alternative,
-  AsyncChainable,
-  MonadConstructor,
-  ApplicativeConstructor
+  Alternative
+  // AsyncChainable,
+  // MonadConstructor,
+  // ApplicativeConstructor,
 } from "@sweet-monads/interfaces";
 
 const enum MaybeState {
@@ -16,9 +16,10 @@ function isWrappedFunction<A, B>(m: Maybe<A> | Maybe<(a: A) => B>): m is Maybe<(
   return typeof m.value === "function";
 }
 
-@ClassImplements<MonadConstructor>()
-@ClassImplements<ApplicativeConstructor>()
-@ClassImplements<AsyncChainable<Maybe<any>>>()
+// TODO: Write AST converter to eliminate these checks from the runtime
+// @ClassImplements<MonadConstructor>()
+// @ClassImplements<ApplicativeConstructor>()
+// @ClassImplements<AsyncChainable<Maybe<any>>>()
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState> implements Monad<T>, Alternative<T> {
   static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
     return (m: Maybe<A>): Promise<Maybe<B>> => m.asyncChain(f);
@@ -43,7 +44,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
   static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9>(
     values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>, Maybe<V5>, Maybe<V6>, Maybe<V7>, Maybe<V8>, Maybe<V9>]
   ): Maybe<[V1, V2, V3, V4, V5, V6, V7, V8, V9]>;
-  static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9, V10>(
+  static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9, L10, V10>(
     values: [
       Maybe<V1>,
       Maybe<V2>,
