@@ -8,5 +8,4 @@ export interface Monad<T> extends Applicative<T> {
 
 export interface MonadConstructor extends ApplicativeConstructor {
   from<I>(item: I): Monad<I>;
-
 }
