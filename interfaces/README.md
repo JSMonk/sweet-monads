@@ -212,19 +212,22 @@ expect(mx.chain(x => f(x).chain(g))).toEqual(mx.chain(f).chain(g));
 ### AsyncChainable
 
 Static interface which give an ability to use `Monad` more comfortable with `Promise`.
+
 > Should be used with `ClassImplements` decorator
 
 Methods:
 
 ##### `AsyncChainable<M>#chain`
+
 ```typescript
-function chain<A, B>(f: (v: A) => Promise<M & Monad<B>>): (m: M & Monad<A>) => Promise<M & Monad<B>>
+function chain<A, B>(f: (v: A) => Promise<M & Monad<B>>): (m: M & Monad<A>) => Promise<M & Monad<B>>;
 ```
 
 #### Usage
+
 ```typescript
 @ClassImplements<IdentityMonad<unknown>>
-class IdentityMonad<T> extends Monad<T> { /*...*/ } 
+class IdentityMonad<T> extends Monad<T> { /*...*/ }
 
 declare function getAsyncValue(): Promise<IdentityMonad<number>>
 declare function sendToServer(value: number): Promise<IdentityMonad<void>>
