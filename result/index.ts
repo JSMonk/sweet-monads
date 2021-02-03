@@ -1,7 +1,4 @@
-import type {
-  Monad,
-  Alternative
-} from "@sweet-monads/interfaces";
+import type { Monad, Alternative } from "@sweet-monads/interfaces";
 
 const enum ResultType {
   Initial = "Initial",
@@ -10,343 +7,167 @@ const enum ResultType {
   Failure = "Failure"
 }
 
-function isWrappedFunction<A, B, L>(
-  m: Result<L, A> | Result<L, (a: A) => B>
-): m is Result<L, (a: A) => B> {
+function isWrappedFunction<A, B, L>(m: Result<L, A> | Result<L, (a: A) => B>): m is Result<L, (a: A) => B> {
   return !m.isInitial() && !m.isPending() && typeof m.value === "function";
 }
 
-export default class ResultConstructor<F, S, T extends ResultType = ResultType> implements Monad<S>, Alternative<T>  {
-    static chain<F, R, NL, NR>(f: (v: R) => Promise<Result<NL, NR>>) {
-        return (m: Result<F, R>): Promise<Result<F | NL, NR>> => m.asyncChain(f);
+export default class ResultConstructor<F, S, T extends ResultType = ResultType> implements Monad<S>, Alternative<T> {
+  static chain<F, R, NL, NR>(f: (v: R) => Promise<Result<NL, NR>>) {
+    return (m: Result<F, R>): Promise<Result<F | NL, NR>> => m.asyncChain(f);
+  }
+
+  static mergeInOne<F1, S1>(values: [Result<F1, S1>]): Result<F1, [S1]>;
+  static mergeInOne<F1, S1, F2, S2>(values: [Result<F1, S1>, Result<F2, S2>]): Result<F1 | F2, [S1, S2]>;
+  static mergeInOne<F1, S1, F2, S2, F3, S3>(
+    values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>]
+  ): Result<F1 | F2 | F3, [S1, S2, S3]>;
+  static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4>(
+    values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>, Result<F4, S4>]
+  ): Result<F1 | F2 | F3 | F4, [S1, S2, S3, S4]>;
+  static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5>(
+    values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>, Result<F4, S4>, Result<F5, S5>]
+  ): Result<F1 | F2 | F3 | F4 | F5, [S1, S2, S3, S4, S5]>;
+  static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6>(
+    values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>, Result<F4, S4>, Result<F5, S5>, Result<F6, S6>]
+  ): Result<F1 | F2 | F3 | F4 | F5 | F6, [S1, S2, S3, S4, S5, S6]>;
+  static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7>(
+    values: [
+      Result<F1, S1>,
+      Result<F2, S2>,
+      Result<F3, S3>,
+      Result<F4, S4>,
+      Result<F5, S5>,
+      Result<F6, S6>,
+      Result<F7, S7>
+    ]
+  ): Result<F1 | F2 | F3 | F4 | F5 | F6 | F7, [S1, S2, S3, S4, S5, S6, S7]>;
+  static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7, F8, S8>(
+    values: [
+      Result<F1, S1>,
+      Result<F2, S2>,
+      Result<F3, S3>,
+      Result<F4, S4>,
+      Result<F5, S5>,
+      Result<F6, S6>,
+      Result<F7, S7>,
+      Result<F8, S8>
+    ]
+  ): Result<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8, [S1, S2, S3, S4, S5, S6, S7, S8]>;
+  static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7, F8, S8, F9, S9>(
+    values: [
+      Result<F1, S1>,
+      Result<F2, S2>,
+      Result<F3, S3>,
+      Result<F4, S4>,
+      Result<F5, S5>,
+      Result<F6, S6>,
+      Result<F7, S7>,
+      Result<F8, S8>,
+      Result<F9, S9>
+    ]
+  ): Result<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9, [S1, S2, S3, S4, S5, S6, S7, S8, S9]>;
+  static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7, F8, S8, F9, S9, F10, S10>(
+    values: [
+      Result<F1, S1>,
+      Result<F2, S2>,
+      Result<F3, S3>,
+      Result<F4, S4>,
+      Result<F5, S5>,
+      Result<F6, S6>,
+      Result<F7, S7>,
+      Result<F8, S8>,
+      Result<F9, S9>,
+      Result<F10, S10>
+    ]
+  ): Result<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9 | F10, [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10]>;
+  static mergeInOne<L, R>(Result: Array<Result<L, R>>): Result<L, R[]>;
+  static mergeInOne(results: Array<Result<unknown, unknown>>) {
+    return results.reduce(
+      (res: Result<unknown, Array<unknown>>, v) => v.chain(v => res.map(res => res.concat([v]))),
+      ResultConstructor.success<unknown, Array<unknown>>([])
+    );
+  }
+
+  static merge = ResultConstructor.mergeInOne;
+
+  static mergeInMany<F1, S1>(values: [Result<F1, S1>]): Result<Array<F1>, [S1]>;
+  static mergeInMany<F1, S1, F2, S2>(values: [Result<F1, S1>, Result<F2, S2>]): Result<Array<F1 | F2>, [S1, S2]>;
+  static mergeInMany<F1, S1, F2, S2, F3, S3>(
+    values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>]
+  ): Result<Array<F1 | F2 | F3>, [S1, S2, S3]>;
+  static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4>(
+    values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>, Result<F4, S4>]
+  ): Result<Array<F1 | F2 | F3 | F4>, [S1, S2, S3, S4]>;
+  static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5>(
+    values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>, Result<F4, S4>, Result<F5, S5>]
+  ): ResultConstructor<Array<F1 | F2 | F3 | F4 | F5>, [S1, S2, S3, S4, S5]>;
+  static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6>(
+    values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>, Result<F4, S4>, Result<F5, S5>, Result<F6, S6>]
+  ): Result<Array<F1 | F2 | F3 | F4 | F5 | F6>, [S1, S2, S3, S4, S5, S6]>;
+  static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7>(
+    values: [
+      Result<F1, S1>,
+      Result<F2, S2>,
+      Result<F3, S3>,
+      Result<F4, S4>,
+      Result<F5, S5>,
+      Result<F6, S6>,
+      Result<F7, S7>
+    ]
+  ): Result<Array<F1 | F2 | F3 | F4 | F5 | F6 | F7>, [S1, S2, S3, S4, S5, S6, S7]>;
+  static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7, F8, S8>(
+    values: [
+      Result<F1, S1>,
+      Result<F2, S2>,
+      Result<F3, S3>,
+      Result<F4, S4>,
+      Result<F5, S5>,
+      Result<F6, S6>,
+      Result<F7, S7>,
+      Result<F8, S8>
+    ]
+  ): ResultConstructor<Array<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8>, [S1, S2, S3, S4, S5, S6, S7, S8]>;
+  static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7, F8, S8, F9, S9>(
+    values: [
+      Result<F1, S1>,
+      Result<F2, S2>,
+      Result<F3, S3>,
+      Result<F4, S4>,
+      Result<F5, S5>,
+      Result<F6, S6>,
+      Result<F7, S7>,
+      Result<F8, S8>,
+      Result<F9, S9>
+    ]
+  ): Result<Array<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9>, [S1, S2, S3, S4, S5, S6, S7, S8, S9]>;
+  static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7, F8, S8, F9, S9, F10, S10>(
+    values: [
+      Result<F1, S1>,
+      Result<F2, S2>,
+      Result<F3, S3>,
+      Result<F4, S4>,
+      Result<F5, S5>,
+      Result<F6, S6>,
+      Result<F7, S7>,
+      Result<F8, S8>,
+      Result<F9, S9>,
+      Result<F10, S10>
+    ]
+  ): Result<Array<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9 | F10>, [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10]>;
+  static mergeInMany<L, R>(Result: Array<Result<L, R>>): Result<L[], R[]>;
+  static mergeInMany(Results: Array<Result<unknown, unknown>>) {
+    return Results.reduce((res: ResultConstructor<Array<unknown>, Array<unknown>>, v): ResultConstructor<
+      Array<unknown>,
+      Array<unknown>
+    > => {
+      if (res.isFailure()) {
+        return v.isFailure() ? ResultConstructor.failure(res.value.concat([v.value])) : res;
       }
-    
-      static mergeInOne<F1, S1>(values: [Result<F1, S1>]): Result<F1, [S1]>;
-      static mergeInOne<F1, S1, F2, S2>(
-        values: [Result<F1, S1>, Result<F2, S2>]
-      ): Result<F1 | F2, [S1, S2]>;
-      static mergeInOne<F1, S1, F2, S2, F3, S3>(
-        values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>]
-      ): Result<F1 | F2 | F3, [S1, S2, S3]>;
-      static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4>(
-        values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>, Result<F4, S4>]
-      ): Result<F1 | F2 | F3 | F4, [S1, S2, S3, S4]>;
-      static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5>(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>
-        ]
-      ): Result<F1 | F2 | F3 | F4 | F5, [S1, S2, S3, S4, S5]>;
-      static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6>(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>
-        ]
-      ): Result<F1 | F2 | F3 | F4 | F5 | F6, [S1, S2, S3, S4, S5, S6]>;
-      static mergeInOne<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7>(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>,
-          Result<F7, S7>
-        ]
-      ): Result<F1 | F2 | F3 | F4 | F5 | F6 | F7, [S1, S2, S3, S4, S5, S6, S7]>;
-      static mergeInOne<
-        F1,
-        S1,
-        F2,
-        S2,
-        F3,
-        S3,
-        F4,
-        S4,
-        F5,
-        S5,
-        F6,
-        S6,
-        F7,
-        S7,
-        F8,
-        S8
-      >(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>,
-          Result<F7, S7>,
-          Result<F8, S8>
-        ]
-      ): Result<
-        F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8,
-        [S1, S2, S3, S4, S5, S6, S7, S8]
-      >;
-      static mergeInOne<
-        F1,
-        S1,
-        F2,
-        S2,
-        F3,
-        S3,
-        F4,
-        S4,
-        F5,
-        S5,
-        F6,
-        S6,
-        F7,
-        S7,
-        F8,
-        S8,
-        F9,
-        S9
-      >(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>,
-          Result<F7, S7>,
-          Result<F8, S8>,
-          Result<F9, S9>
-        ]
-      ): Result<
-        F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9,
-        [S1, S2, S3, S4, S5, S6, S7, S8, S9]
-      >;
-      static mergeInOne<
-        F1,
-        S1,
-        F2,
-        S2,
-        F3,
-        S3,
-        F4,
-        S4,
-        F5,
-        S5,
-        F6,
-        S6,
-        F7,
-        S7,
-        F8,
-        S8,
-        F9,
-        S9,
-        F10,
-        S10
-      >(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>,
-          Result<F7, S7>,
-          Result<F8, S8>,
-          Result<F9, S9>,
-          Result<F10, S10>
-        ]
-      ): Result<
-        F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9 | F10,
-        [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10]
-      >;
-      static mergeInOne<L, R>(Result: Array<Result<L, R>>): Result<L, R[]>;
-      static mergeInOne(results: Array<Result<unknown, unknown>>) {
-        return results.reduce(
-          (res: Result<unknown, Array<unknown>>, v) =>
-            v.chain((v) => res.map((res) => res.concat([v]))),
-          ResultConstructor.success<unknown, Array<unknown>>([])
-        );
-      }
-    
-      static merge = ResultConstructor.mergeInOne;
-    
-      static mergeInMany<F1, S1>(values: [Result<F1, S1>]): Result<Array<F1>, [S1]>;
-      static mergeInMany<F1, S1, F2, S2>(
-        values: [Result<F1, S1>, Result<F2, S2>]
-      ): Result<Array<F1 | F2>, [S1, S2]>;
-      static mergeInMany<F1, S1, F2, S2, F3, S3>(
-        values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>]
-      ): Result<Array<F1 | F2 | F3>, [S1, S2, S3]>;
-      static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4>(
-        values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>, Result<F4, S4>]
-      ): Result<Array<F1 | F2 | F3 | F4>, [S1, S2, S3, S4]>;
-      static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5>(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>
-        ]
-      ): ResultConstructor<Array<F1 | F2 | F3 | F4 | F5>, [S1, S2, S3, S4, S5]>;
-      static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6>(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>
-        ]
-      ): Result<Array<F1 | F2 | F3 | F4 | F5 | F6>, [S1, S2, S3, S4, S5, S6]>;
-      static mergeInMany<F1, S1, F2, S2, F3, S3, F4, S4, F5, S5, F6, S6, F7, S7>(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>,
-          Result<F7, S7>
-        ]
-      ): Result<
-        Array<F1 | F2 | F3 | F4 | F5 | F6 | F7>,
-        [S1, S2, S3, S4, S5, S6, S7]
-      >;
-      static mergeInMany<
-        F1,
-        S1,
-        F2,
-        S2,
-        F3,
-        S3,
-        F4,
-        S4,
-        F5,
-        S5,
-        F6,
-        S6,
-        F7,
-        S7,
-        F8,
-        S8
-      >(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>,
-          Result<F7, S7>,
-          Result<F8, S8>
-        ]
-      ): ResultConstructor<
-        Array<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8>,
-        [S1, S2, S3, S4, S5, S6, S7, S8]
-      >;
-      static mergeInMany<
-        F1,
-        S1,
-        F2,
-        S2,
-        F3,
-        S3,
-        F4,
-        S4,
-        F5,
-        S5,
-        F6,
-        S6,
-        F7,
-        S7,
-        F8,
-        S8,
-        F9,
-        S9
-      >(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>,
-          Result<F7, S7>,
-          Result<F8, S8>,
-          Result<F9, S9>
-        ]
-      ): Result<
-        Array<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9>,
-        [S1, S2, S3, S4, S5, S6, S7, S8, S9]
-      >;
-      static mergeInMany<
-        F1,
-        S1,
-        F2,
-        S2,
-        F3,
-        S3,
-        F4,
-        S4,
-        F5,
-        S5,
-        F6,
-        S6,
-        F7,
-        S7,
-        F8,
-        S8,
-        F9,
-        S9,
-        F10,
-        S10
-      >(
-        values: [
-          Result<F1, S1>,
-          Result<F2, S2>,
-          Result<F3, S3>,
-          Result<F4, S4>,
-          Result<F5, S5>,
-          Result<F6, S6>,
-          Result<F7, S7>,
-          Result<F8, S8>,
-          Result<F9, S9>,
-          Result<F10, S10>
-        ]
-      ): Result<
-        Array<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9 | F10>,
-        [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10]
-      >;
-      static mergeInMany<L, R>(Result: Array<Result<L, R>>): Result<L[], R[]>;
-      static mergeInMany(Results: Array<Result<unknown, unknown>>) {
-        return Results.reduce(
-          (
-            res: ResultConstructor<Array<unknown>, Array<unknown>>,
-            v
-          ): ResultConstructor<Array<unknown>, Array<unknown>> => {
-            if (res.isFailure()) {
-              return v.isFailure()
-                ? ResultConstructor.failure(res.value.concat([v.value]))
-                : res;
-            }
-            return v.isFailure()
-              ? ResultConstructor.failure([v.value])
-              : (v.chain((v) => res.map((res) => [...res, v])) as ResultConstructor<
-                  Array<unknown>,
-                  Array<unknown>
-                >);
-          },
-          ResultConstructor.success<Array<unknown>, Array<unknown>>([])
-        );
-      }
+      return v.isFailure()
+        ? ResultConstructor.failure([v.value])
+        : (v.chain(v => res.map(res => [...res, v])) as ResultConstructor<Array<unknown>, Array<unknown>>);
+    }, ResultConstructor.success<Array<unknown>, Array<unknown>>([]));
+  }
 
   static from<T>(v: T) {
     return this.success(v);
@@ -368,12 +189,10 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
     return new ResultConstructor<undefined, unknown, ResultType.Pending>(ResultType.Pending, undefined);
   }
 
-
   private constructor(
     private readonly type: T,
     public readonly value: T extends ResultType.Failure ? F : T extends ResultType.Success ? S : undefined
-  ) {
-  }
+  ) {}
 
   isFailure(): this is ResultConstructor<F, S, ResultType.Failure> {
     return this.type === ResultType.Failure;
@@ -392,7 +211,7 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
   }
 
   join<F1, F2, S>(this: Result<F1, Result<F2, S>>): Result<F1 | F2, S> {
-    return this.chain((x) => x);
+    return this.chain(x => x);
   }
 
   mapSuccess<T>(f: (r: S) => T): Result<F, T> {
@@ -417,7 +236,7 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
     if (this.isFailure()) {
       return Promise.resolve(ResultConstructor.failure<F, T>(this.value as F));
     }
-    return f(this.value as S).then((v) => ResultConstructor.success<F, T>(v));
+    return f(this.value as S).then(v => ResultConstructor.success<F, T>(v));
   }
 
   apply<A, B>(this: Result<F, (a: A) => B>, arg: Result<F, A>): Result<F, B>;
@@ -451,9 +270,7 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
   ): Promise<Result<F, B>>;
   asyncApply<A, B>(
     this: Result<F, Promise<A>> | Result<F, (a: Promise<A> | A) => Promise<B>>,
-    argOrFn:
-      | Result<F, Promise<A>>
-      | Result<F, (a: Promise<A> | A) => Promise<B>>
+    argOrFn: Result<F, Promise<A>> | Result<F, (a: Promise<A> | A) => Promise<B>>
   ): Promise<Result<F, B>> {
     if (this.isFailure()) {
       return Promise.resolve(ResultConstructor.failure<F, B>(this.value as F));
@@ -462,15 +279,10 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
       return Promise.resolve(ResultConstructor.failure<F, B>(argOrFn.value as F));
     }
     if (isWrappedFunction(this)) {
-      return (argOrFn as Result<F, Promise<A>>).asyncMap(
-        this.value as (a: A | Promise<A>) => Promise<B>
-      );
+      return (argOrFn as Result<F, Promise<A>>).asyncMap(this.value as (a: A | Promise<A>) => Promise<B>);
     }
     if (isWrappedFunction(argOrFn)) {
-      return (argOrFn as Result<
-        F,
-        (a: Promise<A> | A) => Promise<B>
-      >).asyncApply(this as Result<F, Promise<A>>);
+      return (argOrFn as Result<F, (a: Promise<A> | A) => Promise<B>>).asyncApply(this as Result<F, Promise<A>>);
     }
     throw new Error("Some of the arguments should be a function");
   }
@@ -482,9 +294,7 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
     return f(this.value as S);
   }
 
-  asyncChain<A, B>(
-    f: (r: S) => Promise<Result<A, B>>
-  ): Promise<Result<A |F, B>> {
+  asyncChain<A, B>(f: (r: S) => Promise<Result<A, B>>): Promise<Result<A | F, B>> {
     if (this.isFailure()) {
       return Promise.resolve(ResultConstructor.failure<F, B>(this.value));
     }
@@ -502,16 +312,7 @@ export type Result<F, S> =
   | ResultConstructor<F, S, ResultType.Success>
   | ResultConstructor<F, S, ResultType.Failure>;
 
-export const {
-  merge,
-  mergeInOne,
-  mergeInMany,
-  failure,
-  success,
-  from,
-  chain,
-} = ResultConstructor;
+export const { merge, mergeInOne, mergeInMany, failure, success, from, chain } = ResultConstructor;
 
-export const isResult = <F, S>(
-  value: unknown | Result<F, S>
-): value is Result<F, S> => value instanceof ResultConstructor;
+export const isResult = <F, S>(value: unknown | Result<F, S>): value is Result<F, S> =>
+  value instanceof ResultConstructor;
