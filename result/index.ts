@@ -11,7 +11,7 @@ function isWrappedFunction<A, B, L>(m: Result<L, A> | Result<L, (a: A) => B>): m
   return !m.isInitial() && !m.isPending() && typeof m.value === "function";
 }
 
-export default class ResultConstructor<F, S, T extends ResultType = ResultType> implements Monad<S>, Alternative<T> {
+class ResultConstructor<F, S, T extends ResultType = ResultType> implements Monad<S>, Alternative<T> {
   static chain<F, R, NL, NR>(f: (v: R) => Promise<Result<NL, NR>>) {
     return (m: Result<F, R>): Promise<Result<F | NL, NR>> => m.asyncChain(f);
   }
@@ -80,10 +80,10 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
       Result<F10, S10>
     ]
   ): Result<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9 | F10, [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10]>;
-  static mergeInOne<L, R>(Result: Array<Result<L, R>>): Result<L, R[]>;
+  static mergeInOne<L, R>(result: Array<Result<L, R>>): Result<L, R[]>;
   static mergeInOne(results: Array<Result<unknown, unknown>>) {
     return results.reduce(
-      (res: Result<unknown, Array<unknown>>, v) => v.chain(v => res.map(res => res.concat([v]))),
+      (acc: Result<unknown, Array<unknown>>, curr) => curr.chain(v => acc.map(arr => arr.concat([v]))),
       ResultConstructor.success<unknown, Array<unknown>>([])
     );
   }
@@ -154,15 +154,12 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
       Result<F10, S10>
     ]
   ): Result<Array<F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8 | F9 | F10>, [S1, S2, S3, S4, S5, S6, S7, S8, S9, S10]>;
-  static mergeInMany<L, R>(Result: Array<Result<L, R>>): Result<L[], R[]>;
-  static mergeInMany(Results: Array<Result<unknown, unknown>>) {
-    return Results.reduce((res: ResultConstructor<Array<unknown>, Array<unknown>>, v): ResultConstructor<
+  static mergeInMany<F, S>(Result: Array<Result<F, S>>): Result<F[], S[]>;
+  static mergeInMany(results: Array<Result<unknown, unknown>>) {
+    return results.reduce((res: ResultConstructor<Array<unknown>, Array<unknown>>, v): ResultConstructor<
       Array<unknown>,
       Array<unknown>
     > => {
-      if (res.isFailure()) {
-        return v.isFailure() ? ResultConstructor.failure(res.value.concat([v.value])) : res;
-      }
       return v.isFailure()
         ? ResultConstructor.failure([v.value])
         : (v.chain(v => res.map(res => [...res, v])) as ResultConstructor<Array<unknown>, Array<unknown>>);
@@ -181,12 +178,12 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
     return new ResultConstructor<T, R, ResultType.Failure>(ResultType.Failure, v);
   }
 
-  static initial(): Result<unknown, unknown> {
-    return new ResultConstructor<unknown, unknown, ResultType.Initial>(ResultType.Initial, undefined);
+  static initial<F = undefined, T = unknown>(): Result<F, T> {
+    return new ResultConstructor<F, T, ResultType.Initial>(ResultType.Initial, undefined);
   }
 
-  static pending(): Result<unknown, unknown> {
-    return new ResultConstructor<undefined, unknown, ResultType.Pending>(ResultType.Pending, undefined);
+  static pending<F = undefined, T = unknown>(): Result<F, T> {
+    return new ResultConstructor<F, T, ResultType.Pending>(ResultType.Pending, undefined);
   }
 
   private constructor(
@@ -222,10 +219,22 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
     if (this.isFailure()) {
       return ResultConstructor.failure<T, S>(f(this.value as F));
     }
+    if (this.isInitial()) {
+      return new ResultConstructor<T, S, ResultType.Initial>(ResultType.Initial, undefined);
+    }
+    if (this.isPending()) {
+      return new ResultConstructor<T, S, ResultType.Pending>(ResultType.Pending, undefined);
+    }
     return ResultConstructor.success<T, S>(this.value as S);
   }
 
   map<T>(f: (r: S) => T): Result<F, T> {
+    if (this.isInitial()) {
+      return ResultConstructor.initial();
+    }
+    if (this.isPending()) {
+      return ResultConstructor.pending();
+    }
     if (this.isFailure()) {
       return ResultConstructor.failure<F, T>(this.value as F);
     }
@@ -288,17 +297,40 @@ export default class ResultConstructor<F, S, T extends ResultType = ResultType> 
   }
 
   chain<A, B>(f: (r: S) => Result<A, B>): Result<A | F, B> {
-    if (this.isFailure()) {
+    if (this.isInitial()) {
+      return ResultConstructor.initial<A, B>();
+    }
+    const next = f(this.value as S);
+    if (next.isInitial()) {
+      return ResultConstructor.initial<A, B>();
+    }
+
+    if (this.isPending() || next.isPending()) {
+      return ResultConstructor.pending<A, B>();
+    }
+    if (this.isFailure() || next.isFailure()) {
       return ResultConstructor.failure<F, B>(this.value as F);
     }
-    return f(this.value as S);
+    return next;
   }
 
   asyncChain<A, B>(f: (r: S) => Promise<Result<A, B>>): Promise<Result<A | F, B>> {
-    if (this.isFailure()) {
-      return Promise.resolve(ResultConstructor.failure<F, B>(this.value));
+    if (this.isInitial()) {
+      return Promise.resolve(ResultConstructor.initial<A, B>());
     }
-    return f(this.value as S);
+    return f(this.value as S).then(p => {
+      if (p.isInitial()) {
+        return ResultConstructor.initial<A, B>();
+      }
+
+      if (this.isPending() || p.isPending()) {
+        return ResultConstructor.pending<A, B>();
+      }
+
+      if (this.isFailure() || p.isFailure()) {
+        return ResultConstructor.failure<F, B>(this.value as F);
+      }
+    });
   }
 
   or(x: Result<F, S>) {
@@ -312,7 +344,7 @@ export type Result<F, S> =
   | ResultConstructor<F, S, ResultType.Success>
   | ResultConstructor<F, S, ResultType.Failure>;
 
-export const { merge, mergeInOne, mergeInMany, failure, success, from, chain } = ResultConstructor;
+export const { merge, mergeInOne, mergeInMany, failure, success, from, chain, initial, pending } = ResultConstructor;
 
 export const isResult = <F, S>(value: unknown | Result<F, S>): value is Result<F, S> =>
   value instanceof ResultConstructor;
