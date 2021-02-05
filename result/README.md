@@ -52,12 +52,11 @@ function chain<L, R, NL, NR>(fn: (v: R) => Promise<Result<NL, NR>>): (m: Result<
 Example:
 
 ```typescript
-const getValue = async () => success(1);
-
-// Result<TypeError, success>
+const getValue = async () => success<Error, number>(1);
+// Result<Error | TypeError, number>
 const result = await getValue()
-  .then(Result.chain(async v => success(v * 2)))
-  .then(Result.chain(async v => failure(new TypeError("Unexpected"))));
+  .then(chain(async v => success<Error, number>(v * 2)))
+  .then(chain(async g => failure<TypeError, number>(new TypeError("Unexpected"))));
 ```
 
 #### `merge`
@@ -77,12 +76,16 @@ function merge<F1, S1, F2, S2, F3, S3>(
 Example:
 
 ```typescript
-const v1 = success<TypeError, number>(2); // Result<TypeError, number>.Success
-const v2 = success<ReferenceError, string>("test"); // Result<ReferenceError, string>.Success
-const v3 = failure<Error, boolean>(new Error()); // Result<Error, boolean>.Failure
+const v1 = initial<TypeError, number>(); // Result<TypeError, number>.Initial
+const v2 = pending<TypeError, number>(); // Result<TypeError, number>.Pending
+const v3 = success<TypeError, number>(2); // Result<TypeError, number>.Success
+const v4 = success<ReferenceError, string>("test"); // Result<ReferenceError, string>.Success
+const v5 = failure<Error, boolean>(new Error()); // Result<Error, boolean>.Failure
 
-merge([v1, v2]); // Result<TypeError | ReferenceError, [number, string]>.Success
-merge([v1, v2, v3]); // Result<TypeError | ReferenceError | Error, [number, string, boolean]>.Failure
+const r1 = merge([v1, v2]); // Result<TypeError, [number, number]>.Initial
+const r2 = merge([v2, v5]); // Result<TypeError | Error, [number, boolean]>.Pending
+const r3 = merge([v3, v4]); // Result<TypeError | ReferenceError, [number, string]>.Success
+const r4 = merge([v3, v4, v5]); // Result<TypeError | ReferenceError | Error, [number, string, boolean]>.Failure
 ```
 
 ## License

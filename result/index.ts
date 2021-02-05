@@ -330,6 +330,8 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
       if (this.isFailure() || p.isFailure()) {
         return ResultConstructor.failure<F, B>(this.value as F);
       }
+
+      return p;
     });
   }
 

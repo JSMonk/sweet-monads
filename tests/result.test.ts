@@ -1,12 +1,12 @@
 import * as fc from "fast-check";
-import Result, { failure, initial, merge, success, pending } from "@sweet-monads/result";
+import { failure, initial, merge, success, pending } from "@sweet-monads/result";
 
 describe("Result", () => {
   test.each([
-    [Result.initial(), true, false, false, false],
-    [Result.pending(), false, true, false, false],
-    [Result.success("s"), false, false, true, false],
-    [Result.failure("s"), false, false, false, true]
+    [initial(), true, false, false, false],
+    [pending(), false, true, false, false],
+    [success("s"), false, false, true, false],
+    [failure("s"), false, false, false, true]
   ])("Static constants initializing ", (input, initial, pending, success, failure) => {
     expect(input.isInitial()).toBe(initial);
     expect(input.isPending()).toBe(pending);
@@ -14,7 +14,7 @@ describe("Result", () => {
     expect(input.isFailure()).toBe(failure);
   });
 
-  test("merge", () =>
+  test("merge states", () =>
     fc.assert(
       fc.property(
         fc.subarray(["1", "2", "3"]),
@@ -36,12 +36,27 @@ describe("Result", () => {
       )
     ));
 
-  test("chain", async () => {
-    const getValue = async () => success<Error, number>(1);
+  test("merge types", () =>
+    fc.assert(
+      fc.property(fc.integer(), fc.string(), (int, str) => {
+        const v1 = initial<TypeError, number>();
+        const v2 = pending<TypeError, number>();
+        const v3 = success<TypeError, number>(int);
+        const v4 = success<ReferenceError, string>(str);
+        const v5 = failure<Error, boolean>(new Error());
 
-    // Result<TypeError, number>
-    const result = await getValue()
-      .then(Result.chain(async v => success<Error, number>(v * 2)))
-      .then(Result.chain(async g => failure<TypeError, number>(new TypeError("Unexpected"))));
-  });
+        const r1 = merge([v1, v2]);
+        const r2 = merge([v2, v5]);
+        const r3 = merge([v3, v4]);
+        const r4 = merge([v3, v4, v5]);
+
+        expect(r1.isInitial()).toBe(true);
+        expect(r2.isPending()).toBe(true);
+        expect(r3.isSuccess()).toBe(true);
+        if (r3.isSuccess()) {
+          expect(r3.value).toStrictEqual([int, str]);
+        }
+        expect(r4.isFailure()).toBe(true);
+      })
+    ));
 });
