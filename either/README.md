@@ -36,6 +36,8 @@ const user = getUser(1).map(({ email }) => email);
 
 - [`chain`](#chain)
 - [`merge`](#merge)
+- [`mergeInOne`](#mergeinone)
+- [`mergeInMany`](#mergeinmany)
 - [`left`](#left)
 - [`right`](#right)
 - [`from`](#from)
@@ -72,6 +74,8 @@ const result = await getValue()
 ```
 
 #### `merge`
+Alias for [`mergeInOne`](#mergeinone)
+
 ```typescript
   function merge<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
   function merge<L1, R1, L2, R2>(values: [Either<L1, R1>, Either<L2, R2>]): Either<L1 | L2, [R1, R2]>;
@@ -89,6 +93,50 @@ const v3 = left<Error, boolean>(new Error()); // Either<Error, boolean>.Left
 
 merge([v1, v2]) // Either<TypeError | ReferenceError, [number, string]>.Right
 merge([v1, v2, v3]) // Either<TypeError | ReferenceError | Error, [number, string, boolean]>.Left
+```
+
+#### `mergeInOne`
+```typescript
+  function merge<L1, R1>(values: [Either<L1, R1>]): Either<L1, [R1]>;
+  function merge<L1, R1, L2, R2>(values: [Either<L1, R1>, Either<L2, R2>]): Either<L1 | L2, [R1, R2]>;
+  function merge<L1, R1, L2, R2, L3, R3>(values: [Either<L1, R1>, Either<L2, R2>, Either<L3, R3>]): Either<L1 | L2 | L3, [R1, R2, R3]>;
+// ... until 10 elements
+```
+- `values: Array<Either<L, R>>` - Array of Either values which will be merged into Either of Array 
+- Returns `Either<L, Array<R>>` which will contain `Right<Array<R>>` if all of array elements was `Right<R>` otherwise `Left<L>`. 
+
+Example:
+```typescript
+const v1 = right<TypeError, number>(2); // Either<TypeError, number>.Right
+const v2 = right<ReferenceError, string>("test"); // Either<ReferenceError, string>.Right
+const v3 = left<Error, boolean>(new Error()); // Either<Error, boolean>.Left
+
+merge([v1, v2]) // Either<TypeError | ReferenceError, [number, string]>.Right
+merge([v1, v2, v3]) // Either<TypeError | ReferenceError | Error, [number, string, boolean]>.Left
+```
+
+#### `mergeInMany`
+```typescript
+  function mergeInMany<L1, R1>(values: [Either<L1, R1>]): Either<Array<L1>, [R1]>;
+  function mergeInMany<L1, R1, L2, R2>(
+    values: [Either<L1, R1>, Either<L2, R2>]
+  ): Either<Array<L1 | L2>, [R1, R2]>;
+  function mergeInMany<L1, R1, L2, R2, L3, R3>(
+    values: [Either<L1, R1>, Either<L2, R2>, Either<L3, R3>]
+  ): Either<Array<L1 | L2 | L3>, [R1, R2, R3]>;
+// ... until 10 elements
+```
+- `values: Array<Either<L, R>>` - Array of Either values which will be merged into Either of Array 
+- Returns `Either<Array<L>, Array<R>>` which will contain `Right<Array<R>>` if all of array elements was `Right<R>` otherwise array of all catched `Left<L>` values. 
+
+Example:
+```typescript
+const v1 = right<TypeError, number>(2); // Either<TypeError, number>.Right
+const v2 = right<ReferenceError, string>("test"); // Either<ReferenceError, string>.Right
+const v3 = left<Error, boolean>(new Error()); // Either<Error, boolean>.Left
+
+merge([v1, v2]) // Either<Array<TypeError | ReferenceError>, [number, string]>.Right
+merge([v1, v2, v3]) // Either<Array<TypeError | ReferenceError | Error>, [number, string, boolean]>.Left
 ```
 
 #### `left`
