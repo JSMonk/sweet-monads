@@ -21,7 +21,10 @@ function isWrappedFunction<A, B, L>(m: Either<L, A> | Either<L, (a: A) => B>): m
 // @ClassImplements<ApplicativeConstructor>()
 // @ClassImplements<AsyncChainable<Either<any, any>>>()
 class EitherConstructor<L, R, T extends EitherType = EitherType> implements Monad<R>, Alternative<T> {
-  static chain<L, R, NL, NR>(f: (v: R) => Promise<Either<NL, NR>>) {
+  static chain<L, R, NR>(f: (v: R) => Promise<Either<never, NR>>): (m: Either<L, R>) => Promise<Either<L, NR>>;
+  static chain<L, R, NL>(f: (v: R) => Promise<Either<NL, never>>): (m: Either<L, R>) => Promise<Either<NL | L, R>>;
+  static chain<L, R, NL, NR>(f: (v: R) => Promise<Either<NL, NR>>): (m: Either<L, R>) => Promise<Either<NL | L, NR>>;
+  static chain<L = never, R = never, NL = never, NR = never>(f: (v: R) => Promise<Either<NL, NR>>) {
     return (m: Either<L, R>): Promise<Either<L | NL, NR>> => m.asyncChain(f);
   }
 
@@ -182,11 +185,11 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Mona
     return this.right(v);
   }
 
-  static right<L, T>(v: T): Either<L, T> {
+  static right<L = never, T = never>(v: T): Either<L, T> {
     return new EitherConstructor<L, T, EitherType.Right>(EitherType.Right, v);
   }
 
-  static left<T, R>(v: T): Either<T, R> {
+  static left<T = never, R = never>(v: T): Either<T, R> {
     return new EitherConstructor<T, R, EitherType.Left>(EitherType.Left, v);
   }
 
