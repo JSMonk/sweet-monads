@@ -10,9 +10,11 @@
 - No dependencies, one small file
 - Easily auditable TypeScript/JS code
 - Check out all libraries:
-  [maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe),
+  [either](https://github.com/JSMonk/sweet-monads/tree/master/either),  
   [iterator](https://github.com/JSMonk/sweet-monads/tree/master/iterator),
   [interfaces](https://github.com/JSMonk/sweet-monads/tree/master/interfaces),
+  [maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe),  
+  [result](https://github.com/JSMonk/sweet-monads/tree/master/result),
 
 ## Usage
 
@@ -146,7 +148,7 @@ function left<L, R>(value: L): Either<L, R>;
 - Returns `Either` with `Left` state which contain value with `L` type.
 Example:
 ```typescript
-const v2 = left(new Error()); // Either<Error, unknown>.Left
+const v1 = left(new Error()); // Either<Error, never>.Left
 const v2 = left<Error, number>(new Error()); // Either<Error, number>.Left
 ```
 
@@ -157,7 +159,7 @@ function right<L, R>(value: R): Either<L, R>;
 - Returns `Either` with `Right` state which contain value with `R` type.
 Example:
 ```typescript
-const v2 = right(2); // Either<unknown, number>.Right
+const v1 = right(2); // Either<never, number>.Right
 const v2 = right<Error, number>(2); // Either<Error, number>.Right
 ```
 
@@ -168,18 +170,18 @@ The same as [`right`](#right)
 Return only `Right` typed value.
 
 ```typescript
-function from<R>(value: R): Either<unknown, R>;
+function from<R>(value: R): Either<never, R>;
 ```
 - Returns `Either` with `Right` state which contain value with `R` type.
 Example:
 ```typescript
-from(2); // Either<unknown, number>.Right
+from(2); // Either<never, number>.Right
 ```
 
 #### `isEither`
 
 ```typescript
-function isEither<L, R>(value: unknown | Maybe<L, R>): value is Maybe<L, R>;
+function isEither<L, R>(value: unknown | Either<L, R>): value is Either<L, R>;
 ``` 
 - Returns `boolean` if given `value` is instance of Either constructor.
 Example:

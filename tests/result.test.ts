@@ -7,7 +7,7 @@ describe("Result", () => {
     [pending(), false, true, false, false],
     [success("s"), false, false, true, false],
     [failure("s"), false, false, false, true]
-  ])("Static constants initializing ", (input, initial, pending, success, failure) => {
+  ])("Static constants initializing ", async (input, initial, pending, success, failure) => {
     expect(input.isInitial()).toBe(initial);
     expect(input.isPending()).toBe(pending);
     expect(input.isSuccess()).toBe(success);
@@ -57,6 +57,35 @@ describe("Result", () => {
           expect(r3.value).toStrictEqual([int, str]);
         }
         expect(r4.isFailure()).toBe(true);
+      })
+    ));
+
+  test("identity", () =>
+    fc.assert(
+      fc.property(fc.integer(), fc.string(), fc.boolean(), (int, str, bool) => {
+        const v1 = initial();
+        const v2 = pending();
+        const v3 = success<TypeError, number>(int);
+        const v4 = success<ReferenceError, string>(str);
+        const v5 = success<ReferenceError, boolean>(bool);
+        const v6 = failure<Error, boolean>(new Error());
+
+        expect(v1.isInitial()).toBe(true);
+        expect(v2.isPending()).toBe(true);
+        expect(v3.isSuccess()).toBe(true);
+        expect(v4.isSuccess()).toBe(true);
+        expect(v5.isSuccess()).toBe(true);
+
+        if (v3.isSuccess()) {
+          expect(v3.value).toBe(int);
+        }
+        if (v4.isSuccess()) {
+          expect(v4.value).toBe(str);
+        }
+        if (v5.isSuccess()) {
+          expect(v5.value).toBe(bool);
+        }
+        expect(v6.isFailure()).toBe(true);
       })
     ));
 });

@@ -12,8 +12,11 @@ function isWrappedFunction<A, B, L>(m: Result<L, A> | Result<L, (a: A) => B>): m
 }
 
 class ResultConstructor<F, S, T extends ResultType = ResultType> implements Monad<S>, Alternative<T> {
-  static chain<F, R, NL, NR>(f: (v: R) => Promise<Result<NL, NR>>) {
-    return (m: Result<F, R>): Promise<Result<F | NL, NR>> => m.asyncChain(f);
+  static chain<F, S, NR>(f: (v: S) => Promise<Result<never, NR>>): (m: Result<F, S>) => Promise<Result<F, NR>>;
+  static chain<F, S, NF>(f: (v: S) => Promise<Result<NF, never>>): (m: Result<F, S>) => Promise<Result<NF | F, S>>;
+  static chain<F, S, NL, NR>(f: (v: S) => Promise<Result<NL, NR>>): (m: Result<F, S>) => Promise<Result<NL | F, NR>>;
+  static chain<F = never, S = never, NF = never, NS = never>(f: (v: S) => Promise<Result<NF, NS>>) {
+    return (m: Result<F, S>): Promise<Result<F | NF, NS>> => m.asyncChain(f);
   }
 
   static mergeInOne<F1, S1>(values: [Result<F1, S1>]): Result<F1, [S1]>;
@@ -170,19 +173,19 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
     return this.success(v);
   }
 
-  static success<F, T>(v: T): Result<F, T> {
+  static success<F = never, T = never>(v: T): Result<F, T> {
     return new ResultConstructor<F, T, ResultType.Success>(ResultType.Success, v);
   }
 
-  static failure<T, R>(v: T): Result<T, R> {
+  static failure<T = never, R = never>(v: T): Result<T, R> {
     return new ResultConstructor<T, R, ResultType.Failure>(ResultType.Failure, v);
   }
 
-  static initial<F = undefined, T = unknown>(): Result<F, T> {
+  static initial<F = undefined, T = never>(): Result<F, T> {
     return new ResultConstructor<F, T, ResultType.Initial>(ResultType.Initial, undefined);
   }
 
-  static pending<F = undefined, T = unknown>(): Result<F, T> {
+  static pending<F = undefined, T = never>(): Result<F, T> {
     return new ResultConstructor<F, T, ResultType.Pending>(ResultType.Pending, undefined);
   }
 
