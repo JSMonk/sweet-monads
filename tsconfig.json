@@ -5,6 +5,7 @@
     "lib": ["es2018"],
     "target": "es2015",
     "declaration": true,
+    "noImplicitAny": true,
     "removeComments": true,
     "preserveConstEnums": true,
     "experimentalDecorators": true,

@@ -1,4 +1,6 @@
 import type { Monad, Alternative } from "@sweet-monads/interfaces";
+import { just, Maybe, none } from "@sweet-monads/maybe";
+import { Either, left, right } from "@sweet-monads/either";
 
 const enum ResultType {
   Initial = "Initial",
@@ -171,6 +173,14 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
 
   static from<T>(v: T) {
     return this.success(v);
+  }
+
+  static fromMaybe<T>(v: Maybe<T>) {
+    return v.isJust() ? this.success(v.value) : this.initial();
+  }
+
+  static fromEither<L, R>(v: Either<L, R>) {
+    return v.isRight() ? this.success<L, R>(v.value) : this.failure<L, R>(v.value);
   }
 
   static success<F = never, T = never>(v: T): Result<F, T> {
@@ -347,6 +357,31 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
     }
     return x;
   }
+
+  toEither(i: () => F, p: () => F): Either<F, S> {
+    if (this.isSuccess()) {
+      return right<F, S>(this.value as S);
+    }
+    if (this.isInitial()) {
+      return left<F, S>(i());
+    }
+    if (this.isPending()) {
+      return left<F, S>(p());
+    }
+    return left<F, S>(this.value as F);
+  }
+
+  toMaybe(): Maybe<S> {
+    return this.isSuccess() ? just<S>(this.value as S) : none<S>();
+  }
+
+  toNullable(): S | null {
+    return this.isSuccess() ? this.value : null;
+  }
+
+  toUndefined(): S | undefined {
+    return this.isSuccess() ? this.value : undefined;
+  }
 }
 
 export type Result<F, S> =
@@ -355,7 +390,19 @@ export type Result<F, S> =
   | ResultConstructor<F, S, ResultType.Success>
   | ResultConstructor<F, S, ResultType.Failure>;
 
-export const { merge, mergeInOne, mergeInMany, failure, success, from, chain, initial, pending } = ResultConstructor;
+export const {
+  merge,
+  mergeInOne,
+  mergeInMany,
+  failure,
+  success,
+  from,
+  fromMaybe,
+  fromEither,
+  chain,
+  initial,
+  pending
+} = ResultConstructor;
 
 export const isResult = <F, S>(value: unknown | Result<F, S>): value is Result<F, S> =>
   value instanceof ResultConstructor;

@@ -48,4 +48,16 @@ describe("Either", () => {
       expect(r3.value).toBeInstanceOf(TypeError);
     }
   });
+
+  test("asyncApply", () => {
+    const v1 = right<Error, number>(2);
+    const v2 = left<Error, number>(new Error());
+    const fn1 = right<Error, (a: number) => Promise<number>>((a: number) => Promise.resolve(a * 2));
+    const fn2 = left<Error, (a: number) => Promise<number>>(new Error());
+
+    /* const newVal1 = fn1.asyncApply(v1); // Promise<Either<Error, number>.Right> with value 4
+    const newVal2 = fn1.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error()
+    const newVal3 = fn2.asyncApply(v1); // Promise<Either<Error, number>.Left> with value new Error()
+    const newVal4 = fn2.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error() */
+  });
 });

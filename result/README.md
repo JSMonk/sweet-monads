@@ -45,6 +45,8 @@ const user = getUser(1).map(({ email }) => email);
 - [`failure`](#failure)
 - [`success`](#success)
 - [`from`](#from)
+- [`fromMaybe`](#frommaybe)
+- [`fromEither`](#fromeither)
 - [`isResult`](#isresult)
 - [`Result#isInitial`](#resultisinitial)
 - [`Result#isPending`](#resultispending)
@@ -55,6 +57,15 @@ const user = getUser(1).map(({ email }) => email);
 - [`Result#map`](#resultmap)
 - [`Result#mapSuccess`](#resultmapright)
 - [`Result#mapFailure`](#resultmapleft)
+- [`Result#asyncMap`](#resultasyncmap)
+- [`Result#apply`](#resultapply)
+- [`Result#asyncApply`](#resultasyncapply)
+- [`Result#chain`](#resultchain)
+- [`Result#asyncChain`](#resultasyncchain)
+- [`Result#toEither`](#resulttonullable)
+- [`Result#toMaybe`](#resulttonullable)
+- [`Result#toNullable`](#resulttonullable)
+- [`Result#toUndefined`](#resulttoundefined)
 
 #### `chain`
 
@@ -177,20 +188,6 @@ const v1 = failure(new Error()); // Result<Error, never>.Failure
 const v2 = failure<Error, number>(new Error()); // Result<Error, number>.Failure
 ```
 
-#### `failure`
-
-```typescript
-function failure<F, S>(value: F): Result<F, S>;
-```
-
-- Returns `Result` with `Failure` state which contain value with `F` type.
-  Example:
-
-```typescript
-const v1 = failure(new Error()); // Result<Error, never>.Failure
-const v2 = failure<Error, number>(new Error()); // Result<Error, number>.Failure
-```
-
 #### `success`
 
 ```typescript
@@ -207,9 +204,7 @@ const v2 = success<Error, number>(2); // Result<Error, number>.Success
 
 #### `from`
 
-The same as [`success`](#success)
-
-Return only `Success` typed value.
+Alias for [`success`](#success)
 
 ```typescript
 function from<S>(value: S): Result<never, S>;
@@ -220,6 +215,33 @@ function from<S>(value: S): Result<never, S>;
 
 ```typescript
 from(2); // Result<never, number>.Success
+```
+
+#### `fromMaybe`
+
+```typescript
+function fromMaybe<never, S>(value: Maybe<S>): Result<never, S>;
+```
+
+- Creates `Result` from `Maybe` in `Initial` or `Success` state.
+  Example:
+
+```typescript
+fromMaybe(just(2)); // Result<never, number>.Success
+fromMaybe(none()); // Result<never, number>.Initial
+```
+
+#### `fromEither`
+
+```typescript
+function fromEither<F, S>(value: Either<F, S>): Result<F, S>;
+```
+
+- Creates `Result` from `Either` in `Failure` or `Success` state.
+  Example:
+
+```typescript
+fromEither(right<string, number>(10)); // Result<string, number>.Success
 ```
 
 #### `isResult`
@@ -313,7 +335,7 @@ v2.isSuccess(); // false
 #### `Result#or`
 
 ```typescript
-function or<F, S>(x: Result<F, S>): Either<F, S>;
+function or<F, S>(x: Result<F, S>): Result<F, S>;
 ```
 
 - Returns `Result<F, S>`. If state of `this` is `Success` then `this` will be returned otherwise `x` argument will be returned
@@ -337,6 +359,7 @@ v2.or(v1).or(v3); // v1 will be returned
 v1.or(v2).or(v3); // v1 will be returned
 v2.or(v5).or(v3); // v3 will be returned
 ```
+
 #### `Result#join`
 
 ```typescript
@@ -357,12 +380,12 @@ v2.join(); // Result.Failure with value new Error
 v3.join(); // Result.Failure with value new TypeError
 ```
 
-
 #### `Result#map`
-The same as [`Result#mapSuccess`](#resultmapsuccess)
+
+Alias for [`Result#mapSuccess`](#resultmapsuccess)
 
 ```typescript
-function map<F, S, NewS>(fn: (val: S) => NewS): Either<F, NewS>;
+function map<F, S, NewS>(fn: (val: S) => NewS): Result<F, NewS>;
 ```
 
 - Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
@@ -393,7 +416,7 @@ const newVal1 = v1.mapSuccess(a => a.toString()); // Result<Error, string>.Succe
 const newVal2 = v2.mapSuccess(a => a.toString()); // Result<Error, string>.Failure with value new Error()
 ```
 
-#### `Either#mapLeft`
+#### `Result#mapLeft`
 
 ```typescript
 function mapFailure<F, S, NewF>(fn: (val: F) => NewF): Result<NewF, S>;
@@ -408,6 +431,189 @@ const v2 = failure<Error, number>(new Error());
 
 const newVal1 = v1.mapFailure(a => a.toString()); // Result<string, number>.Right with value 2
 const newVal2 = v2.mapFailure(a => a.toString()); // Result<string, number>.Left with value "Error"
+```
+
+##### `Result#asyncMap`
+
+```typescript
+function asyncMap<F, S, NewS>(fn: (val: S) => Promise<NewS>): Promise<Result<F, NewS>>;
+```
+
+- Returns `Promise` with mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
+  Example:
+
+```typescript
+const v1 = success<Error, number>(2);
+const v2 = failure<Error, number>(new Error());
+
+// Promise<Result<Error, string>.Success> with value "2"
+const newVal1 = v1.asyncMap(a => Promise.resolve(a.toString()));
+// Promise<Result<Error, string>.Failure> with value new Error()
+const newVal2 = v2.asyncMap(a => Promise.resolve(a.toString()));
+```
+
+##### `Result#apply`
+
+```typescript
+function apply<A, B>(this: Result<L, (a: A) => B>, arg: Result<L, A>): Result<L, B>;
+function apply<A, B>(this: Result<L, A>, fn: Result<L, (a: A) => B>): Result<L, B>;
+```
+
+- `this | fn` - function wrapped by Result, which should be applied to value `arg`
+- `arg | this` - value which should be applied to `fn`
+- Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
+  Example:
+
+```typescript
+const v1 = success<Error, number>(2);
+const v2 = failure<Error, number>(new Error());
+const fn1 = success<Error, (a: number) => number>((a: number) => a * 2);
+const fn2 = failure<Error, (a: number) => number>(new Error());
+
+const newVal1 = fn1.apply(v1); // Result<Error, number>.Right with value 4
+const newVal2 = fn1.apply(v2); // Result<Error, number>.Left with value new Error()
+const newVal3 = fn2.apply(v1); // Result<Error, number>.Left with value new Error()
+const newVal4 = fn2.apply(v2); // Result<Error, number>.Left with value new Error()
+```
+
+##### `Result#asyncApply`
+
+Async variant of [`Result#apply`](#resultapply)
+
+```typescript
+asyncApply<A, B>(
+  this: Result<F, (a: Promise<A> | A) => Promise<B>>,
+  arg: Result<F, Promise<A>>): Promise<Result<F, B>>;
+asyncApply<A, B>(
+  this: Result<F, Promise<A>>,
+  fn: Result<F, Promise<(a: Promise<A> | A) => B>>): Promise<Result<F, B>>;
+asyncApply<A, B>(
+  this: Result<F, Promise<A>> | Result<F, (a: Promise<A> | A) => Promise<B>>,
+  argOrFn: Result<F, Promise<A>> | Result<F, (a: Promise<A> | A) => Promise<B>>): Promise<Result<F, B>>
+```
+
+- `this | fn` - function wrapped by Maybe, which should be applied to value `arg`
+- `arg | this` - value which should be applied to `fn`
+- Returns `Promise` with mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
+  Example:
+
+```typescript
+const v1 = success<Error, number>(2);
+const v2 = failure<Error, number>(new Error());
+const fn1 = success<Error, (a: number) => Promise<number>>((a: number) => Promise.resolve(a * 2));
+const fn2 = failure<Error, (a: number) => Promise<number>>(new Error());
+
+const newVal1 = fn1.asyncApply(v1); // Promise<Either<Error, number>.Right> with value 4
+const newVal2 = fn1.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error()
+const newVal3 = fn2.asyncApply(v1); // Promise<Either<Error, number>.Left> with value new Error()
+const newVal4 = fn2.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error()
+```
+
+#### `Result#chain`
+
+```typescript
+function chain<F, S, NewF, NewS>(fn: (val: S) => Either<NewF, NewS>): Either<F | NewF, NewS>;
+```
+
+- Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` and returned by `fn` value is `Success` too otherwise `Result` in other state, `Initial` pwns `Pending` and `Failure`.
+  Example:
+
+```typescript
+const v1 = success<Error, number>(2);
+const v2 = failure<Error, number>(new Error());
+const v3 = initial<Error, number>();
+
+// Result<Error | TypeError, string>.Success with value "2"
+const newVal1 = v1.chain(a => success<TypeError, string>(a.toString()));
+// Result<Error | TypeError, string>.Failure with value new TypeError()
+const newVal2 = v1.chain(a => failure<TypeError, string>(new TypeError()));
+// Result<Error | TypeError, string>.Failure with value new Error()
+const newVal3 = v2.chain(a => success<TypeError, string>(a.toString()));
+// Result<Error | TypeError, string>.Failure with value new Error()
+const newVal4 = v2.chain(a => failure<TypeError, string>(new TypeError()));
+// Result<Error | TypeError, string>.Initial with no value
+const newVal5 = v3.chain(a => failure<TypeError, string>(new TypeError()));
+```
+
+##### `Result#asyncChain`
+
+```typescript
+function asyncChain<F, S, NewF, NewS>(fn: (val: S) => Promise<Result<NewF, NewS>>): Promise<Result<F | NewF, NewS>>;
+```
+
+- Returns `Promise` with mapped by `fn` function value wrapped by `Result` if `Result` is `Success` and returned by `fn` value is `Success` too otherwise `Result` in other state, `Initial` pwns `Pending` and `Failure`.
+  Example:
+
+```typescript
+const v1 = success<Error, number>(2);
+const v2 = failure<Error, number>(new Error());
+const v3 = initial<Error, number>();
+
+// Promise<Result<Error | TypeError, string>.Success> with value "2"
+const newVal1 = v1.asyncChain(a => Promise.resolve(right<TypeError, string>(a.toString())));
+// Promise<Result<Error | TypeError, string>.Failure> with value new TypeError()
+const newVal2 = v1.asyncChain(a => Promise.resolve(left<TypeError, string>(new TypeError()));
+// Promise<Result<Error | TypeError, string>.Failure> with value new Error()
+const newVal3 = v2.asyncChain(a => Promise.resolve(right<TypeError, string>(a.toString())));
+// Promise<Result<Error | TypeError, string>.Failure> with value new Error()
+const newVal4 = v2.asyncChain(a => Promise.resolve(left<TypeError, string>(new TypeError())));
+// Promise<Result<Error | TypeError, string>.Initial> with no value
+const newVal5 = v3.asyncChain(a => Promise.resolve(failure<TypeError, string>(new TypeError())));
+```
+
+#### `Result#toEither`
+
+```typescript
+function toEither<F, S>(onInitial: () => F, onPending: () => F): Either<F, S>;
+```
+
+- Converts `Result` into `Either` in `Left` or `Success` state with fallbacks for `Initial` and `Pending` states.
+  Example:
+
+```typescript
+success<string, number>(10).toEither(
+  () => "initial state",
+  () => "pending state"
+); // Either<string, number>.Right
+```
+
+#### `Result#toMaybe`
+
+```typescript
+function toMaybe<S>(): Maybe<S>;
+```
+
+- Converts `Result` into `Maybe` in `Just` state if `Result` is in `Success` state or to `Maybe` in `None` state otherwise.
+  Example:
+
+```typescript
+success<string, number>(10).toMaybe(); // Maybe<number>.Just
+```
+
+#### `Result#toNullable`
+
+```typescript
+function toNullable<S>(): S | null;
+```
+
+- Returns S if `Result` is in `Success` state and null otherwise
+  Example:
+
+```typescript
+success<string, number>(10).toNullable(); // number | null
+```
+
+#### `Result#toUndefined`
+
+```typescript
+function toUndefined<S>(): S | undefined;
+```
+
+- Returns S if `Result` is in `Success` state and undefined otherwise
+  Example:
+
+```typescript
+success<string, number>(10).toUndefined(); // number | undefined
 ```
 
 ## License

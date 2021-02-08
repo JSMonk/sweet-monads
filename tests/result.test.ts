@@ -1,5 +1,8 @@
 import * as fc from "fast-check";
-import { failure, initial, merge, success, pending, Result } from "@sweet-monads/result";
+import { failure, initial, merge, success, pending, Result, fromMaybe, fromEither } from "@sweet-monads/result";
+import { just, none } from "@sweet-monads/maybe";
+import { left, right } from "@sweet-monads/either";
+
 describe("Result", () => {
   test.each([
     [initial(), true, false, false, false],
@@ -56,6 +59,35 @@ describe("Result", () => {
           expect(r3.value).toStrictEqual([int, str]);
         }
         expect(r4.isFailure()).toBe(true);
+      })
+    ));
+
+  test("fromMaybe", () =>
+    fc.assert(
+      fc.property(fc.integer(), int => {
+        const v1 = just(int);
+        const v2 = none<number>();
+
+        const r1 = fromMaybe(v1);
+        expect(r1.isSuccess()).toBe(true);
+
+        const r2 = fromMaybe(v2);
+        expect(r2.isInitial()).toBe(true);
+      })
+    ));
+
+  test("fromEither", () =>
+    fc.assert(
+      fc.property(fc.integer(), fc.string(), (int, str) => {
+        const v1 = right<string, number>(int);
+        const v2 = left<string, number>(str);
+
+        const r1 = fromEither(v1);
+        expect(r1.isSuccess()).toBe(true);
+
+        const r2 = fromEither(v2);
+
+        expect(r2.isFailure()).toBe(true);
       })
     ));
 
@@ -168,7 +200,166 @@ describe("Result", () => {
       expect(newVal2.value).toBe("Error");
     }
   });
+
+  test("asyncMap", async () => {
+    const v1 = success<Error, number>(2);
+    const v2 = failure<Error, number>(new Error());
+
+    const newVal1 = v1.asyncMap(a => Promise.resolve(a.toString()));
+    const newVal2 = v2.asyncMap(a => Promise.resolve(a.toString()));
+
+    expect(newVal1).toBeInstanceOf(Promise);
+    const r1 = await newVal1;
+    expect(r1.isSuccess()).toBe(true);
+
+    expect(newVal2).toBeInstanceOf(Promise);
+    const r2 = await newVal2;
+    expect(r2.isFailure()).toBe(true);
+  });
 });
+
+test("apply", () => {
+  const v1 = success<Error, number>(2);
+  const v2 = failure<Error, number>(new Error());
+  const fn1 = success<Error, (a: number) => number>((a: number) => a * 2);
+  const fn2 = failure<Error, (a: number) => number>(new Error());
+
+  const newVal1 = fn1.apply(v1);
+  expect(newVal1.isSuccess()).toBe(true);
+  if (newVal1.isSuccess()) {
+    expect(newVal1.value).toBe(4);
+  }
+
+  const newVal2 = fn1.apply(v2);
+  expect(newVal2.isFailure()).toBe(true);
+  expect(newVal2.value).toBeInstanceOf(Error);
+
+  const newVal3 = fn2.apply(v1);
+  expect(newVal3.isFailure()).toBe(true);
+  expect(newVal3.value).toBeInstanceOf(Error);
+
+  const newVal4 = fn2.apply(v2);
+  expect(newVal4.isFailure()).toBe(true);
+  expect(newVal4.value).toBeInstanceOf(Error);
+});
+
+test("asyncApply", () => {
+  const v1 = success<Error, number>(2);
+  const v2 = failure<Error, number>(new Error());
+  const fn1 = success<Error, (a: number) => Promise<number>>((a: number) => Promise.resolve(a * 2));
+  const fn2 = failure<Error, (a: number) => Promise<number>>(new Error());
+
+  /*   const newVal1 = fn1.asyncApply(v1); // Promise<Either<Error, number>.Right> with value 4
+  const newVal2 = fn1.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error()
+  const newVal3 = fn2.asyncApply(v1); // Promise<Either<Error, number>.Left> with value new Error()
+  const newVal4 = fn2.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error() */
+});
+
+test("chain", () => {
+  const v1 = success<Error, number>(2);
+  const v2 = failure<Error, number>(new Error());
+  const v3 = initial<Error, number>();
+
+  // Result<Error | TypeError, string>.Success with value "2"
+  const newVal1 = v1.chain(a => success<TypeError, string>(a.toString()));
+  // Result<Error | TypeError, string>.Failure with value new TypeError()
+  const newVal2 = v1.chain(a => failure<TypeError, string>(new TypeError()));
+  // Result<Error | TypeError, string>.Failure with value new Error()
+  const newVal3 = v2.chain(a => success<TypeError, string>(a.toString()));
+  // Result<Error | TypeError, string>.Failure with value new Error()
+  const newVal4 = v2.chain(a => failure<TypeError, string>(new TypeError()));
+  // Result<Error | TypeError, string>.Initial with no value
+  const newVal5 = v3.chain(a => failure<TypeError, string>(new TypeError()));
+
+  expect(newVal1.isSuccess()).toBe(true);
+  expect(newVal2.isFailure()).toBe(true);
+  expect(newVal3.isFailure()).toBe(true);
+  expect(newVal4.isFailure()).toBe(true);
+  expect(newVal5.isInitial()).toBe(true);
+});
+
+test("asyncChain", async () => {
+  const v1 = success<Error, number>(2);
+  const v2 = failure<Error, number>(new Error());
+  const v3 = initial<Error, number>();
+
+  // Result<Error | TypeError, string>.Success with value "2"
+  const newVal1 = v1.asyncChain(a => Promise.resolve(success<TypeError, string>(a.toString())));
+  // Result<Error | TypeError, string>.Failure with value new TypeError()
+  const newVal2 = v1.asyncChain(a => Promise.resolve(failure<TypeError, string>(new TypeError())));
+  // Result<Error | TypeError, string>.Failure with value new Error()
+  const newVal3 = v2.asyncChain(a => Promise.resolve(success<TypeError, string>(a.toString())));
+  // Result<Error | TypeError, string>.Failure with value new Error()
+  const newVal4 = v2.asyncChain(a => Promise.resolve(failure<TypeError, string>(new TypeError())));
+  // Result<Error | TypeError, string>.Initial with no value
+  const newVal5 = v3.asyncChain(a => Promise.resolve(failure<TypeError, string>(new TypeError())));
+
+  expect((await newVal1).isSuccess()).toBe(true);
+  expect((await newVal2).isFailure()).toBe(true);
+  expect((await newVal3).isFailure()).toBe(true);
+  expect((await newVal4).isFailure()).toBe(true);
+  expect((await newVal5).isInitial()).toBe(true);
+});
+
+test("toEither", () =>
+  fc.assert(
+    fc.property(result(), r => {
+      const either = r.toEither(
+        () => "i",
+        () => "p"
+      );
+      expect(either.isLeft()).toBe(r.isInitial() || r.isPending() || r.isFailure());
+      expect(either.isRight()).toBe(r.isSuccess());
+      if (r.isInitial()) {
+        expect(either.value).toBe("i");
+      }
+
+      if (r.isPending()) {
+        expect(either.value).toBe("p");
+      }
+      if (r.isFailure()) {
+        expect(either.value).toBe(r.value);
+      }
+    })
+  ));
+
+test("toMaybe", () =>
+  fc.assert(
+    fc.property(result(), r => {
+      const maybe = r.toMaybe();
+      expect(maybe.isNone()).toBe(r.isInitial() || r.isPending() || r.isFailure());
+      expect(maybe.isJust()).toBe(r.isSuccess());
+      if (r.isSuccess()) {
+        expect(maybe.value).toBe(r.value);
+      }
+    })
+  ));
+
+test("toNullable", () =>
+  fc.assert(
+    fc.property(result(), r => {
+      const nullable = r.toNullable();
+
+      if (r.isInitial() || r.isPending() || r.isFailure()) {
+        expect(nullable).toBeNull();
+      } else {
+        expect(nullable).not.toBeNull();
+      }
+    })
+  ));
+
+test("toUndefined", () =>
+  fc.assert(
+    fc.property(result(), r => {
+      const nullable = r.toUndefined();
+
+      if (r.isInitial() || r.isPending() || r.isFailure()) {
+        expect(nullable).toBeUndefined();
+      } else {
+        expect(nullable).not.toBeUndefined();
+      }
+    })
+  ));
 
 function result(): fc.Arbitrary<Result<string, number>> {
   return fc
