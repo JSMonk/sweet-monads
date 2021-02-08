@@ -44,7 +44,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
   static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9>(
     values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>, Maybe<V5>, Maybe<V6>, Maybe<V7>, Maybe<V8>, Maybe<V9>]
   ): Maybe<[V1, V2, V3, V4, V5, V6, V7, V8, V9]>;
-  static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9, V10>(
+  static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9, L10, V10>(
     values: [
       Maybe<V1>,
       Maybe<V2>,
@@ -121,20 +121,22 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
     throw new Error("Some of the arguments should be a function");
   }
 
-  asyncApply<A, B>(this: Maybe<(a: Promise<A> | A) => Promise<B>>, arg: Maybe<Promise<A> | A>): Promise<Maybe<B>>;
-  asyncApply<A, B>(this: Maybe<Promise<A> | A>, fn: Maybe<(a: Promise<A> | A) => Promise<B>>): Promise<Maybe<B>>;
+  asyncApply<A, B>(this: Maybe<(a: A) => Promise<B>>, arg: Maybe<Promise<A> | A>): Promise<Maybe<B>>;
+  asyncApply<A, B>(this: Maybe<Promise<A> | A>, fn: Maybe<(a: A) => Promise<B>>): Promise<Maybe<B>>;
   asyncApply<A, B>(
-    this: Maybe<Promise<A>> | Maybe<(a: Promise<A> | A) => Promise<B>>,
-    argOrFn: Maybe<Promise<A>> | Maybe<(a: Promise<A> | A) => Promise<B>>
+    this: Maybe<Promise<A> | A> | Maybe<(a: A) => Promise<B>>,
+    argOrFn: Maybe<Promise<A> | A> | Maybe<(a: A) => Promise<B>>
   ): Promise<Maybe<B>> {
     if (this.isNone() || argOrFn.isNone()) {
       return Promise.resolve(MaybeConstructor.none<B>());
     }
     if (isWrappedFunction(this)) {
-      return (argOrFn as Maybe<Promise<A>>).asyncMap(this.value as (a: A | Promise<A>) => Promise<B>);
+      return (argOrFn as Maybe<Promise<A> | A>)
+        .map(a => Promise.resolve(a))
+        .asyncMap(pa => pa.then(this.value as (a: A) => Promise<B>));
     }
     if (isWrappedFunction(argOrFn)) {
-      return (argOrFn as Maybe<(a: A | Promise<A>) => Promise<B>>).asyncApply(this as Maybe<Promise<A>>);
+      return (argOrFn as Maybe<(a: A) => Promise<B>>).asyncApply(this as Maybe<Promise<A>>);
     }
     throw new Error("Some of the arguments should be a function");
   }

@@ -12,7 +12,9 @@ const enum EitherType {
   Right = "Right"
 }
 
-function isWrappedFunction<A, B, L>(m: Either<L, A> | Either<L, (a: A) => B>): m is Either<L, (a: A) => B> {
+function isWrappedFunction<A, B, L>(
+  m: Either<L, A | Promise<A>> | Either<L, (a: A) => B>
+): m is Either<L, (a: A) => B> {
   return typeof m.value === "function";
 }
 
@@ -253,17 +255,11 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Mona
     throw new Error("Some of the arguments should be a function");
   }
 
+  asyncApply<A, B>(this: Either<L, (a: A) => Promise<B>>, arg: Either<L, Promise<A> | A>): Promise<Either<L, B>>;
+  asyncApply<A, B>(this: Either<L, Promise<A> | A>, fn: Either<L, Promise<(a: A) => B>>): Promise<Either<L, B>>;
   asyncApply<A, B>(
-    this: Either<L, (a: Promise<A> | A) => Promise<B>>,
-    arg: Either<L, Promise<A>>
-  ): Promise<Either<L, B>>;
-  asyncApply<A, B>(
-    this: Either<L, Promise<A>>,
-    fn: Either<L, Promise<(a: Promise<A> | A) => B>>
-  ): Promise<Either<L, B>>;
-  asyncApply<A, B>(
-    this: Either<L, Promise<A>> | Either<L, (a: Promise<A> | A) => Promise<B>>,
-    argOrFn: Either<L, Promise<A>> | Either<L, (a: Promise<A> | A) => Promise<B>>
+    this: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>,
+    argOrFn: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>
   ): Promise<Either<L, B>> {
     if (this.isLeft()) {
       return Promise.resolve(EitherConstructor.left<L, B>(this.value as L));
@@ -272,7 +268,9 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Mona
       return Promise.resolve(EitherConstructor.left<L, B>(argOrFn.value as L));
     }
     if (isWrappedFunction(this)) {
-      return (argOrFn as Either<L, Promise<A>>).asyncMap(this.value as (a: A | Promise<A>) => Promise<B>);
+      return (argOrFn as Either<L, Promise<A> | A>)
+        .map(a => Promise.resolve(a))
+        .asyncMap(pa => pa.then(this.value as (a: A) => Promise<B>));
     }
     if (isWrappedFunction(argOrFn)) {
       return (argOrFn as Either<L, (a: Promise<A> | A) => Promise<B>>).asyncApply(this as Either<L, Promise<A>>);
