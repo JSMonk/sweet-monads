@@ -46,6 +46,15 @@ const user = getUser(1).map(({ email }) => email);
 - [`success`](#success)
 - [`from`](#from)
 - [`isResult`](#isresult)
+- [`Result#isInitial`](#resultisinitial)
+- [`Result#isPending`](#resultispending)
+- [`Result#isFailure`](#resultisfailure)
+- [`Result#isSuccess`](#eresultissuccess)
+- [`Result#or`](#resultor)
+- [`Result#join`](#resultjoin)
+- [`Result#map`](#resultmap)
+- [`Result#mapSuccess`](#resultmapright)
+- [`Result#mapFailure`](#resultmapleft)
 
 #### `chain`
 
@@ -67,6 +76,7 @@ const result = await getValue()
 ```
 
 #### `merge`
+
 Alias for [`mergeInOne`](#mergeinone)
 
 ```typescript
@@ -124,134 +134,280 @@ const r2 = merge([v2, v5]); // Result<TypeError | Error, [number, boolean]>.Pend
 const r3 = merge([v3, v4]); // Result<TypeError | ReferenceError, [number, string]>.Success
 const r4 = merge([v3, v4, v5]); // Result<TypeError | ReferenceError | Error, [number, string, boolean]>.Failure
 ```
+
 #### `initial`
+
 ```typescript
 function initial<F, S>(): Result<F, S>;
 ```
+
 - Returns `Result` with `Initial` state which does not contain value.
-Example:
+  Example:
+
 ```typescript
 const v1 = initial(); // Result<undefined, never>.Initial
 const v2 = initial<Error, number>(); // Result<Error, number>.Initial
 ```
 
 #### `pending`
+
 ```typescript
 function pending<F, S>(): Result<F, S>;
 ```
+
 - Returns `Result` with `Pending` state which does not contain value.
-Example:
+  Example:
+
 ```typescript
 const v1 = pending(); // Result<undefined, never>.Initial
 const v2 = pending<Error, number>(); // Result<Error, number>.Initial
 ```
 
 #### `failure`
+
 ```typescript
 function failure<F, S>(value: F): Result<F, S>;
 ```
+
 - Returns `Result` with `Failure` state which contain value with `F` type.
-Example:
+  Example:
+
 ```typescript
 const v1 = failure(new Error()); // Result<Error, never>.Failure
 const v2 = failure<Error, number>(new Error()); // Result<Error, number>.Failure
 ```
 
 #### `failure`
+
 ```typescript
 function failure<F, S>(value: F): Result<F, S>;
 ```
+
 - Returns `Result` with `Failure` state which contain value with `F` type.
-Example:
+  Example:
+
 ```typescript
 const v1 = failure(new Error()); // Result<Error, never>.Failure
 const v2 = failure<Error, number>(new Error()); // Result<Error, number>.Failure
 ```
 
 #### `success`
+
 ```typescript
 function success<F, S>(value: S): Result<F, S>;
 ```
+
 - Returns `Result` with `Success` state which contain value with `S` type.
-Example:
+  Example:
+
 ```typescript
 const v1 = success(2); // Result<never, number>.Success
 const v2 = success<Error, number>(2); // Result<Error, number>.Success
+```
+
+#### `from`
+
+The same as [`success`](#success)
+
+Return only `Success` typed value.
+
+```typescript
+function from<S>(value: S): Result<never, S>;
+```
+
+- Returns `Result` with `Success` state which contain value with `S` type.
+  Example:
+
+```typescript
+from(2); // Result<never, number>.Success
 ```
 
 #### `isResult`
 
 ```typescript
 function isResult<F, S>(value: unknown | Result<F, S>): value is Result<L, R>;
-``` 
+```
+
 - Returns `boolean` if given `value` is instance of Result constructor.
-Example:
+  Example:
+
 ```typescript
 const value: unknown = 2;
-if  (isResult(value)) {
+if (isResult(value)) {
   // ... value is Result<unknown, unknown> at this block
 }
 ```
 
-
 #### `Result#isInitial`
+
 ```typescript
 function isInitial(): boolean;
 ```
+
 - Returns `true` if state of `Result` is `Initial` otherwise `false`
-Example:
+  Example:
+
 ```typescript
 const v1 = success(2);
 const v2 = failure(2);
 const v3 = initial();
 
-v1.isInitial() // false
-v2.isInitial() // false
-v3.isInitial() // true
+v1.isInitial(); // false
+v2.isInitial(); // false
+v3.isInitial(); // true
 ```
 
 #### `Result#isPending`
+
 ```typescript
 function isPending(): boolean;
 ```
+
 - Returns `true` if state of `Result` is `Pending` otherwise `false`
-Example:
+  Example:
+
 ```typescript
 const v1 = success(2);
 const v2 = failure(2);
 const v3 = pending();
 
-v1.isPending() // false
-v2.isPending() // false
-v3.isPending() // true
+v1.isPending(); // false
+v2.isPending(); // false
+v3.isPending(); // true
 ```
 
 #### `Result#isFailure`
+
 ```typescript
 function isFailure(): boolean;
 ```
+
 - Returns `true` if state of `Result` is `Failure` otherwise `false`
-Example:
+  Example:
+
 ```typescript
 const v1 = success(2);
 const v2 = failure(2);
 
-v1.isFailure() // false
-v2.isFailure() // true
+v1.isFailure(); // false
+v2.isFailure(); // true
 ```
 
 #### `Result#isSuccess`
+
 ```typescript
 function isSuccess(): boolean;
 ```
+
 - Returns `true` if state of `Result` is `Success` otherwise `false`
-Example:
+  Example:
+
 ```typescript
 const v1 = success(2);
 const v2 = failure(2);
 
-v1.isSuccess() // true
-v2.isSuccess() // false
+v1.isSuccess(); // true
+v2.isSuccess(); // false
+```
+
+#### `Result#or`
+
+```typescript
+function or<F, S>(x: Result<F, S>): Either<F, S>;
+```
+
+- Returns `Result<F, S>`. If state of `this` is `Success` then `this` will be returned otherwise `x` argument will be returned
+  Example:
+
+```typescript
+const v1 = success<string, number>(2);
+const v2 = failure<string, number>("Error 1");
+const v3 = failure<string, number>("Error 2");
+const v4 = success<string, number>(3);
+const v5 = initial();
+
+v1.or(v2); // v1 will be returned
+v2.or(v1); // v1 will be returned
+v2.or(v3); // v3 will be returned
+v1.or(v4); // v1 will be returned
+v5.or(v1); // v1 will be returned
+
+v2.or(v3).or(v1); // v1 will be returned
+v2.or(v1).or(v3); // v1 will be returned
+v1.or(v2).or(v3); // v1 will be returned
+v2.or(v5).or(v3); // v3 will be returned
+```
+#### `Result#join`
+
+```typescript
+function join<L1, L2, R>(this: Result<L1, Result<L2, R>>): Result<L1 | L2, R>;
+```
+
+- `this: Result<F1, Result<F2, S>>` - `Result` instance which contains other `Result` instance as `Success` value.
+- Returns unwrapped `Result` - if current `Result` has `Success` state and inner `Result` has `Success` state then returns inner `Result` `Success`, if inner `Result` has `Failure` state then return inner `Result` `Failure` otherwise outer `Result` `Failure`.
+  Example:
+
+```typescript
+const v1 = success(success(2));
+const v2 = success(failure(new Error()));
+const v3 = failure<TypeError, Result<Error, number>>(new TypeError());
+
+v1.join(); // Result.Success with value 2
+v2.join(); // Result.Failure with value new Error
+v3.join(); // Result.Failure with value new TypeError
+```
+
+
+#### `Result#map`
+The same as [`Result#mapSuccess`](#resultmapsuccess)
+
+```typescript
+function map<F, S, NewS>(fn: (val: S) => NewS): Either<F, NewS>;
+```
+
+- Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
+  Example:
+
+```typescript
+const v1 = success<Error, number>(2);
+const v2 = failure<Error, number>(new Error());
+
+const newVal1 = v1.map(a => a.toString()); // Result<Error, string>.Success with value "2"
+const newVal2 = v2.map(a => a.toString()); // Result<Error, string>.Failure with value new Error()
+```
+
+#### `Result#mapSuccess`
+
+```typescript
+function mapSuccess<F, S, NewS>(fn: (val: S) => NewS): Result<F, NewS>;
+```
+
+- Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
+  Example:
+
+```typescript
+const v1 = success<Error, number>(2);
+const v2 = failure<Error, number>(new Error());
+
+const newVal1 = v1.mapSuccess(a => a.toString()); // Result<Error, string>.Success with value "2"
+const newVal2 = v2.mapSuccess(a => a.toString()); // Result<Error, string>.Failure with value new Error()
+```
+
+#### `Either#mapLeft`
+
+```typescript
+function mapFailure<F, S, NewF>(fn: (val: F) => NewF): Result<NewF, S>;
+```
+
+- Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Failure` otherwise `Result` with current value
+  Example:
+
+```typescript
+const v1 = success<Error, number>(2);
+const v2 = failure<Error, number>(new Error());
+
+const newVal1 = v1.mapFailure(a => a.toString()); // Result<string, number>.Right with value 2
+const newVal2 = v2.mapFailure(a => a.toString()); // Result<string, number>.Left with value "Error"
 ```
 
 ## License

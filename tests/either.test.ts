@@ -1,8 +1,8 @@
 import * as fc from "fast-check";
-import { left, merge, right } from "@sweet-monads/either";
+import { Either, left, merge, right } from "@sweet-monads/either";
 
 describe("Either", () => {
-  test("merge", () =>
+  test("merge generic", () =>
     fc.assert(
       fc.property(fc.subarray(["1", "2", "3"]), fc.subarray(["4", "5", "6"]), (l, r) => {
         const mergedOne = merge([...l.map(x => left(x)), ...r.map(y => right(y))]);
@@ -14,4 +14,38 @@ describe("Either", () => {
         expect(mergedTwo.isRight()).toBe(l.length === 0);
       })
     ));
+
+  test("merge concrete", () => {
+    const v1 = right<TypeError, number>(2);
+    const v2 = right<ReferenceError, string>("test");
+    const v3 = left<Error, boolean>(new Error());
+    const v4 = left<Int8Array, boolean>(new Int8Array());
+    const v5 = left<Float32Array, boolean>(new Float32Array());
+
+    expect(merge([v1, v2]).value).toStrictEqual([2, "test"]);
+    expect(merge([v1, v2, v3]).value).toBeInstanceOf(Error);
+    // expect(merge([v3, v4, v5]).value).toBeInstanceOf(Error);
+  });
+  test("join", () => {
+    const v1 = right(right(2));
+    const v2 = right(left(new Error()));
+    const v3 = left<TypeError, Either<Error, number>>(new TypeError());
+
+    const r1 = v1.join();
+    const r2 = v2.join();
+    const r3 = v3.join();
+    expect(r1.isRight());
+    if (r1.isRight()) {
+      expect(r1.value).toBe(2);
+    }
+    expect(r2.isLeft());
+    if (r2.isLeft()) {
+      expect(r2.value).toBeInstanceOf(Error);
+    }
+
+    expect(r3.isLeft());
+    if (r3.isLeft()) {
+      expect(r3.value).toBeInstanceOf(TypeError);
+    }
+  });
 });

@@ -1,6 +1,5 @@
 import * as fc from "fast-check";
-import { failure, initial, merge, success, pending } from "@sweet-monads/result";
-
+import { failure, initial, merge, success, pending, Result } from "@sweet-monads/result";
 describe("Result", () => {
   test.each([
     [initial(), true, false, false, false],
@@ -88,4 +87,106 @@ describe("Result", () => {
         expect(v6.isFailure()).toBe(true);
       })
     ));
+
+  test("or", () =>
+    fc.assert(
+      fc.property(result(), result(), (x, y) => {
+        const result = x.or(y);
+        expect(result.isSuccess()).toBe(x.isSuccess() || y.isSuccess());
+        expect(result).toBe(x.isSuccess() ? x : y);
+      })
+    ));
+
+  test("join", () => {
+    const v1 = success(success(2));
+    const v2 = success(failure(new Error()));
+    const v3 = failure<Float32Array, Result<Error, number>>(new Float32Array());
+
+    const r1 = v1.join(); // Result.Success with value 2
+    const r2 = v2.join(); // Result.Failure with value new Error
+    const r3 = v3.join(); // Result.Failure with value new TypeError
+
+    expect(r1.isSuccess()).toBe(true);
+    if (r1.isSuccess()) {
+      expect(r1.value).toBe(2);
+    }
+    expect(r2.isFailure()).toBe(true);
+    if (r2.isFailure()) {
+      expect(r2.value).toBeInstanceOf(Error);
+    }
+
+    expect(r3.isFailure()).toBe(true);
+    if (r3.isFailure()) {
+      expect(r3.value).toBeInstanceOf(Float32Array);
+    }
+  });
+
+  test("map", () => {
+    const v1 = success<Error, number>(2);
+    const v2 = failure<Error, number>(new Error());
+
+    const newVal1 = v1.map(a => a.toString()); // Result<Error, string>.Success with value "2"
+    const newVal2 = v2.map(a => a.toString()); // Result<Error, string>.Failure with value new Error()
+    expect(newVal1.isSuccess()).toBe(true);
+    if (newVal1.isSuccess()) {
+      expect(newVal1.value).toBe("2");
+    }
+    expect(newVal2.isFailure()).toBe(true);
+    if (newVal2.isFailure()) {
+      expect(newVal2.value).toBeInstanceOf(Error);
+    }
+  });
+
+  test("mapSuccess", () => {
+    const v1 = success<Error, number>(2);
+    const v2 = failure<Error, number>(new Error());
+
+    const newVal1 = v1.mapSuccess(a => a.toString()); // Result<Error, string>.Success with value "2"
+    const newVal2 = v2.mapSuccess(a => a.toString()); // Result<Error, string>.Failure with value new Error()
+    expect(newVal1.isSuccess()).toBe(true);
+    if (newVal1.isSuccess()) {
+      expect(newVal1.value).toBe("2");
+    }
+    expect(newVal2.isFailure()).toBe(true);
+    if (newVal2.isFailure()) {
+      expect(newVal2.value).toBeInstanceOf(Error);
+    }
+  });
+
+  test("mapFailure", () => {
+    const v1 = success<Error, number>(2);
+    const v2 = failure<Error, number>(new Error());
+
+    const newVal1 = v1.mapFailure(a => a.toString()); // Result<Error, string>.Success with value 2
+    const newVal2 = v2.mapFailure(a => a.toString()); // Result<Error, string>.Failure with value new Error()
+    expect(newVal1.isSuccess()).toBe(true);
+    if (newVal1.isSuccess()) {
+      expect(newVal1.value).toBe(2);
+    }
+    expect(newVal2.isFailure()).toBe(true);
+    if (newVal2.isFailure()) {
+      expect(newVal2.value).toBe("Error");
+    }
+  });
 });
+
+function result(): fc.Arbitrary<Result<string, number>> {
+  return fc
+    .integer(0, 3)
+    .chain(v => fc.tuple(fc.string(), fc.constant(v)))
+    .map(([str, num]) => {
+      switch (num) {
+        case 0:
+          return initial<string, number>();
+        case 1:
+          return pending<string, number>();
+        case 2:
+          return success<string, number>(num);
+        case 3:
+          return failure<string, number>(str);
+        default:
+          throw new Error("unexpected value for Result arb");
+      }
+    })
+    .noBias();
+}

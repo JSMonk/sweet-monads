@@ -181,11 +181,11 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
     return new ResultConstructor<T, R, ResultType.Failure>(ResultType.Failure, v);
   }
 
-  static initial<F = undefined, T = never>(): Result<F, T> {
+  static initial<F = never, T = never>(): Result<F, T> {
     return new ResultConstructor<F, T, ResultType.Initial>(ResultType.Initial, undefined);
   }
 
-  static pending<F = undefined, T = never>(): Result<F, T> {
+  static pending<F = never, T = never>(): Result<F, T> {
     return new ResultConstructor<F, T, ResultType.Pending>(ResultType.Pending, undefined);
   }
 
@@ -304,15 +304,18 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
       return ResultConstructor.initial<A, B>();
     }
     const next = f(this.value as S);
-    if (next.isInitial()) {
+    if (isResult(next) && next.isInitial()) {
       return ResultConstructor.initial<A, B>();
     }
 
-    if (this.isPending() || next.isPending()) {
+    if (this.isPending() || (isResult(next) && next.isPending())) {
       return ResultConstructor.pending<A, B>();
     }
-    if (this.isFailure() || next.isFailure()) {
+    if (this.isFailure()) {
       return ResultConstructor.failure<F, B>(this.value as F);
+    }
+    if (isResult(next) && next.isFailure()) {
+      return ResultConstructor.failure<A, B>(next.value as A);
     }
     return next;
   }
@@ -338,8 +341,11 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
     });
   }
 
-  or(x: Result<F, S>) {
-    return this.isFailure() ? x : (this as Result<F, S>);
+  or(x: Result<F, S>): Result<F, S> {
+    if (this.isSuccess()) {
+      return this as Result<F, S>;
+    }
+    return x;
   }
 }
 
