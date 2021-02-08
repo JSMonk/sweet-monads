@@ -163,27 +163,27 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
   }
 
   asyncApply<A, B>(
-    this: Maybe<(a: Promise<A> | A) => Promise<B>>,
+    this: Maybe<(a: A) => Promise<B>>,
     arg: Maybe<Promise<A> | A>
   ): Promise<Maybe<B>>;
   asyncApply<A, B>(
     this: Maybe<Promise<A> | A>,
-    fn: Maybe<(a: Promise<A> | A) => Promise<B>>
+    fn: Maybe<(a: A) => Promise<B>>
   ): Promise<Maybe<B>>;
   asyncApply<A, B>(
-    this: Maybe<Promise<A>> | Maybe<(a: Promise<A> | A) => Promise<B>>,
-    argOrFn: Maybe<Promise<A>> | Maybe<(a: Promise<A> | A) => Promise<B>>
+    this: Maybe<Promise<A> | A> | Maybe<(a: A) => Promise<B>>,
+    argOrFn: Maybe<Promise<A> | A> | Maybe<(a: A) => Promise<B>>
   ): Promise<Maybe<B>> {
     if (this.isNone() || argOrFn.isNone()) {
       return Promise.resolve(MaybeConstructor.none<B>());
     }
     if (isWrappedFunction(this)) {
-      return (argOrFn as Maybe<Promise<A>>).asyncMap(this.value as (
-        a: A | Promise<A>
-      ) => Promise<B>);
+      return (argOrFn as Maybe<Promise<A> | A>)
+        .map(a => Promise.resolve(a))
+        .asyncMap(pa => pa.then(this.value as (a: A) => Promise<B>));
     }
     if (isWrappedFunction(argOrFn)) {
-      return (argOrFn as Maybe<(a: A | Promise<A>) => Promise<B>>).asyncApply(
+      return (argOrFn as Maybe<(a: A) => Promise<B>>).asyncApply(
         this as Maybe<Promise<A>>
       );
     }

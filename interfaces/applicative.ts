@@ -10,12 +10,12 @@ export interface Applicative<I> extends Functor<I> {
     fn: Applicative<(a: A) => B>
   ): Applicative<B>;
   asyncApply<A, B>(
-    this: Applicative<(a: Promise<A> | A) => Promise<B>>,
+    this: Applicative<(a: A) => Promise<B>>,
     arg: Applicative<Promise<A> | A>
   ): Promise<Applicative<B>>;
   asyncApply<A, B>(
     this: Applicative<Promise<A> | A>,
-    fn: Applicative<(a: Promise<A> | A) => Promise<B>>
+    fn: Applicative<(a: A) => Promise<B>>
   ): Promise<Applicative<B>>;
 }
 
