@@ -44,7 +44,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
   static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9>(
     values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>, Maybe<V5>, Maybe<V6>, Maybe<V7>, Maybe<V8>, Maybe<V9>]
   ): Maybe<[V1, V2, V3, V4, V5, V6, V7, V8, V9]>;
-  static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9, L10, V10>(
+  static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9, V10>(
     values: [
       Maybe<V1>,
       Maybe<V2>,
