@@ -16,7 +16,7 @@
     "build:copy": "cp ./package.json ./build/package.json && cp ./README.md ./build/README.md"
   },
   "dependencies": {
-    "@sweet-monads/interfaces": "^1.3.0"
+    "@sweet-monads/interfaces": "2.2.0"
   },
   "author": "",
   "license": "MIT"

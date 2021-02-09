@@ -1,7 +1,7 @@
 // import { ClassImplements } from "@sweet-monads/interfaces";
 import type {
   Monad,
-  Alternative,
+  Alternative
   // AsyncChainable,
   // MonadConstructor,
   // ApplicativeConstructor,
@@ -12,9 +12,7 @@ const enum MaybeState {
   None = "None"
 }
 
-function isWrappedFunction<A, B>(
-  m: Maybe<A> | Maybe<(a: A) => B>
-): m is Maybe<(a: A) => B> {
+function isWrappedFunction<A, B>(m: Maybe<A> | Maybe<(a: A) => B>): m is Maybe<(a: A) => B> {
   return typeof m.value === "function";
 }
 
@@ -22,20 +20,15 @@ function isWrappedFunction<A, B>(
 // @ClassImplements<MonadConstructor>()
 // @ClassImplements<ApplicativeConstructor>()
 // @ClassImplements<AsyncChainable<Maybe<any>>>()
-export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
-  implements Monad<T>, Alternative<T> {
+export default class MaybeConstructor<T, S extends MaybeState = MaybeState> implements Monad<T>, Alternative<T> {
   static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
     return (m: Maybe<A>): Promise<Maybe<B>> => m.asyncChain(f);
   }
 
   static merge<V1>(values: [Maybe<V1>]): Maybe<[V1]>;
   static merge<V1, V2>(values: [Maybe<V1>, Maybe<V2>]): Maybe<[V1, V2]>;
-  static merge<V1, V2, V3>(
-    values: [Maybe<V1>, Maybe<V2>, Maybe<V3>]
-  ): Maybe<[V1, V2, V3]>;
-  static merge<V1, V2, V3, V4>(
-    values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>]
-  ): Maybe<[V1, V2, V3, V4]>;
+  static merge<V1, V2, V3>(values: [Maybe<V1>, Maybe<V2>, Maybe<V3>]): Maybe<[V1, V2, V3]>;
+  static merge<V1, V2, V3, V4>(values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>]): Maybe<[V1, V2, V3, V4]>;
   static merge<V1, V2, V3, V4, V5>(
     values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>, Maybe<V5>]
   ): Maybe<[V1, V2, V3, V4, V5]>;
@@ -43,42 +36,15 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>, Maybe<V5>, Maybe<V6>]
   ): Maybe<[V1, V2, V3, V4, V5, V6]>;
   static merge<V1, V2, V3, V4, V5, V6, V7>(
-    values: [
-      Maybe<V1>,
-      Maybe<V2>,
-      Maybe<V3>,
-      Maybe<V4>,
-      Maybe<V5>,
-      Maybe<V6>,
-      Maybe<V7>
-    ]
+    values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>, Maybe<V5>, Maybe<V6>, Maybe<V7>]
   ): Maybe<[V1, V2, V3, V4, V5, V6, V7]>;
   static merge<V1, V2, V3, V4, V5, V6, V7, V8>(
-    values: [
-      Maybe<V1>,
-      Maybe<V2>,
-      Maybe<V3>,
-      Maybe<V4>,
-      Maybe<V5>,
-      Maybe<V6>,
-      Maybe<V7>,
-      Maybe<V8>
-    ]
+    values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>, Maybe<V5>, Maybe<V6>, Maybe<V7>, Maybe<V8>]
   ): Maybe<[V1, V2, V3, V4, V5, V6, V7, V8]>;
   static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9>(
-    values: [
-      Maybe<V1>,
-      Maybe<V2>,
-      Maybe<V3>,
-      Maybe<V4>,
-      Maybe<V5>,
-      Maybe<V6>,
-      Maybe<V7>,
-      Maybe<V8>,
-      Maybe<V9>
-    ]
+    values: [Maybe<V1>, Maybe<V2>, Maybe<V3>, Maybe<V4>, Maybe<V5>, Maybe<V6>, Maybe<V7>, Maybe<V8>, Maybe<V9>]
   ): Maybe<[V1, V2, V3, V4, V5, V6, V7, V8, V9]>;
-  static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9, L10, V10>(
+  static merge<V1, V2, V3, V4, V5, V6, V7, V8, V9, V10>(
     values: [
       Maybe<V1>,
       Maybe<V2>,
@@ -95,8 +61,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
   static merge<T>(maybies: Array<Maybe<T>>): Maybe<T[]>;
   static merge(maybies: Array<Maybe<unknown>>) {
     return maybies.reduce(
-      (res: Maybe<Array<unknown>>, v) =>
-        v.chain(v => res.map(res => res.concat([v]))),
+      (res: Maybe<Array<unknown>>, v) => v.chain(v => res.map(res => res.concat([v]))),
       MaybeConstructor.just<Array<unknown>>([])
     );
   }
@@ -113,10 +78,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     return new MaybeConstructor<T, MaybeState.Just>(MaybeState.Just, v);
   }
 
-  private constructor(
-    private readonly type: S,
-    public readonly value: S extends MaybeState.Just ? T : undefined
-  ) {}
+  private constructor(private readonly type: S, public readonly value: S extends MaybeState.Just ? T : undefined) {}
 
   isNone(): this is MaybeConstructor<T, MaybeState.None> {
     return this.type === MaybeState.None;
@@ -146,10 +108,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
 
   apply<A, B>(this: Maybe<(a: A) => B>, arg: Maybe<A>): Maybe<B>;
   apply<A, B>(this: Maybe<A>, fn: Maybe<(a: A) => B>): Maybe<B>;
-  apply<A, B>(
-    this: Maybe<A> | Maybe<(a: A) => B>,
-    argOrFn: Maybe<A> | Maybe<(a: A) => B>
-  ): Maybe<B> {
+  apply<A, B>(this: Maybe<A> | Maybe<(a: A) => B>, argOrFn: Maybe<A> | Maybe<(a: A) => B>): Maybe<B> {
     if (this.isNone() || argOrFn.isNone()) {
       return MaybeConstructor.none<B>();
     }
@@ -162,14 +121,8 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     throw new Error("Some of the arguments should be a function");
   }
 
-  asyncApply<A, B>(
-    this: Maybe<(a: A) => Promise<B>>,
-    arg: Maybe<Promise<A> | A>
-  ): Promise<Maybe<B>>;
-  asyncApply<A, B>(
-    this: Maybe<Promise<A> | A>,
-    fn: Maybe<(a: A) => Promise<B>>
-  ): Promise<Maybe<B>>;
+  asyncApply<A, B>(this: Maybe<(a: A) => Promise<B>>, arg: Maybe<Promise<A> | A>): Promise<Maybe<B>>;
+  asyncApply<A, B>(this: Maybe<Promise<A> | A>, fn: Maybe<(a: A) => Promise<B>>): Promise<Maybe<B>>;
   asyncApply<A, B>(
     this: Maybe<Promise<A> | A> | Maybe<(a: A) => Promise<B>>,
     argOrFn: Maybe<Promise<A> | A> | Maybe<(a: A) => Promise<B>>
@@ -183,9 +136,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
         .asyncMap(pa => pa.then(this.value as (a: A) => Promise<B>));
     }
     if (isWrappedFunction(argOrFn)) {
-      return (argOrFn as Maybe<(a: A) => Promise<B>>).asyncApply(
-        this as Maybe<Promise<A>>
-      );
+      return (argOrFn as Maybe<(a: A) => Promise<B>>).asyncApply(this as Maybe<Promise<A>>);
     }
     throw new Error("Some of the arguments should be a function");
   }
@@ -205,15 +156,12 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
   }
 
   or(x: Maybe<T>) {
-    return this.isNone() ? x : this as Maybe<T>;
+    return this.isNone() ? x : (this as Maybe<T>);
   }
 }
 
-export type Maybe<T> =
-  | MaybeConstructor<T, MaybeState.Just>
-  | MaybeConstructor<T, MaybeState.None>;
+export type Maybe<T> = MaybeConstructor<T, MaybeState.Just> | MaybeConstructor<T, MaybeState.None>;
 
 export const { merge, just, none, from, chain } = MaybeConstructor;
 
-export const isMaybe = <T>(value: unknown | Maybe<T>): value is Maybe<T> =>
-  value instanceof MaybeConstructor;
+export const isMaybe = <T>(value: unknown | Maybe<T>): value is Maybe<T> => value instanceof MaybeConstructor;

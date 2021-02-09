@@ -1,0 +1,12 @@
+# Add files here to ignore them from prettier formatting
+tmp/
+out-tsc/
+node_modules/
+.vscode/
+.idea/
+.vscode/
+.prettierignore
+package-lock.json
+package.json
+yarn.lock
+**/build/**
