@@ -283,16 +283,16 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
   }
 
   asyncApply<A, B>(
-    this: Result<F, (a: Promise<A> | A) => Promise<B>>,
-    arg: Result<F, Promise<A>>
+    this: Result<F, (a: A) => Promise<B>>,
+    arg: Result<F, Promise<A> | A>
   ): Promise<Result<F, B>>;
   asyncApply<A, B>(
-    this: Result<F, Promise<A>>,
-    fn: Result<F, Promise<(a: Promise<A> | A) => B>>
+    this: Result<F, Promise<A> | A>,
+    fn: Result<F, (a: A) => Promise<B>>
   ): Promise<Result<F, B>>;
   asyncApply<A, B>(
-    this: Result<F, Promise<A>> | Result<F, (a: Promise<A> | A) => Promise<B>>,
-    argOrFn: Result<F, Promise<A>> | Result<F, (a: Promise<A> | A) => Promise<B>>
+    this: Result<F, Promise<A> | A> | Result<F, (a: A) => Promise<B>>,
+    argOrFn: Result<F, Promise<A> | A> | Result<F, (a: A) => Promise<B>>
   ): Promise<Result<F, B>> {
     if (this.isFailure()) {
       return Promise.resolve(ResultConstructor.failure<F, B>(this.value as F));
@@ -301,7 +301,9 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
       return Promise.resolve(ResultConstructor.failure<F, B>(argOrFn.value as F));
     }
     if (isWrappedFunction(this)) {
-      return (argOrFn as Result<F, Promise<A>>).asyncMap(this.value as (a: A | Promise<A>) => Promise<B>);
+      return (argOrFn as Result<F, Promise<A> | A>)
+        .map(a => Promise.resolve(a))
+        .asyncMap(pa => pa.then(this.value as (a: A) => Promise<B>));
     }
     if (isWrappedFunction(argOrFn)) {
       return (argOrFn as Result<F, (a: Promise<A> | A) => Promise<B>>).asyncApply(this as Result<F, Promise<A>>);
