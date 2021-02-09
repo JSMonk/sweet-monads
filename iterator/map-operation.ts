@@ -1,5 +1,5 @@
 import { just } from "@sweet-monads/maybe";
-import { IntermidiateOperation } from "./intermediate-operation";
+import { IntermidiateOperation } from "./intermediate-operation.js";
 import type { Maybe } from "@sweet-monads/maybe";
 
 export class MapOperation<A, B> extends IntermidiateOperation<A, B> {

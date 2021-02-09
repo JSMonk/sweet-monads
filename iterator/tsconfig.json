@@ -1,7 +1,5 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
-    "outDir": "./build",
     "lib": ["es2018"],
     "target": "es2015",
     "declaration": true,
@@ -10,7 +8,8 @@
     "strictNullChecks": true,
     "preserveConstEnums": true,
     "experimentalDecorators": true,
-    "downlevelIteration": true
+    "downlevelIteration": true,
+    "moduleResolution": "Node"
   },
   "include": ["./index.ts"],
   "exclude": ["node_modules"]

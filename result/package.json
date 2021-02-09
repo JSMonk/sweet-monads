@@ -1,24 +1,37 @@
 {
-    "name": "@sweet-monads/result",
-    "version": "2.2.2",
-    "description": "Result monad",
-    "main": "index.js",
-    "types": "index.d.ts",
-    "scripts": {
-      "build": "npm run build:clean && npm run build:start && npm run build:copy",
-      "build:start": "cp ../tsconfig.json tsconfig.json && tsc --project ./tsconfig.json",
-      "build:clean": "rm -rf build && mkdir build",
-      "build:copy": "cp ./package.json ./build/package.json && cp ./README.md ./build/README.md && rm ./tsconfig.json"
-    },
-    "homepage": "https://github.com/JSMonk/sweet-monads/tree/master/result",
-    "repository": {
-      "type": "git",
-      "url": "https://github.com/JSMonk/sweet-monads/tree/master/result"
-    },
-    "dependencies": {
-      "@sweet-monads/interfaces": "^2.2.0"
-    },
-    "author": "",
-    "license": "ISC"
+  "name": "@sweet-monads/result",
+  "version": "2.2.2",
+  "description": "Result monad",
+  "main": "./cjs/index.js",
+  "module": "./esm/index.js",
+  "exports": {
+    "import": "./esm/index.js",
+    "require": "./cjs/index.js"
+  },
+  "types": "index.d.ts",
+  "scripts": {
+    "build": "run-s build:pre build:all build:after",
+    "build:clean": "rm -rf build && mkdir build",
+    "build:config": "cp ../tsconfig.json tsconfig.json",
+    "build:pre": "run-p build:clean build:config",
+    "build:esm": "tsc --project ./tsconfig.json --module 'ESNext' --outDir './build/esm'",
+    "build:cjs": "tsc --project ./tsconfig.json --module 'CommonJS' --outDir './build/cjs'",
+    "build:declaration": "tsc --project ./tsconfig.json --outDir './build' --emitDeclarationOnly",
+    "build:all": "run-p build:esm build:cjs build:declaration",
+    "build:copy": "cp ./package.json ./build/package.json && cp ./README.md ./build/README.md",
+    "build:fixcjs": "echo '{\"type\":\"commonjs\"}' > ./build/cjs/package.json",
+    "build:fixesm": "echo '{\"type\":\"module\"}' > ./build/esm/package.json",
+    "build:after": "run-p build:copy build:fixcjs build:fixesm"
+  },
+  "homepage": "https://github.com/JSMonk/sweet-monads/tree/master/result",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JSMonk/sweet-monads/tree/master/result"
+  },
+  "dependencies": {
+    "@sweet-monads/interfaces": "^2.2.0"
+  },
+  "author": "",
+  "license": "ISC"
   }
   
