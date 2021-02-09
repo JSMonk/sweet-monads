@@ -70,6 +70,12 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
     return this.just(v);
   }
 
+  static fromNullable<T>(v: T): Maybe<Exclude<T, null | undefined>> {
+    return v !== null && v !== undefined
+      ? this.just(v as Exclude<T, null | undefined>)
+      : this.none<Exclude<T, null | undefined>>();
+  }
+
   static none<T>(): Maybe<T> {
     return new MaybeConstructor<T, MaybeState.None>(MaybeState.None, undefined);
   }
@@ -162,6 +168,6 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
 
 export type Maybe<T> = MaybeConstructor<T, MaybeState.Just> | MaybeConstructor<T, MaybeState.None>;
 
-export const { merge, just, none, from, chain } = MaybeConstructor;
+export const { merge, just, none, from, fromNullable, chain } = MaybeConstructor;
 
 export const isMaybe = <T>(value: unknown | Maybe<T>): value is Maybe<T> => value instanceof MaybeConstructor;

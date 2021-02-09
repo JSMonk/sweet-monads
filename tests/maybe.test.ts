@@ -1,5 +1,5 @@
 import * as fc from "fast-check";
-import { just, merge, none } from "@sweet-monads/maybe";
+import { fromNullable, just, merge, none } from "@sweet-monads/maybe";
 
 describe("Maybe", () => {
   test("merge", () =>
@@ -12,6 +12,15 @@ describe("Maybe", () => {
         const mergedTwo = merge([...justItems.map(y => just(y)), ...noneItems.map(() => none())]);
         expect(mergedTwo.isNone()).toBe(noneItems.length > 0);
         expect(mergedTwo.isJust()).toBe(noneItems.length === 0);
+      })
+    ));
+
+  test("fromNullable", () =>
+    fc.assert(
+      fc.property(fc.option(fc.string()), option => {
+        const nil = fromNullable(option);
+        expect(nil.isJust()).toBe(option !== null && option !== undefined);
+        expect(nil.isNone()).toBe(option === null || option === undefined);
       })
     ));
 });
