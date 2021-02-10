@@ -1,6 +1,6 @@
-import { MapOperation } from "./map-operation";
-import { FilterOperation } from "./filter-operation";
-import { IntermidiateOperation } from "./intermediate-operation";
+import { MapOperation } from "./map-operation.js";
+import { FilterOperation } from "./filter-operation.js";
+import { IntermidiateOperation } from "./intermediate-operation.js";
 import MaybeConstructor, { Maybe, just, none } from "@sweet-monads/maybe";
 
 type FromIterator<A, S extends Iterable<A> = Iterable<A>, T extends Iterable<A> = Iterable<A>> = (source: S) => T;
