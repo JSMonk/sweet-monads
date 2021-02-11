@@ -38,6 +38,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`none`](#none)
 - [`just`](#just)
 - [`from`](#from)
+- [`fromNullable`](#fromnullable)
 - [`isMaybe`](#ismaybe)
 - [`Maybe#isNone`](#maybeisnone)
 - [`Maybe#isJust`](#maybeisjust)
@@ -136,6 +137,19 @@ function from<T>(value: T): Maybe<T>;
 ```typescript
 const v1 = from(2); // Maybe<number>.Just
 const v2 = from<2>(2); // Maybe<2>.Just
+```
+
+#### `fromNullable`
+
+```typescript
+function fromNullable<T>(value: T): Maybe<Exclude<T, null | undefined>>;
+```
+
+- Returns `Maybe` with `Just` state which contain value with `T` type if value is not null or undefined and `None` otherwise.
+  Example:
+
+```typescript
+const v1 = fromNullable(2); // Maybe<number>.Just
 ```
 
 #### `isMaybe`

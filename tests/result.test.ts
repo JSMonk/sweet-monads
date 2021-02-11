@@ -1,5 +1,15 @@
 import * as fc from "fast-check";
-import { failure, initial, merge, success, pending, Result, fromMaybe, fromEither } from "@sweet-monads/result";
+import {
+  failure,
+  initial,
+  merge,
+  success,
+  pending,
+  Result,
+  fromMaybe,
+  fromEither,
+  mergeInMany
+} from "@sweet-monads/result";
 import { just, none } from "@sweet-monads/maybe";
 import { left, right } from "@sweet-monads/either";
 
@@ -358,6 +368,15 @@ test("toUndefined", () =>
       } else {
         expect(nullable).not.toBeUndefined();
       }
+    })
+  ));
+
+test("mergeInMany", () =>
+  fc.assert(
+    fc.property(result(), result(), (x, y) => {
+      const r1 = mergeInMany([x, y]);
+      expect(r1.isSuccess()).toBe(x.isSuccess() && y.isSuccess());
+      // expect(r1.isFailure()).toBe(x.isFailure() || y.isFailure());
     })
   ));
 

@@ -396,14 +396,15 @@ const newVal4 = fn2.apply(v2); // Either<Error, number>.Left with value new Erro
 Async variant of [`Either#apply`](#eitherapply)
 
 ```typescript
-function asyncApply<A, B>(
-  this: Maybe<(a: Promise<A> | A) => Promise<B>>,
-  arg: Maybe<Promise<A> | A>
-): Promise<Maybe<B>>;
-function asyncApply<A, B>(this: Maybe<Promise<A> | A>, fn: Maybe<(a: Promise<A> | A) => Promise<B>>): Promise<Maybe<B>>;
+asyncApply<A, B>(this: Either<L, (a: A) => Promise<B>>, arg: Either<L, Promise<A> | A>): Promise<Either<L, B>>;
+asyncApply<A, B>(this: Either<L, Promise<A> | A>, fn: Either<L, Promise<(a: A) => B>>): Promise<Either<L, B>>;
+asyncApply<A, B>(
+    this: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>,
+    argOrFn: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>
+  ): Promise<Either<L, B>>
 ```
 
-- `this | fn` - function wrapped by Maybe, which should be applied to value `arg`
+- `this | fn` - function wrapped by Either, which should be applied to value `arg`
 - `arg | this` - value which should be applied to `fn`
 - Returns `Promise` with mapped by `fn` function value wrapped by `Either` if `Either` is `Right` otherwise `Left` with `L` value
   Example:

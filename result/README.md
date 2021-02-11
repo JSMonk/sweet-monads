@@ -39,7 +39,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`chain`](#chain)
 - [`merge`](#merge)
 - [`mergeInOne`](#mergeinone)
-- [`mergeInMany`](#mergeinmany) TODO
+- [`mergeInMany`](#mergeinmany)
 - [`initial`](#initial)
 - [`pending`](#pending)
 - [`failure`](#failure)
@@ -51,19 +51,19 @@ const user = getUser(1).map(({ email }) => email);
 - [`Result#isInitial`](#resultisinitial)
 - [`Result#isPending`](#resultispending)
 - [`Result#isFailure`](#resultisfailure)
-- [`Result#isSuccess`](#eresultissuccess)
+- [`Result#isSuccess`](#resultissuccess)
 - [`Result#or`](#resultor)
 - [`Result#join`](#resultjoin)
 - [`Result#map`](#resultmap)
-- [`Result#mapSuccess`](#resultmapright)
-- [`Result#mapFailure`](#resultmapleft)
+- [`Result#mapSuccess`](#resultmapsuccess)
+- [`Result#mapFailure`](#resultmapfailure)
 - [`Result#asyncMap`](#resultasyncmap)
 - [`Result#apply`](#resultapply)
 - [`Result#asyncApply`](#resultasyncapply)
 - [`Result#chain`](#resultchain)
 - [`Result#asyncChain`](#resultasyncchain)
-- [`Result#toEither`](#resulttonullable)
-- [`Result#toMaybe`](#resulttonullable)
+- [`Result#toEither`](#resulttoeither)
+- [`Result#toMaybe`](#resulttomaybe)
 - [`Result#toNullable`](#resulttonullable)
 - [`Result#toUndefined`](#resulttoundefined)
 
@@ -145,6 +145,30 @@ const r2 = merge([v2, v5]); // Result<TypeError | Error, [number, boolean]>.Pend
 const r3 = merge([v3, v4]); // Result<TypeError | ReferenceError, [number, string]>.Success
 const r4 = merge([v3, v4, v5]); // Result<TypeError | ReferenceError | Error, [number, string, boolean]>.Failure
 ```
+#### `mergeInMany`
+
+```typescript
+static mergeInMany<F1, S1>(values: [Result<F1, S1>]): Result<Array<F1>, [S1]>;
+static mergeInMany<F1, S1, F2, S2>(values: [Result<F1, S1>, Result<F2, S2>]): Result<Array<F1 | F2>, [S1, S2]>;
+static mergeInMany<F1, S1, F2, S2, F3, S3>(
+  values: [Result<F1, S1>, Result<F2, S2>, Result<F3, S3>]
+): Result<Array<F1 | F2 | F3>, [S1, S2, S3]>;
+// ... until 10 elements
+```
+
+- `values: Array<Result<F, S>>` - Array of Result values which will be merged into Result of Array
+- Returns `Result<Array<F>, Array<S>>` which will contain `Success<Array<S>>` if all of array elements was `Success<R>` otherwise array of all catched `Failure<F>` values.
+
+Example:
+
+```typescript
+const v1 = success<TypeError, number>(2); // Result<TypeError, number>.Success
+const v2 = failure<ReferenceError, string>("test"); // Result<ReferenceError, string>.Success
+const v3 = failure<Error, boolean>(new Error()); // Result<Error, boolean>.Failure
+
+merge([v1, v2]); // Result<Array<TypeError | ReferenceError>, [number, string]>.Success
+merge([v1, v2, v3]); // Result<Array<TypeError | ReferenceError | Error>, [number, string, boolean]>.Failure
+```
 
 #### `initial`
 
@@ -153,7 +177,8 @@ function initial<F, S>(): Result<F, S>;
 ```
 
 - Returns `Result` with `Initial` state which does not contain value.
-  Example:
+
+Example:
 
 ```typescript
 const v1 = initial(); // Result<undefined, never>.Initial
@@ -167,7 +192,8 @@ function pending<F, S>(): Result<F, S>;
 ```
 
 - Returns `Result` with `Pending` state which does not contain value.
-  Example:
+
+Example:
 
 ```typescript
 const v1 = pending(); // Result<undefined, never>.Initial
@@ -181,7 +207,8 @@ function failure<F, S>(value: F): Result<F, S>;
 ```
 
 - Returns `Result` with `Failure` state which contain value with `F` type.
-  Example:
+
+Example:
 
 ```typescript
 const v1 = failure(new Error()); // Result<Error, never>.Failure
@@ -195,7 +222,8 @@ function success<F, S>(value: S): Result<F, S>;
 ```
 
 - Returns `Result` with `Success` state which contain value with `S` type.
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success(2); // Result<never, number>.Success
@@ -211,7 +239,8 @@ function from<S>(value: S): Result<never, S>;
 ```
 
 - Returns `Result` with `Success` state which contain value with `S` type.
-  Example:
+
+Example:
 
 ```typescript
 from(2); // Result<never, number>.Success
@@ -224,7 +253,8 @@ function fromMaybe<never, S>(value: Maybe<S>): Result<never, S>;
 ```
 
 - Creates `Result` from `Maybe` in `Initial` or `Success` state.
-  Example:
+
+Example:
 
 ```typescript
 fromMaybe(just(2)); // Result<never, number>.Success
@@ -238,7 +268,8 @@ function fromEither<F, S>(value: Either<F, S>): Result<F, S>;
 ```
 
 - Creates `Result` from `Either` in `Failure` or `Success` state.
-  Example:
+
+Example:
 
 ```typescript
 fromEither(right<string, number>(10)); // Result<string, number>.Success
@@ -251,7 +282,8 @@ function isResult<F, S>(value: unknown | Result<F, S>): value is Result<L, R>;
 ```
 
 - Returns `boolean` if given `value` is instance of Result constructor.
-  Example:
+
+Example:
 
 ```typescript
 const value: unknown = 2;
@@ -267,7 +299,8 @@ function isInitial(): boolean;
 ```
 
 - Returns `true` if state of `Result` is `Initial` otherwise `false`
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success(2);
@@ -286,7 +319,8 @@ function isPending(): boolean;
 ```
 
 - Returns `true` if state of `Result` is `Pending` otherwise `false`
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success(2);
@@ -305,7 +339,8 @@ function isFailure(): boolean;
 ```
 
 - Returns `true` if state of `Result` is `Failure` otherwise `false`
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success(2);
@@ -322,7 +357,8 @@ function isSuccess(): boolean;
 ```
 
 - Returns `true` if state of `Result` is `Success` otherwise `false`
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success(2);
@@ -339,7 +375,8 @@ function or<F, S>(x: Result<F, S>): Result<F, S>;
 ```
 
 - Returns `Result<F, S>`. If state of `this` is `Success` then `this` will be returned otherwise `x` argument will be returned
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<string, number>(2);
@@ -368,7 +405,8 @@ function join<L1, L2, R>(this: Result<L1, Result<L2, R>>): Result<L1 | L2, R>;
 
 - `this: Result<F1, Result<F2, S>>` - `Result` instance which contains other `Result` instance as `Success` value.
 - Returns unwrapped `Result` - if current `Result` has `Success` state and inner `Result` has `Success` state then returns inner `Result` `Success`, if inner `Result` has `Failure` state then return inner `Result` `Failure` otherwise outer `Result` `Failure`.
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success(success(2));
@@ -389,7 +427,8 @@ function map<F, S, NewS>(fn: (val: S) => NewS): Result<F, NewS>;
 ```
 
 - Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<Error, number>(2);
@@ -406,7 +445,8 @@ function mapSuccess<F, S, NewS>(fn: (val: S) => NewS): Result<F, NewS>;
 ```
 
 - Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<Error, number>(2);
@@ -423,7 +463,8 @@ function mapFailure<F, S, NewF>(fn: (val: F) => NewF): Result<NewF, S>;
 ```
 
 - Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Failure` otherwise `Result` with current value
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<Error, number>(2);
@@ -440,7 +481,8 @@ function asyncMap<F, S, NewS>(fn: (val: S) => Promise<NewS>): Promise<Result<F, 
 ```
 
 - Returns `Promise` with mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<Error, number>(2);
@@ -462,7 +504,8 @@ function apply<A, B>(this: Result<L, A>, fn: Result<L, (a: A) => B>): Result<L, 
 - `this | fn` - function wrapped by Result, which should be applied to value `arg`
 - `arg | this` - value which should be applied to `fn`
 - Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<Error, number>(2);
@@ -492,10 +535,11 @@ asyncApply<A, B>(
   argOrFn: Result<F, Promise<A>> | Result<F, (a: Promise<A> | A) => Promise<B>>): Promise<Result<F, B>>
 ```
 
-- `this | fn` - function wrapped by Maybe, which should be applied to value `arg`
+- `this | fn` - function wrapped by Result, which should be applied to value `arg`
 - `arg | this` - value which should be applied to `fn`
 - Returns `Promise` with mapped by `fn` function value wrapped by `Result` if `Result` is `Success` otherwise `Result` with current value
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<Error, number>(2);
@@ -516,7 +560,8 @@ function chain<F, S, NewF, NewS>(fn: (val: S) => Either<NewF, NewS>): Either<F |
 ```
 
 - Returns mapped by `fn` function value wrapped by `Result` if `Result` is `Success` and returned by `fn` value is `Success` too otherwise `Result` in other state, `Initial` pwns `Pending` and `Failure`.
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<Error, number>(2);
@@ -542,7 +587,8 @@ function asyncChain<F, S, NewF, NewS>(fn: (val: S) => Promise<Result<NewF, NewS>
 ```
 
 - Returns `Promise` with mapped by `fn` function value wrapped by `Result` if `Result` is `Success` and returned by `fn` value is `Success` too otherwise `Result` in other state, `Initial` pwns `Pending` and `Failure`.
-  Example:
+
+Example:
 
 ```typescript
 const v1 = success<Error, number>(2);
@@ -568,7 +614,8 @@ function toEither<F, S>(onInitial: () => F, onPending: () => F): Either<F, S>;
 ```
 
 - Converts `Result` into `Either` in `Left` or `Success` state with fallbacks for `Initial` and `Pending` states.
-  Example:
+
+Example:
 
 ```typescript
 success<string, number>(10).toEither(
@@ -584,7 +631,8 @@ function toMaybe<S>(): Maybe<S>;
 ```
 
 - Converts `Result` into `Maybe` in `Just` state if `Result` is in `Success` state or to `Maybe` in `None` state otherwise.
-  Example:
+
+Example:
 
 ```typescript
 success<string, number>(10).toMaybe(); // Maybe<number>.Just
@@ -597,7 +645,8 @@ function toNullable<S>(): S | null;
 ```
 
 - Returns S if `Result` is in `Success` state and null otherwise
-  Example:
+
+Example:
 
 ```typescript
 success<string, number>(10).toNullable(); // number | null
@@ -610,7 +659,8 @@ function toUndefined<S>(): S | undefined;
 ```
 
 - Returns S if `Result` is in `Success` state and undefined otherwise
-  Example:
+
+Example:
 
 ```typescript
 success<string, number>(10).toUndefined(); // number | undefined
