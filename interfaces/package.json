@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/interfaces",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Monad interfaces",
   "main": "index.js",
   "types": "index.d.ts",

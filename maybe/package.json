@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/maybe",
-  "version": "2.2.2",
+  "version": "2.3.0",
   "description": "",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -29,7 +29,7 @@
     "build:after": "run-p build:copy build:fixcjs build:fixesm"
   },
   "dependencies": {
-    "@sweet-monads/interfaces": "2.2.0"
+    "@sweet-monads/interfaces": "^2.3.0"
   },
   "author": "",
   "license": "MIT"

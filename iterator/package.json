@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/iterator",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Implement iterator with helper functions",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
