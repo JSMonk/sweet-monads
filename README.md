@@ -17,7 +17,6 @@ Easy-to-use monads implementation with static types definition and separated pac
 - [Either](https://github.com/JSMonk/sweet-monads/tree/master/either)
 - [Iterator](https://github.com/JSMonk/sweet-monads/tree/master/iterator)
 - [Interfaces](https://github.com/JSMonk/sweet-monads/tree/master/interfaces)
-- [Result](https://github.com/JSMonk/sweet-monads/tree/master/result)
 
 ## License
 
