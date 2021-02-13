@@ -97,7 +97,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Mona
   static mergeInOne<L, R>(either: Array<Either<L, R>>): Either<L, R[]>;
   static mergeInOne(eithers: Array<Either<unknown, unknown>>) {
     return eithers.reduce(
-      (res: Either<unknown, Array<unknown>>, v) => v.chain(v => res.map(res => res.concat([v]))),
+      (res: Either<unknown, Array<unknown>>, v) => res.chain(res => v.map(v => res.concat([v]))),
       EitherConstructor.right<unknown, Array<unknown>>([])
     );
   }
@@ -179,7 +179,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Mona
       }
       return v.isLeft()
         ? EitherConstructor.left([v.value])
-        : (v.chain(v => res.map(res => [...res, v])) as EitherConstructor<Array<unknown>, Array<unknown>>);
+        : (res.chain(res => v.map(v => [...res, v])) as EitherConstructor<Array<unknown>, Array<unknown>>);
     }, EitherConstructor.right<Array<unknown>, Array<unknown>>([]));
   }
 
