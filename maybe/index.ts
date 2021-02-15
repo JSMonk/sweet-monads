@@ -59,14 +59,14 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
     ]
   ): Maybe<[V1, V2, V3, V4, V5, V6, V7, V8, V9, V10]>;
   static merge<T>(maybies: Array<Maybe<T>>): Maybe<T[]>;
-  static merge(maybies: Array<Maybe<unknown>>) {
+  static merge(maybies: Array<Maybe<unknown>>): Maybe<unknown> {
     return maybies.reduce(
-      (res: Maybe<Array<unknown>>, v) => v.chain(v => res.map(res => res.concat([v]))),
-      MaybeConstructor.just<Array<unknown>>([])
+      (res: Maybe<unknown[]>, v) => res.chain(res => v.map(v => res.concat([v]))),
+      MaybeConstructor.just<unknown[]>([])
     );
   }
 
-  static from<T>(v: T) {
+  static from<T>(v: T): Maybe<T> {
     return this.just(v);
   }
 
@@ -76,7 +76,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
       : this.none<Exclude<T, null | undefined>>();
   }
 
-  static none<T>(): Maybe<T> {
+  static none<T = never>(): Maybe<T> {
     return new MaybeConstructor<T, MaybeState.None>(MaybeState.None, undefined);
   }
 

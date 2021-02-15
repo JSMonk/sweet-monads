@@ -396,12 +396,18 @@ const newVal4 = fn2.apply(v2); // Either<Error, number>.Left with value new Erro
 Async variant of [`Either#apply`](#eitherapply)
 
 ```typescript
-asyncApply<A, B>(this: Either<L, (a: A) => Promise<B>>, arg: Either<L, Promise<A> | A>): Promise<Either<L, B>>;
-asyncApply<A, B>(this: Either<L, Promise<A> | A>, fn: Either<L, Promise<(a: A) => B>>): Promise<Either<L, B>>;
-asyncApply<A, B>(
-    this: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>,
-    argOrFn: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>
-  ): Promise<Either<L, B>>
+function asyncApply<A, B>(
+  this: Either<L, (a: A) => Promise<B>>,
+  arg: Either<L, Promise<A> | A>
+): Promise<Either<L, B>>;
+function asyncApply<A, B>(
+  this: Either<L, Promise<A> | A>,
+  fn: Either<L, (a: A) => Promise<B>>
+): Promise<Either<L, B>>;
+function asyncApply<A, B>(
+  this: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>,
+  argOrFn: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>
+): Promise<Either<L, B>>;
 ```
 
 - `this | fn` - function wrapped by Either, which should be applied to value `arg`
@@ -472,9 +478,9 @@ const newVal4 = v2.chain(a => left<TypeError, string>(new TypeError()));
 ```typescript
 // Value from Either instance
 const { value } = right<Error, number>(2); // number | Error
-const { value } = right(2); // any
+const { value } = right(2); // number
 const { value } = left<Error, number>(new Error()); // number | Error
-const { value } = left(2); // any
+const { value } = left(new Error()); // Error
 ```
 
 ## License

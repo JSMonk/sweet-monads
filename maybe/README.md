@@ -105,7 +105,7 @@ function none<T>(): Maybe<T>;
   Example:
 
 ```typescript
-const v1 = none(); // Maybe<unknown>.None
+const v1 = none(); // Maybe<never>.None
 const v2 = none<number>(); // Maybe<number>.None
 ```
 
