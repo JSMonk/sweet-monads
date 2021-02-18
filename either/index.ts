@@ -1,10 +1,10 @@
-// import { ClassImplements } from "@sweet-monads/interfaces";
 import type {
   Monad,
-  Alternative
-  // AsyncChainable,
-  // MonadConstructor,
-  // ApplicativeConstructor,
+  Alternative,
+  AsyncChainable,
+  ClassImplements,
+  MonadConstructor,
+  ApplicativeConstructor
 } from "@sweet-monads/interfaces";
 
 const enum EitherType {
@@ -18,10 +18,11 @@ function isWrappedFunction<A, B, L>(
   return typeof m.value === "function";
 }
 
-// TODO: Write AST converter to eliminate these checks from the runtime
-// @ClassImplements<MonadConstructor>()
-// @ClassImplements<ApplicativeConstructor>()
-// @ClassImplements<AsyncChainable<Either<any, any>>>()
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type StaticCheck = ClassImplements<
+  typeof EitherConstructor,
+  [MonadConstructor, ApplicativeConstructor, AsyncChainable<Either<any, any>>]
+>;
 class EitherConstructor<L, R, T extends EitherType = EitherType> implements Monad<R>, Alternative<T> {
   static chain<L, R, NR>(f: (v: R) => Promise<Either<never, NR>>): (m: Either<L, R>) => Promise<Either<L, NR>>;
   static chain<L, R, NL>(f: (v: R) => Promise<Either<NL, never>>): (m: Either<L, R>) => Promise<Either<NL | L, R>>;

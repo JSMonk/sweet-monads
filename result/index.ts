@@ -1,4 +1,11 @@
-import type { Monad, Alternative } from "@sweet-monads/interfaces";
+import type {
+  Monad,
+  Alternative,
+  AsyncChainable,
+  ClassImplements,
+  MonadConstructor,
+  ApplicativeConstructor
+} from "@sweet-monads/interfaces";
 import { just, Maybe, none } from "@sweet-monads/maybe";
 import { Either, left, right } from "@sweet-monads/either";
 
@@ -13,6 +20,11 @@ function isWrappedFunction<A, B, L>(m: Result<L, A> | Result<L, (a: A) => B>): m
   return !m.isInitial() && !m.isPending() && typeof m.value === "function";
 }
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+type StaticCheck = ClassImplements<
+  typeof ResultConstructor,
+  [MonadConstructor, ApplicativeConstructor, AsyncChainable<Result<any, any>>]
+>;
 class ResultConstructor<F, S, T extends ResultType = ResultType> implements Monad<S>, Alternative<T> {
   static chain<F, S, NR>(f: (v: S) => Promise<Result<never, NR>>): (m: Result<F, S>) => Promise<Result<F, NR>>;
   static chain<F, S, NF>(f: (v: S) => Promise<Result<NF, never>>): (m: Result<F, S>) => Promise<Result<NF | F, S>>;
@@ -282,14 +294,8 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
     throw new Error("Some of the arguments should be a function");
   }
 
-  asyncApply<A, B>(
-    this: Result<F, (a: A) => Promise<B>>,
-    arg: Result<F, Promise<A> | A>
-  ): Promise<Result<F, B>>;
-  asyncApply<A, B>(
-    this: Result<F, Promise<A> | A>,
-    fn: Result<F, (a: A) => Promise<B>>
-  ): Promise<Result<F, B>>;
+  asyncApply<A, B>(this: Result<F, (a: A) => Promise<B>>, arg: Result<F, Promise<A> | A>): Promise<Result<F, B>>;
+  asyncApply<A, B>(this: Result<F, Promise<A> | A>, fn: Result<F, (a: A) => Promise<B>>): Promise<Result<F, B>>;
   asyncApply<A, B>(
     this: Result<F, Promise<A> | A> | Result<F, (a: A) => Promise<B>>,
     argOrFn: Result<F, Promise<A> | A> | Result<F, (a: A) => Promise<B>>
