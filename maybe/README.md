@@ -9,10 +9,10 @@
 - No dependencies, one small file
 - Easily auditable TypeScript/JS code
 - Check out all libraries:
-  [either](https://github.com/JSMonk/sweet-monads/tree/master/either),  
+  [either](https://github.com/JSMonk/sweet-monads/tree/master/either),
   [iterator](https://github.com/JSMonk/sweet-monads/tree/master/iterator),
   [interfaces](https://github.com/JSMonk/sweet-monads/tree/master/interfaces),
-  [maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe),  
+  [maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
 
 ## Usage
 
