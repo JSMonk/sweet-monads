@@ -86,6 +86,16 @@ describe("Result", () => {
       })
     ));
 
+  test("success", () =>
+    fc.assert(
+      fc.property(fc.integer(), int => {
+        const r1 = success(int);
+        expect(r1.isSuccess()).toBe(true);
+
+        expect(r1.value).toBe(int);
+      })
+    ));
+
   test("fromEither", () =>
     fc.assert(
       fc.property(fc.integer(), fc.string(), (int, str) => {
