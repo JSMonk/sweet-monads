@@ -145,6 +145,7 @@ const r2 = merge([v2, v5]); // Result<TypeError | Error, [number, boolean]>.Pend
 const r3 = merge([v3, v4]); // Result<TypeError | ReferenceError, [number, string]>.Success
 const r4 = merge([v3, v4, v5]); // Result<TypeError | ReferenceError | Error, [number, string, boolean]>.Failure
 ```
+
 #### `mergeInMany`
 
 ```typescript

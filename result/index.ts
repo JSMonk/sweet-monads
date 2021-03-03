@@ -16,7 +16,9 @@ const enum ResultType {
   Failure = "Failure"
 }
 
-function isWrappedFunction<A, B, L>(m: Result<L, A> | Result<L, (a: A) => B>): m is Result<L, (a: A) => B> {
+function isWrappedFunction<A, B, L>(
+  m: Result<L, A | Promise<A>> | Result<L, (a: A) => B>
+): m is Result<L, (a: A) => B> {
   return !m.isInitial() && !m.isPending() && typeof m.value === "function";
 }
 
@@ -184,15 +186,15 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
   }
 
   static from<T>(v: T) {
-    return this.success(v);
+    return success(v);
   }
 
   static fromMaybe<T>(v: Maybe<T>) {
-    return v.isJust() ? this.success(v.value) : this.initial();
+    return v.isJust() ? success(v.value) : initial();
   }
 
   static fromEither<L, R>(v: Either<L, R>) {
-    return v.isRight() ? this.success<L, R>(v.value) : this.failure<L, R>(v.value);
+    return v.isRight() ? success<L, R>(v.value) : failure<L, R>(v.value);
   }
 
   static success<F = never, T = never>(v: T): Result<F, T> {
@@ -295,7 +297,7 @@ class ResultConstructor<F, S, T extends ResultType = ResultType> implements Mona
   }
 
   asyncApply<A, B>(this: Result<F, (a: A) => Promise<B>>, arg: Result<F, Promise<A> | A>): Promise<Result<F, B>>;
-  asyncApply<A, B>(this: Result<F, Promise<A> | A>, fn: Result<F, (a: A) => Promise<B>>): Promise<Result<F, B>>;
+  asyncApply<A, B>(this: Result<F, Promise<A> | A>, fn: Result<F, Promise<(a: A) => B>>): Promise<Result<F, B>>;
   asyncApply<A, B>(
     this: Result<F, Promise<A> | A> | Result<F, (a: A) => Promise<B>>,
     argOrFn: Result<F, Promise<A> | A> | Result<F, (a: A) => Promise<B>>

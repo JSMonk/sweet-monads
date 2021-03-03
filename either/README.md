@@ -396,14 +396,8 @@ const newVal4 = fn2.apply(v2); // Either<Error, number>.Left with value new Erro
 Async variant of [`Either#apply`](#eitherapply)
 
 ```typescript
-function asyncApply<A, B>(
-  this: Either<L, (a: A) => Promise<B>>,
-  arg: Either<L, Promise<A> | A>
-): Promise<Either<L, B>>;
-function asyncApply<A, B>(
-  this: Either<L, Promise<A> | A>,
-  fn: Either<L, (a: A) => Promise<B>>
-): Promise<Either<L, B>>;
+function asyncApply<A, B>(this: Either<L, (a: A) => Promise<B>>, arg: Either<L, Promise<A> | A>): Promise<Either<L, B>>;
+function asyncApply<A, B>(this: Either<L, Promise<A> | A>, fn: Either<L, (a: A) => Promise<B>>): Promise<Either<L, B>>;
 function asyncApply<A, B>(
   this: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>,
   argOrFn: Either<L, Promise<A> | A> | Either<L, (a: A) => Promise<B>>
