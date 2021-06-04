@@ -185,7 +185,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Mona
   }
 
   static from<T>(v: T) {
-    return this.right(v);
+    return EitherConstructor.right(v);
   }
 
   static right<L = never, T = never>(v: T): Either<L, T> {
