@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/iterator",
-  "version": "2.3.0",
+  "version": "3.0.1",
   "description": "Implement iterator with helper functions",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -31,6 +31,6 @@
   "author": "JSMonk",
   "license": "MIT",
   "dependencies": {
-    "@sweet-monads/maybe": "^2.0.0"
+    "@sweet-monads/maybe": "^3.0.1"
   }
 }

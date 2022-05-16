@@ -31,9 +31,12 @@ class Container<T> implements Functor<T> {
 ## Available Interfaces
 
 - [`Functor`](#functor)
+- [`AsyncFunctor`](#asyncfunctor)
 - [`Alternative`](#alternative)
 - [`Applicative`](#applicative)
+- [`AsyncApplicative`](#asyncapplicative)
 - [`Monad`](#monad)
+- [`AsyncMonad`](#asyncmonad)
 - [`AsyncChainable`](#asyncchainable)
 
 ### Functor
@@ -80,6 +83,49 @@ const f = new SomeFunctorImplementation<number>();
 expect(f.map(x => toString(twice(x)))).toEqual(f.map(twice).map(toString));
 ```
 
+### AsyncFunctor
+
+Async version of [`Functor`](#functor), which provides async version of the [`map`](#functormap) method.
+
+Methods:
+
+##### `AsyncFunctor#asyncMap`
+
+```typescript
+function asyncMap<A, B>(f: (x: A) => Promise<B>): Promise<AsyncFunctor<B>>;
+```
+
+#### Minimal Complete Definition
+
+[`Functor`](#functor) implementation.
+
+```typescript
+asyncMap<A, B>(f: (x: A) => Promise<B>): Promise<AsyncFunctor<B>>;
+```
+
+#### AsyncFunctor Laws
+All the [`Functor Laws`](#functor-laws) should be applied to the async version, so:
+
+##### AsyncFunctors must preserve identity morphisms
+```typescript
+const f = new SomeAsyncFunctorImplementation(); // for all functors
+const id = x => Promise.resolve(x);
+
+expect(await f.asyncMap(id)).toEqual(f);
+```
+
+##### AsyncFunctors preserve composition of morphisms
+
+```typescript
+declare function twice(x: number): Promise<number>; // for all functions
+declare function toString(x: number): Promise<string>; // for all functions
+Promise.resolve(toString(twice(x)))
+
+const f = new SomeAsyncFunctorImplementation<number>();
+expect(await f.asyncMap(x => twice(x).then(toString))).toEqual(await f.asyncMap(twice).then(f => f.asyncMap(toString)));
+```
+
+
 ### Alternative
 
 https://en.wikibooks.org/wiki/Haskell/Alternative_and_MonadPlus
@@ -114,8 +160,8 @@ function from<A>(x: A): Applicative<A>;
 ##### `Applicative#apply`
 
 ```typescript
-apply<A, B>(this: Applicative<(a: A) => B>, arg: Applicative<A>): Applicative<B>;
-apply<A, B>(this: Applicative<A>, fn: Applicative<(a: A) => B>): Applicative<B>;
+function apply<A, B>(this: Applicative<(a: A) => B>, arg: Applicative<A>): Applicative<B>;
+function apply<A, B>(this: Applicative<A>, fn: Applicative<(a: A) => B>): Applicative<B>;
 ```
 
 #### Minimal Complete Definition
@@ -149,6 +195,52 @@ declare var x: unknown;
 declare var f: (x: unknown) => unknown;
 
 expect(SomeApplicative.from(f).apply(x)).toEqual(SomeApplicative.from(f(x)));
+```
+
+### AsyncApplicative
+
+Async version of [`Applicative`](#applicative), which provides async version of the [`apply`](#applicativeapply) method.
+
+Methods:
+
+##### `AsyncApplicative#asyncApply`
+
+```typescript
+function asyncApply<A, B>(this: AsyncApplicative<(a: A) => Promise<B>>, arg: AsyncApplicative<Promise<A> | A>): Promise<AsyncApplicative<B>>;
+function asyncApply<A, B>(this: AsyncApplicative<Promise<A> | A>, fn: AsyncApplicative<(a: A) => Promise<B>>): Promise<AsyncApplicative<B>>;
+```
+
+#### Minimal Complete Definition
+
+[`Applicative`](#applicative) implementation.
+
+[`AsyncFunctor`](#asyncfunctor) implementation.
+
+```typescript
+asyncApply<A, B>(this: AsyncApplicative<(a: A) => Promise<B>>, arg: AsyncApplicative<Promise<A> | A>): Promise<AsyncApplicative<B>>;
+asyncApply<A, B>(this: AsyncApplicative<Promise<A> | A>, fn: AsyncApplicative<(a: A) => Promise<B>>): Promise<AsyncApplicative<B>>;
+```
+
+#### AsyncApplicative Laws
+
+All the [`Applicative Laws`](#applicative-laws) should be applied to the async version, so:
+
+##### Identity Law
+
+```typescript
+declare var x: AsyncApplicative<unknown>;
+const id = x => Promise.resolve(x);
+
+expect(await SomeAsyncApplicative.from(id).asyncApply(x)).toEqual(x);
+```
+
+##### Homomorphism Law
+
+```typescript
+declare var x: unknown;
+declare var f: (x: unknown) => Promise<unknown>;
+
+expect(await SomeAsyncApplicative.from(f).asyncApply(x)).toEqual(SomeAsyncApplicative.from(await f(x)));
 ```
 
 ### Monad
@@ -210,9 +302,64 @@ declare function g(x: unknown): Monad<unknown>;
 expect(mx.chain(x => f(x).chain(g))).toEqual(mx.chain(f).chain(g));
 ```
 
+### AsyncMonad
+
+Async version of [`Monad`](#monad), which provides async version of the [`chain`](#applicativeapply) method.
+
+Methods:
+
+##### `Monad#chain`
+
+```typescript
+function asyncChain<A, B>(f: (x: A) => Promise<AsyncMonad<B>>): Promise<AsyncMonad<B>>;
+```
+
+#### Minimal Complete Definition
+
+[`Monad`](#monad) implementation.
+
+[`AsyncApplicative`](#applicative) implementation.
+
+```typescript
+asyncChain<A, B>(f: (x: A) => Promise<AsyncMonad<B>>): Promise<Monad<B>>;
+```
+
+#### AsyncMonad Laws
+
+All the [`Monad Laws`](#monad-laws) should be applied to the async version, so:
+
+##### Left identity Law
+
+```typescript
+declare var x: unknown;
+declare function f(x: unknown): Promise<AsyncMonad<unknown>>;
+
+expect(await SomeAsyncMonad.from(x).asyncChain(f)).toEqual(await f(x));
+```
+
+##### Right identity Law
+
+```typescript
+declare var mx: AsyncMonad<unknown>;
+declare function f(x: unknown): Promise<AsyncMonad<unknown>>;
+
+expect(await mx.asyncChain(x => Promise.resolve(SomeAsyncMonad.from(x)))).toEqual(mx);
+```
+
+##### Associativity Law
+
+```typescript
+declare var ax: AsyncMonad<unknown>;
+declare function f(x: unknown): Promise<AsyncMonad<unknown>>;
+declare function g(x: unknown): Promise<AsyncMonad<unknown>>;
+
+expect(await ax.asyncChain(x => f(x).then(fx => fx.asyncChain(g)))).toEqual(await ax.asyncChain(f).then(fx => fx.asyncChain(g)));
+```
+
+
 ### AsyncChainable
 
-Static interface which give an ability to use `Monad` more comfortable with `Promise`.
+Static interface which give an ability to use `AsyncMonad` more comfortable with `Promise`.
 
 > Should be used with `ClassImplements` decorator
 
@@ -221,14 +368,14 @@ Methods:
 ##### `AsyncChainable<M>#chain`
 
 ```typescript
-function chain<A, B>(f: (v: A) => Promise<M & Monad<B>>): (m: M & Monad<A>) => Promise<M & Monad<B>>;
+function chain<A, B>(f: (v: A) => Promise<M & AsyncMonad<B>>): (m: M & AsyncMonad<A>) => Promise<M & AsyncMonad<B>>;
 ```
 
 #### Usage
 
 ```typescript
 @ClassImplements<IdentityMonad<unknown>>
-class IdentityMonad<T> extends Monad<T> { /*...*/ }
+class IdentityMonad<T> extends AsyncMonad<T> { /*...*/ }
 
 declare function getAsyncValue(): Promise<IdentityMonad<number>>
 declare function sendToServer(value: number): Promise<IdentityMonad<void>>

@@ -1,5 +1,5 @@
 import { just, none } from "@sweet-monads/maybe";
-import { IntermidiateOperation } from "./intermediate-operation.js";
+import { IntermidiateOperation } from "./intermediate-operation";
 import type { Maybe } from "@sweet-monads/maybe";
 
 export class FilterOperation<A, B extends A = A> extends IntermidiateOperation<A, B> {

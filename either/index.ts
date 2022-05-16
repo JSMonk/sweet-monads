@@ -1,5 +1,5 @@
 import type {
-  Monad,
+  AsyncMonad,
   Alternative,
   AsyncChainable,
   ClassImplements,
@@ -23,7 +23,7 @@ type StaticCheck = ClassImplements<
   typeof EitherConstructor,
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Either<any, any>>]
 >;
-class EitherConstructor<L, R, T extends EitherType = EitherType> implements Monad<R>, Alternative<T> {
+class EitherConstructor<L, R, T extends EitherType = EitherType> implements AsyncMonad<R>, Alternative<T> {
   static chain<L, R, NR>(f: (v: R) => Promise<Either<never, NR>>): (m: Either<L, R>) => Promise<Either<L, NR>>;
   static chain<L, R, NL>(f: (v: R) => Promise<Either<NL, never>>): (m: Either<L, R>) => Promise<Either<NL | L, R>>;
   static chain<L, R, NL, NR>(f: (v: R) => Promise<Either<NL, NR>>): (m: Either<L, R>) => Promise<Either<NL | L, NR>>;

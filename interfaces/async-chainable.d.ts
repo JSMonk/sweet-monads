@@ -1,5 +1,5 @@
-import type { Monad } from "@sweet-monads/interfaces";
+import type { AsyncMonad } from "./async-monad";
 
-export interface AsyncChainable<M extends Monad<unknown>> {
-  chain<A, B>(f: (v: A) => Promise<M & Monad<B>>): (m: M & Monad<A>) => Promise<M & Monad<B>>;
+export interface AsyncChainable<M extends AsyncMonad<unknown>> {
+  chain<A, B>(f: (v: A) => Promise<M & AsyncMonad<B>>): (m: M & AsyncMonad<A>) => Promise<M & AsyncMonad<B>>;
 }
