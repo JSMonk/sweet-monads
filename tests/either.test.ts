@@ -60,4 +60,12 @@ describe("Either", () => {
     const newVal3 = fn2.asyncApply(v1); // Promise<Either<Error, number>.Left> with value new Error()
     const newVal4 = fn2.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error() */
   });
+
+  test("unwrap", () => {
+    const v1 = right<Error, number>(2);
+    const v2 = left<Error, number>(new Error());
+
+    expect(v1.unwrap()).toBe(2);
+    expect(v2.unwrap).toThrow(new Error());
+  });
 });
