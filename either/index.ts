@@ -21,6 +21,7 @@ function isWrappedFunction<A, B, L>(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StaticCheck = ClassImplements<
   typeof EitherConstructor,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Either<any, any>>]
 >;
 class EitherConstructor<L, R, T extends EitherType = EitherType> implements AsyncMonad<R>, Alternative<T> {
@@ -96,7 +97,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Asyn
     ]
   ): Either<L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10, [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]>;
   static mergeInOne<L, R>(either: Array<Either<L, R>>): Either<L, R[]>;
-  static mergeInOne(eithers: Array<Either<unknown, unknown>>) {
+  static mergeInOne(eithers: Array<Either<unknown, unknown>>): Either<unknown, unknown[]> {
     return eithers.reduce(
       (res: Either<unknown, Array<unknown>>, v) => res.chain(res => v.map(v => res.concat([v]))),
       EitherConstructor.right<unknown, Array<unknown>>([])
@@ -170,7 +171,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Asyn
     ]
   ): Either<Array<L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10>, [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]>;
   static mergeInMany<L, R>(either: Array<Either<L, R>>): Either<L[], R[]>;
-  static mergeInMany(eithers: Array<Either<unknown, unknown>>) {
+  static mergeInMany(eithers: Array<Either<unknown, unknown>>): EitherConstructor<unknown[], unknown[], EitherType> {
     return eithers.reduce((res: EitherConstructor<Array<unknown>, Array<unknown>>, v): EitherConstructor<
       Array<unknown>,
       Array<unknown>
@@ -184,7 +185,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Asyn
     }, EitherConstructor.right<Array<unknown>, Array<unknown>>([]));
   }
 
-  static from<T>(v: T) {
+  static from<T>(v: T): Either<never, T> {
     return EitherConstructor.right(v);
   }
 
