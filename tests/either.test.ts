@@ -66,6 +66,6 @@ describe("Either", () => {
     const v2 = left<Error, number>(new Error());
 
     expect(v1.unwrap()).toBe(2);
-    expect(v2.unwrap).toThrow(new Error());
+    expect(() => v2.unwrap()).toThrow(new Error());
   });
 });
