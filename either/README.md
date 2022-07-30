@@ -477,6 +477,12 @@ const { value } = left<Error, number>(new Error()); // number | Error
 const { value } = left(new Error()); // Error
 ```
 
+```typescript
+right(2).unwrap() // number
+left(new TypeError()).unwrap() // throws value (TypeError)
+left(2).unwrap() // throws 2 (don't do this)
+```
+
 ## License
 
 MIT (c) Artem Kobzar see LICENSE file.
