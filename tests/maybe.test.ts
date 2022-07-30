@@ -23,4 +23,12 @@ describe("Maybe", () => {
         expect(nil.isNone()).toBe(option === null || option === undefined);
       })
     ));
+
+  test("unwrap", () => {
+    const v1 = just(2);
+    const v2 = none();
+
+    expect(v1.unwrap()).toBe(2);
+    expect(() => v2.unwrap()).toThrow(new Error("Value is None"));
+  });
 });
