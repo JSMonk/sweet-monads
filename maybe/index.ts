@@ -162,8 +162,14 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
     return Promise.resolve(MaybeConstructor.none<V>());
   }
 
-  or(x: Maybe<T>) {
+  or(x: Maybe<T>): Maybe<T> {
     return this.isNone() ? x : (this as Maybe<T>);
+  }
+
+  unwrap(): T {
+    if (this.isJust()) return this.value;
+
+    throw new Error("Value is None");
   }
 }
 
