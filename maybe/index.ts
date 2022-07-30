@@ -16,9 +16,16 @@ function isWrappedFunction<A, B>(m: Maybe<A> | Maybe<(a: A) => B>): m is Maybe<(
   return typeof m.value === "function";
 }
 
+function isWrappedAsyncFunction<A, B>(
+  m: Maybe<A | Promise<A>> | Maybe<(a: A) => B | Promise<B>>
+): m is Maybe<(a: A) => B> {
+  return typeof m.value === "function";
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StaticCheck = ClassImplements<
   typeof MaybeConstructor,
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Maybe<any>>]
 >;
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState> implements AsyncMonad<T>, Alternative<T> {
@@ -137,12 +144,12 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
     if (this.isNone() || argOrFn.isNone()) {
       return Promise.resolve(MaybeConstructor.none<B>());
     }
-    if (isWrappedFunction(this)) {
+    if (isWrappedAsyncFunction(this)) {
       return (argOrFn as Maybe<Promise<A> | A>)
         .map(a => Promise.resolve(a))
         .asyncMap(pa => pa.then(this.value as (a: A) => Promise<B>));
     }
-    if (isWrappedFunction(argOrFn)) {
+    if (isWrappedAsyncFunction(argOrFn)) {
       return (argOrFn as Maybe<(a: A) => Promise<B>>).asyncApply(this as Maybe<Promise<A>>);
     }
     throw new Error("Some of the arguments should be a function");
