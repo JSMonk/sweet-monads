@@ -384,6 +384,12 @@ const newVal4 = v2.asyncChain(a => Promise.resolve(none()));
 const { value } = just(2); // number | undefined
 ```
 
+```typescript
+const value = just(2).unwrap(); // returns 2
+
+none().unwrap(); // Throws error
+```
+
 ## License
 
 MIT (c) Artem Kobzar see LICENSE file.
