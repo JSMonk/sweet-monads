@@ -293,8 +293,14 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Asyn
     return f(this.value as R);
   }
 
-  or(x: Either<L, R>) {
+  or(x: Either<L, R>): Either<L, R> {
     return this.isLeft() ? x : (this as Either<L, R>);
+  }
+
+  unwrap(): R {
+    if (this.isRight()) return this.value;
+
+    throw this.value;
   }
 }
 
