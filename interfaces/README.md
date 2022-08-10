@@ -383,6 +383,21 @@ declare function sendToServer(value: number): Promise<IdentityMonad<void>>
 const value = await getAsyncValue().then(chain(sendToServer));
 ```
 
+### Container 
+
+Is a value wrapper, that allows to get value (if state of the container is valid), or throws error if not.
+
+Methods:
+
+##### `Container#unwrap`
+
+```typescript
+const lucky = Math.random() > 0.5 ? just(":)") : none();
+
+// Will either return ":)" or throw an error
+lucky.unwrap();
+```
+
 ## License
 
 MIT (c) Artem Kobzar see LICENSE file.
