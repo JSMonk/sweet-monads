@@ -4,7 +4,8 @@ import type {
   AsyncChainable,
   ClassImplements,
   MonadConstructor,
-  ApplicativeConstructor
+  ApplicativeConstructor,
+  Container
 } from "@sweet-monads/interfaces";
 
 const enum MaybeState {
@@ -27,7 +28,8 @@ type StaticCheck = ClassImplements<
   typeof MaybeConstructor,
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Maybe<any>>]
 >;
-export default class MaybeConstructor<T, S extends MaybeState = MaybeState> implements AsyncMonad<T>, Alternative<T> {
+export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
+  implements AsyncMonad<T>, Alternative<T>, Container<T> {
   static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
     return (m: Maybe<A>): Promise<Maybe<B>> => m.asyncChain(f);
   }
