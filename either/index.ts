@@ -4,7 +4,8 @@ import type {
   AsyncChainable,
   ClassImplements,
   MonadConstructor,
-  ApplicativeConstructor
+  ApplicativeConstructor,
+  Container
 } from "@sweet-monads/interfaces";
 
 const enum EitherType {
@@ -23,7 +24,8 @@ type StaticCheck = ClassImplements<
   typeof EitherConstructor,
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Either<any, any>>]
 >;
-class EitherConstructor<L, R, T extends EitherType = EitherType> implements AsyncMonad<R>, Alternative<T> {
+class EitherConstructor<L, R, T extends EitherType = EitherType>
+  implements AsyncMonad<R>, Alternative<T>, Container<R> {
   static chain<L, R, NR>(f: (v: R) => Promise<Either<never, NR>>): (m: Either<L, R>) => Promise<Either<L, NR>>;
   static chain<L, R, NL>(f: (v: R) => Promise<Either<NL, never>>): (m: Either<L, R>) => Promise<Either<NL | L, R>>;
   static chain<L, R, NL, NR>(f: (v: R) => Promise<Either<NL, NR>>): (m: Either<L, R>) => Promise<Either<NL | L, NR>>;
@@ -300,7 +302,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Asyn
   unwrap(): R {
     if (this.isRight()) return this.value;
 
-    throw this.value;
+    throw new Error("Either state is Left");
   }
 }
 
