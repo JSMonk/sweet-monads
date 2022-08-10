@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/explicit-module-boundary-types */
 import { MapOperation } from "./map-operation";
 import { FilterOperation } from "./filter-operation";
 import { IntermidiateOperation } from "./intermediate-operation";
@@ -10,7 +9,6 @@ const defaultFromIterator = function <I>(original: Iterable<I>): Array<I> {
   return [...original];
 };
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const id: any = (x: number) => x;
 
 export default class LazyIterator<I> implements Iterable<I> {

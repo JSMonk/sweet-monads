@@ -25,7 +25,6 @@ function isWrappedAsyncFunction<A, B>(
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StaticCheck = ClassImplements<
   typeof MaybeConstructor,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Maybe<any>>]
 >;
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState> implements AsyncMonad<T>, Alternative<T> {
