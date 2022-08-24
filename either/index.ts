@@ -4,7 +4,8 @@ import type {
   AsyncChainable,
   ClassImplements,
   MonadConstructor,
-  ApplicativeConstructor
+  ApplicativeConstructor,
+  Container
 } from "@sweet-monads/interfaces";
 
 const enum EitherType {
@@ -23,7 +24,8 @@ type StaticCheck = ClassImplements<
   typeof EitherConstructor,
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Either<any, any>>]
 >;
-class EitherConstructor<L, R, T extends EitherType = EitherType> implements AsyncMonad<R>, Alternative<T> {
+class EitherConstructor<L, R, T extends EitherType = EitherType>
+  implements AsyncMonad<R>, Alternative<T>, Container<R> {
   static chain<L, R, NR>(f: (v: R) => Promise<Either<never, NR>>): (m: Either<L, R>) => Promise<Either<L, NR>>;
   static chain<L, R, NL>(f: (v: R) => Promise<Either<NL, never>>): (m: Either<L, R>) => Promise<Either<NL | L, R>>;
   static chain<L, R, NL, NR>(f: (v: R) => Promise<Either<NL, NR>>): (m: Either<L, R>) => Promise<Either<NL | L, NR>>;
@@ -170,7 +172,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Asyn
     ]
   ): Either<Array<L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10>, [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]>;
   static mergeInMany<L, R>(either: Array<Either<L, R>>): Either<L[], R[]>;
-  static mergeInMany(eithers: Array<Either<unknown, unknown>>) {
+  static mergeInMany(eithers: Array<Either<unknown, unknown>>): EitherConstructor<unknown[], unknown[], EitherType> {
     return eithers.reduce((res: EitherConstructor<Array<unknown>, Array<unknown>>, v): EitherConstructor<
       Array<unknown>,
       Array<unknown>
@@ -184,7 +186,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Asyn
     }, EitherConstructor.right<Array<unknown>, Array<unknown>>([]));
   }
 
-  static from<T>(v: T) {
+  static from<T>(v: T): Either<never, T> {
     return EitherConstructor.right(v);
   }
 
@@ -293,8 +295,14 @@ class EitherConstructor<L, R, T extends EitherType = EitherType> implements Asyn
     return f(this.value as R);
   }
 
-  or(x: Either<L, R>) {
+  or(x: Either<L, R>): Either<L, R> {
     return this.isLeft() ? x : (this as Either<L, R>);
+  }
+
+  unwrap(): R {
+    if (this.isRight()) return this.value;
+
+    throw new Error("Either state is Left");
   }
 }
 

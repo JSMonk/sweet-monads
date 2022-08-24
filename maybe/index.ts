@@ -4,7 +4,8 @@ import type {
   AsyncChainable,
   ClassImplements,
   MonadConstructor,
-  ApplicativeConstructor
+  ApplicativeConstructor,
+  Container
 } from "@sweet-monads/interfaces";
 
 const enum MaybeState {
@@ -16,12 +17,19 @@ function isWrappedFunction<A, B>(m: Maybe<A> | Maybe<(a: A) => B>): m is Maybe<(
   return typeof m.value === "function";
 }
 
+function isWrappedAsyncFunction<A, B>(
+  m: Maybe<A | Promise<A>> | Maybe<(a: A) => B | Promise<B>>
+): m is Maybe<(a: A) => B> {
+  return typeof m.value === "function";
+}
+
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 type StaticCheck = ClassImplements<
   typeof MaybeConstructor,
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Maybe<any>>]
 >;
-export default class MaybeConstructor<T, S extends MaybeState = MaybeState> implements AsyncMonad<T>, Alternative<T> {
+export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
+  implements AsyncMonad<T>, Alternative<T>, Container<T> {
   static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
     return (m: Maybe<A>): Promise<Maybe<B>> => m.asyncChain(f);
   }
@@ -137,12 +145,12 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
     if (this.isNone() || argOrFn.isNone()) {
       return Promise.resolve(MaybeConstructor.none<B>());
     }
-    if (isWrappedFunction(this)) {
+    if (isWrappedAsyncFunction(this)) {
       return (argOrFn as Maybe<Promise<A> | A>)
         .map(a => Promise.resolve(a))
         .asyncMap(pa => pa.then(this.value as (a: A) => Promise<B>));
     }
-    if (isWrappedFunction(argOrFn)) {
+    if (isWrappedAsyncFunction(argOrFn)) {
       return (argOrFn as Maybe<(a: A) => Promise<B>>).asyncApply(this as Maybe<Promise<A>>);
     }
     throw new Error("Some of the arguments should be a function");
@@ -162,8 +170,14 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState> impl
     return Promise.resolve(MaybeConstructor.none<V>());
   }
 
-  or(x: Maybe<T>) {
+  or(x: Maybe<T>): Maybe<T> {
     return this.isNone() ? x : (this as Maybe<T>);
+  }
+
+  unwrap(): T {
+    if (this.isJust()) return this.value;
+
+    throw new Error("Value is None");
   }
 }
 

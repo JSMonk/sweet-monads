@@ -5,7 +5,7 @@ import MaybeConstructor, { Maybe, just, none } from "@sweet-monads/maybe";
 
 type FromIterator<A, S extends Iterable<A> = Iterable<A>, T extends Iterable<A> = Iterable<A>> = (source: S) => T;
 
-const defaultFromIterator = function <I>(original: LazyIterator<I>): Array<I> {
+const defaultFromIterator = function <I>(original: Iterable<I>): Array<I> {
   return [...original];
 };
 
@@ -97,7 +97,7 @@ export default class LazyIterator<I> implements Iterable<I> {
     return LazyIterator.withOperation(this, this.isCycled, new MapOperation(x => fn(x), true));
   }
 
-  intersect(other: LazyIterator<I>) {
+  intersect(other: LazyIterator<I>): LazyIterator<I> {
     const existed = new Set<I>(other);
     return this.filter(value => existed.has(value));
   }
@@ -116,7 +116,7 @@ export default class LazyIterator<I> implements Iterable<I> {
     );
   }
 
-  prepend(item: I) {
+  prepend(item: I): LazyIterator<I> {
     return LazyIterator.from([item]).chain(this);
   }
 
@@ -129,20 +129,20 @@ export default class LazyIterator<I> implements Iterable<I> {
     return this.map(() => oldIterator[i--]);
   }
 
-  skip(n: number) {
+  skip(n: number): LazyIterator<I> {
     return this.filter(() => n === 0 || n-- <= 0);
   }
 
-  scan<A>(fn: (a: A, i: I) => A, accumulator: A) {
+  scan<A>(fn: (a: A, i: I) => A, accumulator: A): LazyIterator<A> {
     return this.map(value => (accumulator = fn(accumulator, value)));
   }
 
-  skipWhile(predicate: (i: I) => boolean) {
+  skipWhile(predicate: (i: I) => boolean): LazyIterator<I> {
     let hasBeenFalse = false;
     return this.filter(i => hasBeenFalse || (hasBeenFalse = !predicate(i)));
   }
 
-  slice(start = 0, end?: number) {
+  slice(start = 0, end?: number): LazyIterator<I> {
     let index = 0;
     return LazyIterator.withOperation(
       this,
@@ -464,11 +464,11 @@ export default class LazyIterator<I> implements Iterable<I> {
     return withoutMaybe ? result.value : result;
   }
 
-  product(this: LazyIterator<number>) {
+  product(this: LazyIterator<number>): number {
     return this.fold((res, a) => res * a, 1);
   }
 
-  sum(this: LazyIterator<number>) {
+  sum(this: LazyIterator<number>): number {
     return this.fold((sum, a) => sum + a, 0);
   }
 
