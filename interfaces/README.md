@@ -21,9 +21,9 @@ Collection of interfaces which describe functional programming abstractions.
 ```typescript
 import { Functor } from "@sweet-monads/interfaces";
 
-class Container<T> implements Functor<T> {
-  map<A>(fn: (i: T) => A): Container<A> {
-    return new Container<A>();
+class MyClass<T> implements Functor<T> {
+  map<A>(fn: (i: T) => A): MyClass<A> {
+    return new MyClass<A>();
   }
 }
 ```
