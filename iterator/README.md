@@ -13,6 +13,7 @@
   [iterator](https://github.com/JSMonk/sweet-monads/tree/master/iterator),
   [interfaces](https://github.com/JSMonk/sweet-monads/tree/master/interfaces),
   [maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
+  [identity](https://github.com/JSMonk/sweet-monads/tree/master/identity)
 
 ## Why?
 

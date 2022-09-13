@@ -1,7 +1,7 @@
 {
-  "name": "@sweet-monads/iterator",
+  "name": "@sweet-monads/identity",
   "version": "3.2.0",
-  "description": "Implement iterator with helper functions",
+  "description": "",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
   "exports": {
@@ -9,10 +9,10 @@
     "require": "./cjs/index.js"
   },
   "types": "index.d.ts",
-  "homepage": "https://github.com/JSMonk/sweet-monads/tree/master/iterator",
+  "homepage": "https://github.com/JSMonk/sweet-monads/tree/master/identity",
   "repository": {
     "type": "git",
-    "url": "https://github.com/JSMonk/sweet-monads/tree/master/iterator"
+    "url": "https://github.com/JSMonk/sweet-monads/tree/master/identity"
   },
   "scripts": {
     "build": "run-s build:pre build:all build:after",
@@ -28,9 +28,9 @@
     "build:fixesm": "echo '{\"type\":\"module\"}' > ./build/esm/package.json",
     "build:after": "run-p build:copy build:fixcjs build:fixesm"
   },
-  "author": "JSMonk",
-  "license": "MIT",
   "dependencies": {
-    "@sweet-monads/maybe": "^3.1.0"
-  }
+    "@sweet-monads/interfaces": "^3.1.0"
+  },
+  "author": "",
+  "license": "MIT"
 }

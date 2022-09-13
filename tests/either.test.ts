@@ -24,7 +24,6 @@ describe("Either", () => {
 
     expect(merge([v1, v2]).value).toStrictEqual([2, "test"]);
     expect(merge([v1, v2, v3]).value).toBeInstanceOf(Error);
-    // expect(merge([v3, v4, v5]).value).toBeInstanceOf(Error);
   });
   test("join", () => {
     const v1 = right(right(2));
@@ -54,11 +53,6 @@ describe("Either", () => {
     const v2 = left<Error, number>(new Error());
     const fn1 = right<Error, (a: number) => Promise<number>>((a: number) => Promise.resolve(a * 2));
     const fn2 = left<Error, (a: number) => Promise<number>>(new Error());
-
-    /* const newVal1 = fn1.asyncApply(v1); // Promise<Either<Error, number>.Right> with value 4
-    const newVal2 = fn1.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error()
-    const newVal3 = fn2.asyncApply(v1); // Promise<Either<Error, number>.Left> with value new Error()
-    const newVal4 = fn2.asyncApply(v2); // Promise<Either<Error, number>.Left> with value new Error() */
   });
 
   test("unwrap", () => {
