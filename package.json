@@ -12,7 +12,7 @@
     "interfaces",
     "iterator",
     "maybe",
-    "result"
+    "identity"
   ],
   "scripts": {
     "test": "jest",

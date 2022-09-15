@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/identity",
-  "version": "3.1.0",
+  "version": "3.2.0",
   "description": "Identity monad",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -9,6 +9,11 @@
     "require": "./cjs/index.js"
   },
   "types": "index.d.ts",
+  "homepage": "https://github.com/JSMonk/sweet-monads/tree/master/identity",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/JSMonk/sweet-monads/tree/master/identity"
+  },
   "scripts": {
     "build": "run-s build:pre build:all build:after",
     "build:clean": "rm -rf build && mkdir build",
@@ -23,14 +28,9 @@
     "build:fixesm": "echo '{\"type\":\"module\"}' > ./build/esm/package.json",
     "build:after": "run-p build:copy build:fixcjs build:fixesm"
   },
-  "homepage": "https://github.com/JSMonk/sweet-monads/tree/master/identity",
-  "repository": {
-    "type": "git",
-    "url": "https://github.com/JSMonk/sweet-monads/tree/master/identity"
-  },
   "dependencies": {
     "@sweet-monads/interfaces": "^3.1.0"
   },
   "author": "",
-  "license": "ISC"
+  "license": "MIT"
 }
