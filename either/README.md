@@ -65,7 +65,7 @@ function chain<L, R, NL, NR>(fn: (v: R) => Promise<Either<NL, NR>>): (m: Either<
 ```
 
 - `fn: (v: R) => Promise<Either<NL, NR>>` - function which should be applied asynchronously to `Either<L, R>` value
-- Returns function with `Either<L, R>` argument and promisied `Either` with new error or maped by `fn` value (could be used inside `Promise#then` function).
+- Returns function with `Either<L, R>` argument and promised `Either` with new error or mapped by `fn` value (could be used inside `Promise#then` function).
 
 Example:
 
@@ -142,7 +142,7 @@ function mergeInMany<L1, R1, L2, R2, L3, R3>(
 ```
 
 - `values: Array<Either<L, R>>` - Array of Either values which will be merged into Either of Array
-- Returns `Either<Array<L>, Array<R>>` which will contain `Right<Array<R>>` if all of array elements was `Right<R>` otherwise array of all catched `Left<L>` values.
+- Returns `Either<Array<L>, Array<R>>` which will contain `Right<Array<R>>` if all of array elements was `Right<R>` otherwise array of all caught `Left<L>` values.
 
 Example:
 

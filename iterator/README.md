@@ -127,7 +127,7 @@ LazyIterator.from([1, 2, 3]); // LazyIterator<number>
 
 Tests if every element of the `LazyIterator` matches a predicate.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function all<I>(predicate: (i: I) => boolean): boolean;
@@ -149,7 +149,7 @@ iterator.all(a => a % 2 === 0); // false
 
 Tests if any element of the `LazyIterator` a predicate.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function any<I>(predicate: (i: I) => boolean): boolean;
@@ -198,7 +198,7 @@ for (const i of newIterator) {
 
 Consumes the iterator, counting the number of iterations and returning it.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function count(): number;
@@ -280,7 +280,7 @@ for (const [index, element] of iterator) {
 
 An `LazyIterator` method that applies a function as long as it returns successfully, producing a single, final value. Folding is useful whenever you have a collection of something, and want to produce a single value from it.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function fold<I>(fn: (a: I, i: I) => I): I;
@@ -289,7 +289,7 @@ function fold<I, A>(fn: (a: A, i: I) => A, accumulator: A): A;
 
 - `fn: (a: A, i: I) => A` - accumulator function which fold elements in some value
 - `accumulator: A` (default `LazyItertor#first()`) - the initial value the `fn` will have on the first call.
-- Returns value which are computed by invokation of `fn` with each element of the `LazyIterator` and `accumulator` which was computed at previous step of iteration.
+- Returns value which are computed by invocation of `fn` with each element of the `LazyIterator` and `accumulator` which was computed at previous step of iteration.
 
 Example:
 
@@ -513,7 +513,7 @@ iterator.forEach(console.log);
 
 An `LazyIterator` method that return last element of the `LazyIterator`.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 _Info:_ more information about [Maybe](https://github.com/JSMonk/sweet-monads/tree/master/maybe)
 
@@ -551,7 +551,7 @@ If you are good at thinking in types, you can think of `map()` like this: If you
 function map<I, T>(fn: (i: I) => T): LazyIterator<T>;
 ```
 
-- `fn: (i: I) => T` - function which will called whith each element of `LazyIterator`
+- `fn: (i: I) => T` - function which will called with each element of `LazyIterator`
 - Returns `LazyIterator` which contains all values which was transformed by `fn`
 
 Example:
@@ -746,7 +746,7 @@ const two6 = iterator.position(i => i === 10, true); // undefined
 
 Iterates over the entire iterator, multiplying all the elements.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function product(this: LazyIterator<number>): number;
@@ -771,7 +771,7 @@ const product3 = cycled.product(); // Will lock your application
 
 Reverses an iterator's direction. Usually, `LazyIterator`s iterate from left to right. After using `reverse()`, an `LazyIterator` will instead iterate from right to left.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function reverse<I>(): LazyIterator<I>;
@@ -807,7 +807,7 @@ function scan<A, I>(fn: (a: A, i: I) => A, accumulator: A): A;
 
 - `fn: (a: A, i: I) => A` - a function with two arguments, the first being the internal state and the second an `LazyIterator` element. The function can assign to the internal state to share state between iterations.
 - `accumulator: A` - an initial value which seeds the internal state
-- Returns the `LazyIterator` which yields `accumulator` per each iteration which computed by `fn` invokation.
+- Returns the `LazyIterator` which yields `accumulator` per each iteration which computed by `fn` invocation.
 
 Example:
 
@@ -856,7 +856,7 @@ function skipWhile<I>(predicate: (i: I) => boolean): LazyIterator<I>;
 ```
 
 - `predicate: (i: I) => boolean` - function which will be called on each element of the `LazyIterator`, and ignore elements until it returns `false`.
-- Returns the `LazyIterator` which yields the rest of the elements after first `false` from `predicate` invokation.
+- Returns the `LazyIterator` which yields the rest of the elements after first `false` from `predicate` invocation.
 
 Example:
 
@@ -901,7 +901,7 @@ for (const a of skipped) console.log(a);
 Sums the elements of an iterator.
 Takes each element, adds them together, and returns the result.
 
-_Warrning_: Be careful, `LazyIterator` should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, `LazyIterator` should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function sum(this: LazyIterator<number>): number;
@@ -930,7 +930,7 @@ Creates an `LazyIterator` that yields its first `n` elements.
 function take<I>(n: number): LazyIterator<I>;
 ```
 
-- `n: number` - count of element which should be takken.
+- `n: number` - count of element which should be taken.
 - Returns the `LazyIterator` which yields first `n` elements.
 
 Example:
@@ -953,7 +953,7 @@ function takeWhile<I>(predicate: (i: I) => boolean): LazyIterator<I>;
 ```
 
 - `predicate: (i: I) => boolean` - function which will be called on each element of the `LazyIterator`, and yield elements until it returns `false`.
-- Returns the `LazyIterator` which yields elements before first `false` from `predicate` invokation.
+- Returns the `LazyIterator` which yields elements before first `false` from `predicate` invocation.
 
 Example:
 
@@ -1108,7 +1108,7 @@ for (const a of compacted) console.log(a);
 
 Tests if any element of the `LazyIterator` matches provided element.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function contains<I>(elem: I): boolean;
@@ -1116,7 +1116,7 @@ function contains<I>(elem: I): boolean;
 
 - Returns `LazyIterator` that contains only non-undefined elements.
 
-_Warrning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function contains<I>(elem: I): boolean;
@@ -1137,7 +1137,7 @@ iterator.contains(7); // false
 
 Create `LazyIterator` which contains only unique elements.
 
-_Warrning_: Be careful, iterator should save previous elements for the computation. So it create memmory leak with large `LazyIterator`.
+_Warning_: Be careful, iterator should save previous elements for the computation. So it create memory leak with large `LazyIterator`.
 
 ```typescript
 function unique<I>(): LazyIterator<I>;
@@ -1181,13 +1181,13 @@ iterator2.isEmpty(); // true
 
 Create `LazyIterator` without element which was contained in provided `LazyIterator`.
 
-_Warrning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function except<I>(other: LazyIterator<I>): LazyIterator<I>;
 ```
 
-- `other: LazyIterator<I>` - `LazyIterator` whith element which should be excluded from `this` `LazyIterator`
+- `other: LazyIterator<I>` - `LazyIterator` with element which should be excluded from `this` `LazyIterator`
 - Returns `LazyIterator` that doesn't contain elements from `other` `LazyIterator`.
 
 ```typescript
@@ -1206,14 +1206,14 @@ for (const a of excepted) console.log(a);
 
 Create `LazyIterator` only with elements which was existed in both `LazyIterator`s.
 
-_Warrning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function except<I>(other: LazyIterator<I>): LazyIterator<I>;
 ```
 
-- `other: LazyIterator<I>` - `LazyIterator` whith element which should be existed in `this` `LazyIterator`
-- Returns `LazyIterator` that containss elements from both `other` and `this` `LazyIterator`.
+- `other: LazyIterator<I>` - `LazyIterator` with element which should be existed in `this` `LazyIterator`
+- Returns `LazyIterator` that contains elements from both `other` and `this` `LazyIterator`.
 
 ```typescript
 const iterator = LazyIterator.from([1, 1, 2, 3, 4, 4, 12, 6, 2, 3, 4, 5]);
@@ -1251,7 +1251,7 @@ iterator2.isEmpty(); // true
 
 Convert `LazyIterator` without element which was contained in provided `LazyIterator`.
 
-_Warrning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
+_Warning_: Be careful, provided as argument iterator should be iterated for the computation. So it doesn't work with infinity iterable objects.
 
 ```typescript
 function except<I>(other: LazyIterator<I>): LazyIterator<I>;
@@ -1320,7 +1320,7 @@ for (const a of iterator2) console.log(a);
 #### `LazyIterator.collect`
 
 Convert `LazyIterator` in initial iterable object or array.
-If initial iterable object had `fromIterator` method or `fromIterator` was provided as second argument of [`LazyIterator.from`](#lazyiteratorfrom) function `fromIterator` will be called for convertion, otherwise convert `LazyIterator` in array.
+If initial iterable object had `fromIterator` method or `fromIterator` was provided as second argument of [`LazyIterator.from`](#lazyiteratorfrom) function `fromIterator` will be called for converting, otherwise convert `LazyIterator` in array.
 
 ```typescript
 function collect<I>(): Iterable<I>;

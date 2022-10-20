@@ -60,7 +60,7 @@ function chain<A, B>(fn: (v: A) => Promise<Maybe<B>>): (m: Maybe<A>) => Promise<
 ```
 
 - `fn: (v: A) => Promise<Maybe<B>>` - function which should be applied asynchronously to `Maybe<A>` value
-- Returns function with `Maybe<A>` argument and promisied `Maybe` with `Maybe.None` or maped by `fn` value (could be used inside `Promise#then` function).
+- Returns function with `Maybe<A>` argument and promised `Maybe` with `Maybe.None` or mapped by `fn` value (could be used inside `Promise#then` function).
 
 Example:
 

@@ -1,0 +1,32 @@
+{
+  "lang": "en",
+  "ignoreCapitalization": true,
+  "dictionary": [
+    "js",
+    "JS",
+    "Artem",
+    "Kobzar",
+    "iterable",
+    "npm",
+    "AsyncApplicative",
+    "AsyncChainable",
+    "AsyncFunctor",
+    "AsyncFunctors",
+    "auditable",
+    "AsyncMonad",
+    "Async",
+    "async",
+    "fmap",
+    "haskell",
+    "wikibooks",
+    "asynchronously",
+    "morphisms",
+    "MonadPlus",
+    "monoidal",
+    "Homomorphism",
+    "composable",
+    "updatable",
+    "undefinable",
+    "iterables"
+  ]
+}

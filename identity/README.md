@@ -58,7 +58,7 @@ function chain<A, B>(fn: (v: A) => Promise<Identity<B>>): (m: Identity<A>) => Pr
 ```
 
 - `fn: (v: A) => Promise<Identity<B>>` - function which should be applied asynchronously to `Identity<A>` value
-- Returns function with `Identity<A>` argument and maped by `fn` value (could be used inside `Promise#then` function).
+- Returns function with `Identity<A>` argument and mapped by `fn` value (could be used inside `Promise#then` function).
 
 Example:
 
