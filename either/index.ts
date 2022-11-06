@@ -190,6 +190,14 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
     return EitherConstructor.right(v);
   }
 
+  static fromTry<L, R>(fn: () => R): Either<L, R> {
+    try {
+      return EitherConstructor.right(fn());
+    } catch (e) {
+      return EitherConstructor.left(e);
+    }
+  }
+
   static right<L = never, T = never>(v: T): Either<L, T> {
     return new EitherConstructor<L, T, EitherType.Right>(EitherType.Right, v);
   }
@@ -308,7 +316,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
 
 export type Either<L, R> = EitherConstructor<L, R, EitherType.Right> | EitherConstructor<L, R, EitherType.Left>;
 
-export const { merge, mergeInOne, mergeInMany, left, right, from, chain } = EitherConstructor;
+export const { merge, mergeInOne, mergeInMany, left, right, from, fromTry, chain } = EitherConstructor;
 
 export const isEither = <L, R>(value: unknown | Either<L, R>): value is Either<L, R> =>
   value instanceof EitherConstructor;
