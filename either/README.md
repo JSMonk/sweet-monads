@@ -481,6 +481,12 @@ const { value } = left(new Error()); // Error
 right(2).unwrap() // number
 left(new TypeError()).unwrap() // throws value (TypeError)
 left(2).unwrap() // throws 2 (don't do this)
+
+left(2).unwrapOr(3) // returns 3
+rigth(2).unwrapOr(3) // returns 2
+
+left(2).unwrapOrElse(num => num * 2) // returns 4
+right(2).unwrapOrElse(num => num * 2 ) // returns 2
 ```
 
 ## License
