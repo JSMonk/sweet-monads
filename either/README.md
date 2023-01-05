@@ -486,7 +486,7 @@ left(2).unwrapOr(3) // returns 3
 rigth(2).unwrapOr(3) // returns 2
 
 left(2).unwrapOrElse(num => num * 2) // returns 4
-right(2).unwrapOrElse(num => num * 2 ) // returns 2
+right(2).unwrapOrElse(num => num * 2) // returns 2
 ```
 
 ## License
