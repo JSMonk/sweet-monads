@@ -31,4 +31,20 @@ describe("Maybe", () => {
     expect(v1.unwrap()).toBe(2);
     expect(() => v2.unwrap()).toThrow(new Error("Value is None"));
   });
+
+  test("unwrapOr", () => {
+    const v1 = just(2);
+    const v2 = none<number>();
+
+    expect(v1.unwrapOr(3)).toBe(2);
+    expect(v2.unwrapOr(3)).toBe(3);
+  });
+
+  test("unwrapOrElse", () => {
+    const v1 = just(2);
+    const v2 = none<number>();
+
+    expect(v1.unwrapOrElse(() => 6)).toBe(2);
+    expect(v2.unwrapOrElse(() => 6)).toBe(6);
+  });
 });

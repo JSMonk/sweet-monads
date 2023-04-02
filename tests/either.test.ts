@@ -63,6 +63,22 @@ describe("Either", () => {
     expect(() => v2.unwrap()).toThrow(new Error("Either state is Left"));
   });
 
+  test("unwrapOr", () => {
+    const v1 = right<Error, number>(2);
+    const v2 = left<Error, number>(new Error());
+
+    expect(v1.unwrapOr(3)).toBe(2);
+    expect(v2.unwrapOr(3)).toBe(3);
+  });
+
+  test("unwrapOrElse", () => {
+    const v1 = right<number, number>(2);
+    const v2 = left<number, number>(3);
+
+    expect(v1.unwrapOrElse(x => x * 2)).toBe(2);
+    expect(v2.unwrapOrElse(x => x * 2)).toBe(6);
+  });
+
   test("fromTry", () => {
     const error = new Error("test");
     const v1 = fromTry(() => 1);

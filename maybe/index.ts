@@ -85,7 +85,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
       : MaybeConstructor.none<Exclude<T, null | undefined>>();
   }
 
-  private static _noneInstance!: MaybeConstructor<any, MaybeState.None>;
+  private static _noneInstance: MaybeConstructor<any, MaybeState.None>;
 
   static none<T = never>(): Maybe<T> {
     if (MaybeConstructor._noneInstance === undefined) {
@@ -183,6 +183,14 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     if (this.isJust()) return this.value;
 
     throw new Error("Value is None");
+  }
+
+  unwrapOr(x: T): T {
+    return this.isJust() ? this.value : x;
+  }
+
+  unwrapOrElse(f: () => T): T {
+    return this.isJust() ? this.value : f();
   }
 }
 

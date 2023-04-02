@@ -386,9 +386,14 @@ const { value } = just(2); // number | undefined
 ```
 
 ```typescript
-const value = just(2).unwrap(); // returns 2
-
+just(2).unwrap(); // returns 2
 none().unwrap(); // Throws error
+
+just(2).unwrapOr(3) // returns 3
+none().unwrapOr(3) // returns 2
+
+just(2).unwrapOrElse(num => num * 2) // returns 4
+none().unwrapOrElse(num => num * 2) // returns 2
 ```
 
 ## License
