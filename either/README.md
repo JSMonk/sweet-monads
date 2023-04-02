@@ -43,6 +43,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`left`](#left)
 - [`right`](#right)
 - [`from`](#from)
+- [`fromTry`](#fromtry)
 - [`isEither`](#iseither)
 - [`Either#isLeft`](#eitherisleft)
 - [`Either#isRight`](#eitherisright)
@@ -198,6 +199,21 @@ function from<R>(value: R): Either<never, R>;
 
 ```typescript
 from(2); // Either<never, number>.Right
+```
+
+#### `fromTry`
+
+Returns `Right` with function result or `Left` if function execution throws an error.
+
+```typescript
+function fromTry<L, R>(fn: () => R): Either<L, R>;
+```
+
+```typescript
+fromTry(() => 2); // Either<never, number>.Right
+fromTry(() => {
+  throw new Error("test");
+}); // Either<Error, never>.Left
 ```
 
 #### `isEither`
@@ -478,9 +494,9 @@ const { value } = left(new Error()); // Error
 ```
 
 ```typescript
-right(2).unwrap() // number
-left(new TypeError()).unwrap() // throws value (TypeError)
-left(2).unwrap() // throws 2 (don't do this)
+right(2).unwrap(); // number
+left(new TypeError()).unwrap(); // throws value (TypeError)
+left(2).unwrap(); // throws 2 (don't do this)
 ```
 
 ## License
