@@ -85,8 +85,13 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
       : MaybeConstructor.none<Exclude<T, null | undefined>>();
   }
 
+  private static _noneInstance!: MaybeConstructor<any, MaybeState.None>;
+
   static none<T = never>(): Maybe<T> {
-    return new MaybeConstructor<T, MaybeState.None>(MaybeState.None, undefined);
+    if (MaybeConstructor._noneInstance === undefined) {
+      MaybeConstructor._noneInstance = new MaybeConstructor<T, MaybeState.None>(MaybeState.None, undefined);
+    }
+    return MaybeConstructor._noneInstance;
   }
 
   static just<T>(v: T): Maybe<T> {
