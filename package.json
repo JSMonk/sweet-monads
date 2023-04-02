@@ -24,8 +24,8 @@
     "type": "git",
     "url": "git+https://github.com/JSMonk/sweet-monads.git"
   },
-  "author": "",
-  "license": "ISC",
+  "author": "JSMonk",
+  "license": "MIT",
   "bugs": {
     "url": "https://github.com/JSMonk/sweet-monads/issues"
   },

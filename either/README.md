@@ -44,6 +44,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`right`](#right)
 - [`from`](#from)
 - [`fromTry`](#fromtry)
+- [`fromPromise`](#frompromise)
 - [`isEither`](#iseither)
 - [`Either#isLeft`](#eitherisleft)
 - [`Either#isRight`](#eitherisright)
@@ -214,6 +215,19 @@ fromTry(() => 2); // Either<never, number>.Right
 fromTry(() => {
   throw new Error("test");
 }); // Either<Error, never>.Left
+```
+
+#### `fromPromise`
+
+Returns `Right` with the promise value if the provided promise fulfilled or `Left` with the error value if the provided promise rejected.
+
+```typescript
+function fromPromise<L, R>(promise: Promise<R>): Promise<Either<L, R>>;
+```
+
+```typescript
+fromPromise(Promise.resolve(2)); // Either<never, number>.Right
+fromPromise(Promise.reject(new Error("test"))); // Either<Error, never>.Left
 ```
 
 #### `isEither`

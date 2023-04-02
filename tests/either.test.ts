@@ -1,6 +1,5 @@
 import * as fc from "fast-check";
-import { Either, left, merge, right } from "@sweet-monads/either";
-import { fromTry } from "../either";
+import { Either, left, merge, right, fromTry, fromPromise } from "@sweet-monads/either";
 
 describe("Either", () => {
   test("merge generic", () =>
@@ -70,6 +69,15 @@ describe("Either", () => {
     const v2 = fromTry(() => {
       throw error;
     });
+
+    expect(v1.unwrap()).toBe(1);
+    expect(v2.value).toBe(error);
+    expect(v2.isLeft()).toBe(true);
+  });
+  test("fromPromise", async () => {
+    const error = new Error("test");
+    const v1 = await fromPromise(Promise.resolve(1));
+    const v2 = await fromPromise(Promise.reject(error));
 
     expect(v1.unwrap()).toBe(1);
     expect(v2.value).toBe(error);
