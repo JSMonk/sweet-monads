@@ -389,6 +389,9 @@ const { value } = just(2); // number | undefined
 just(2).unwrap(); // returns 2
 none().unwrap(); // Throws error
 
+just(2).unwrap(() => new Error("NEVER!")); // returns 2
+none().unwrap(() => new CustomError("My error")); // Throws CustomError
+
 just(2).unwrapOr(3) // returns 3
 none().unwrapOr(3) // returns 2
 

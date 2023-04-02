@@ -30,6 +30,11 @@ describe("Maybe", () => {
 
     expect(v1.unwrap()).toBe(2);
     expect(() => v2.unwrap()).toThrow(new Error("Value is None"));
+
+    const customError = new ReferenceError("Custom error message");
+
+    expect(v1.unwrap(() => customError)).toBe(2);
+    expect(() => v2.unwrap(() => customError)).toThrow(customError);
   });
 
   test("unwrapOr", () => {

@@ -179,10 +179,9 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     return this.isNone() ? x : (this as Maybe<T>);
   }
 
-  unwrap(): T {
+  unwrap(errorFactory: () => unknown = () => new Error("Value is None")): T {
     if (this.isJust()) return this.value;
-
-    throw new Error("Value is None");
+    throw errorFactory();
   }
 
   unwrapOr(x: T): T {

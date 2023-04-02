@@ -509,8 +509,10 @@ const { value } = left(new Error()); // Error
 
 ```typescript
 right(2).unwrap(); // number
-left(new TypeError()).unwrap(); // throws value (TypeError)
-left(2).unwrap(); // throws 2 (don't do this)
+left(new TypeError()).unwrap(); // throws error
+
+right(2).unwrap((; // number
+left(new TypeError()).unwrap(x => x); // throws TypeError provied in arguments
 
 left(2).unwrapOr(3) // returns 3
 rigth(2).unwrapOr(3) // returns 2

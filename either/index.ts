@@ -314,18 +314,17 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
     return this.isLeft() ? x : (this as Either<L, R>);
   }
 
-  unwrap(): R {
+  unwrap(errorFactory: (x: L) => unknown = () => new Error("Either state is Left")): R {
     if (this.isRight()) return this.value;
+    throw errorFactory(this.value as L);
+  }
 
-    throw new Error("Either state is Left");
-  }
-  
   unwrapOr(x: R): R {
-    return this.isRight() ? this.value : x
+    return this.isRight() ? this.value : x;
   }
-  
+
   unwrapOrElse(f: (l: L) => R): R {
-    return this.isRight() ? this.value : f(this.value as L)
+    return this.isRight() ? this.value : f(this.value as L);
   }
 }
 
