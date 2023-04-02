@@ -3,6 +3,9 @@ import Maybe from "@sweet-monads/maybe";
 import LazyIterator from "@sweet-monads/iterator";
 
 describe("Iterator", () => {
+  test("toString", () => {
+    expect(LazyIterator.from([]).toString()).toBe("[object LazyIterator]");
+  });
   describe("all", () => {
     it("should say true for all items", () => {
       fc.assert(

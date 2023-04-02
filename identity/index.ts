@@ -75,15 +75,19 @@ export default class Identity<T> implements AsyncMonad<T>, Container<T> {
   }
 
   chain<V>(f: (r: T) => Identity<V>): Identity<V> {
-      return f(this.value as T);
+    return f(this.value as T);
   }
 
   asyncChain<V>(f: (r: T) => Promise<Identity<V>>): Promise<Identity<V>> {
-      return f(this.value as T);
+    return f(this.value as T);
   }
 
   unwrap(): T {
     return this.value;
+  }
+
+  get [Symbol.toStringTag]() {
+    return this.constructor.name;
   }
 }
 

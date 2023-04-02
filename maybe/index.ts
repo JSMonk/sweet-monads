@@ -191,6 +191,10 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
   unwrapOrElse(f: () => T): T {
     return this.isJust() ? this.value : f();
   }
+
+  get [Symbol.toStringTag]() {
+    return "Maybe";
+  }
 }
 
 export type Maybe<T> = MaybeConstructor<T, MaybeState.Just> | MaybeConstructor<T, MaybeState.None>;

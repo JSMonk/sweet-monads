@@ -326,6 +326,10 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
   unwrapOrElse(f: (l: L) => R): R {
     return this.isRight() ? this.value : f(this.value as L);
   }
+
+  get [Symbol.toStringTag]() {
+    return "Either";
+  }
 }
 
 export type Either<L, R> = EitherConstructor<L, R, EitherType.Right> | EitherConstructor<L, R, EitherType.Left>;

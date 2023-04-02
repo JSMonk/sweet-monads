@@ -484,4 +484,8 @@ export default class LazyIterator<I> implements Iterable<I> {
       [left as A[], right as B[]]
     );
   }
+
+  get [Symbol.toStringTag]() {
+    return this.constructor.name;
+  }
 }

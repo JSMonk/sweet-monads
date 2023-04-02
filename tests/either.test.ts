@@ -102,4 +102,8 @@ describe("Either", () => {
     expect(v2.value).toBe(error);
     expect(v2.isLeft()).toBe(true);
   });
+  test("toString", () => {
+    expect(right(1).toString()).toBe("[object Either]");
+    expect(left(1).toString()).toBe("[object Either]");
+  });
 });
