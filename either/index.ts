@@ -319,6 +319,14 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
 
     throw new Error("Either state is Left");
   }
+  
+  unwrapOr(x: R): R {
+    return this.isRight() ? this.value : x
+  }
+  
+  unwrapOrElse(f: (l: L) => R): R {
+    return this.isRight() ? this.value : f(this.value as L)
+  }
 }
 
 export type Either<L, R> = EitherConstructor<L, R, EitherType.Right> | EitherConstructor<L, R, EitherType.Left>;
