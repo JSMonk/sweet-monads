@@ -173,21 +173,36 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
   ): Either<Array<L1 | L2 | L3 | L4 | L5 | L6 | L7 | L8 | L9 | L10>, [R1, R2, R3, R4, R5, R6, R7, R8, R9, R10]>;
   static mergeInMany<L, R>(either: Array<Either<L, R>>): Either<L[], R[]>;
   static mergeInMany(eithers: Array<Either<unknown, unknown>>): EitherConstructor<unknown[], unknown[], EitherType> {
-    return eithers.reduce((res: EitherConstructor<Array<unknown>, Array<unknown>>, v): EitherConstructor<
-      Array<unknown>,
-      Array<unknown>
-    > => {
-      if (res.isLeft()) {
-        return v.isLeft() ? EitherConstructor.left(res.value.concat([v.value])) : res;
-      }
-      return v.isLeft()
-        ? EitherConstructor.left([v.value])
-        : (res.chain(res => v.map(v => [...res, v])) as EitherConstructor<Array<unknown>, Array<unknown>>);
-    }, EitherConstructor.right<Array<unknown>, Array<unknown>>([]));
+    return eithers.reduce<EitherConstructor<unknown[], unknown[], EitherType>>(
+      (
+        res: EitherConstructor<unknown[], unknown[], EitherType>,
+        v
+      ): EitherConstructor<unknown[], unknown[], EitherType> => {
+        if (res.isLeft()) {
+          return v.isLeft() ? EitherConstructor.left(res.value.concat([v.value])) : res;
+        }
+        return v.isLeft()
+          ? EitherConstructor.left([v.value])
+          : (res.chain(res => v.map(v => [...res, v])) as EitherConstructor<unknown[], unknown[], EitherType>);
+      },
+      EitherConstructor.right<unknown[], unknown[]>([])
+    );
   }
 
   static from<T>(v: T): Either<never, T> {
     return EitherConstructor.right(v);
+  }
+
+  static fromPromise<L, R>(promise: Promise<R>): Promise<Either<L, R>> {
+    return promise.then(EitherConstructor.right).catch(EitherConstructor.left);
+  }
+
+  static fromTry<L, R>(fn: () => R): Either<L, R> {
+    try {
+      return EitherConstructor.right(fn());
+    } catch (e) {
+      return EitherConstructor.left(e);
+    }
   }
 
   static right<L = never, T = never>(v: T): Either<L, T> {
@@ -316,7 +331,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
 
 export type Either<L, R> = EitherConstructor<L, R, EitherType.Right> | EitherConstructor<L, R, EitherType.Left>;
 
-export const { merge, mergeInOne, mergeInMany, left, right, from, chain } = EitherConstructor;
+export const { merge, mergeInOne, mergeInMany, left, right, from, fromTry, fromPromise, chain } = EitherConstructor;
 
 export const isEither = <L, R>(value: unknown | Either<L, R>): value is Either<L, R> =>
   value instanceof EitherConstructor;

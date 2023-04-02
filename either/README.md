@@ -43,6 +43,8 @@ const user = getUser(1).map(({ email }) => email);
 - [`left`](#left)
 - [`right`](#right)
 - [`from`](#from)
+- [`fromTry`](#fromtry)
+- [`fromPromise`](#frompromise)
 - [`isEither`](#iseither)
 - [`Either#isLeft`](#eitherisleft)
 - [`Either#isRight`](#eitherisright)
@@ -198,6 +200,34 @@ function from<R>(value: R): Either<never, R>;
 
 ```typescript
 from(2); // Either<never, number>.Right
+```
+
+#### `fromTry`
+
+Returns `Right` with function result or `Left` if function execution throws an error.
+
+```typescript
+function fromTry<L, R>(fn: () => R): Either<L, R>;
+```
+
+```typescript
+fromTry(() => 2); // Either<never, number>.Right
+fromTry(() => {
+  throw new Error("test");
+}); // Either<Error, never>.Left
+```
+
+#### `fromPromise`
+
+Returns `Right` with the promise value if the provided promise fulfilled or `Left` with the error value if the provided promise rejected.
+
+```typescript
+function fromPromise<L, R>(promise: Promise<R>): Promise<Either<L, R>>;
+```
+
+```typescript
+fromPromise(Promise.resolve(2)); // Either<never, number>.Right
+fromPromise(Promise.reject(new Error("test"))); // Either<Error, never>.Left
 ```
 
 #### `isEither`
@@ -478,9 +508,9 @@ const { value } = left(new Error()); // Error
 ```
 
 ```typescript
-right(2).unwrap() // number
-left(new TypeError()).unwrap() // throws value (TypeError)
-left(2).unwrap() // throws 2 (don't do this)
+right(2).unwrap(); // number
+left(new TypeError()).unwrap(); // throws value (TypeError)
+left(2).unwrap(); // throws 2 (don't do this)
 
 left(2).unwrapOr(3) // returns 3
 rigth(2).unwrapOr(3) // returns 2
