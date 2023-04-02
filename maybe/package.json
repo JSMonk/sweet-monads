@@ -5,10 +5,10 @@
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
   "exports": {
+    "types": "./index.d.ts",
     "import": "./esm/index.js",
     "require": "./cjs/index.js"
   },
-  "types": "index.d.ts",
   "homepage": "https://github.com/JSMonk/sweet-monads/tree/master/maybe",
   "repository": {
     "type": "git",
@@ -29,7 +29,7 @@
     "build:after": "run-p build:copy build:fixcjs build:fixesm"
   },
   "dependencies": {
-    "@sweet-monads/interfaces": "^3.1.0"
+    "@sweet-monads/interfaces": "^3.2.0"
   },
   "author": "",
   "license": "MIT"
