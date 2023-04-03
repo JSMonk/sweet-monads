@@ -511,7 +511,7 @@ const { value } = left(new Error()); // Error
 right(2).unwrap(); // number
 left(new TypeError()).unwrap(); // throws error
 
-right(2).unwrap((; // number
+right(2).unwrap(); // number
 left(new TypeError()).unwrap(x => x); // throws TypeError provied in arguments
 
 left(2).unwrapOr(3) // returns 3
