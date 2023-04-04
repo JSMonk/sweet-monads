@@ -211,10 +211,10 @@ function fromTry<L, R>(fn: () => R): Either<L, R>;
 ```
 
 ```typescript
-fromTry(() => 2); // Either<never, number>.Right
+fromTry(() => 2); // Either<unknown, number>.Right
 fromTry(() => {
   throw new Error("test");
-}); // Either<Error, never>.Left
+}); // Either<unknown, never>.Left
 ```
 
 #### `fromPromise`

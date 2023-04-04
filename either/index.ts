@@ -197,7 +197,7 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
     return promise.then(EitherConstructor.right).catch(EitherConstructor.left);
   }
 
-  static fromTry<L, R>(fn: () => R): Either<L, R> {
+  static fromTry<R>(fn: () => R): Either<unknown, R> {
     try {
       return EitherConstructor.right(fn());
     } catch (e) {
