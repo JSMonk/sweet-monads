@@ -325,8 +325,8 @@ export default class LazyIterator<I> implements Iterable<I> {
   find(predicate: (i: I) => boolean): Maybe<I>;
   find(predicate: (i: I) => boolean, withoutMaybe: false): Maybe<I>;
   find(predicate: (i: I) => boolean, withoutMaybe: true): I | undefined;
-  find(predicate: (i: I) => boolean, withoutMaybe = false) {
-    let foundValue = none<I>();
+  find(predicate: (i: I) => boolean, withoutMaybe = false): I | undefined | Maybe<I> {
+    let foundValue: Maybe<I> = none<I>();
     this.forEach(value => {
       if (predicate(value)) {
         foundValue = just(value);
@@ -340,8 +340,8 @@ export default class LazyIterator<I> implements Iterable<I> {
   findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined): Maybe<I>;
   findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe: false): Maybe<T>;
   findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe: true): I | undefined;
-  findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe = false) {
-    let result = none<T>();
+  findMap<T>(predicateMapper: (i: I) => Maybe<T> | T | undefined, withoutMaybe = false): I | undefined | Maybe<T> {
+    let result: Maybe<T> = none<T>();
 
     this.forEach(item => {
       const maybeItem = predicateMapper(item);
@@ -387,7 +387,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   last(withoutMaybe: false): Maybe<I>;
   last(withoutMaybe: true): I | undefined;
   last(withoutMaybe = false) {
-    const result = this.fold((_, a) => just<I>(a), none<I>());
+    const result = this.fold<Maybe<I>>((_, a) => just<I>(a), none<I>());
     return withoutMaybe ? result.value : result;
   }
 
@@ -396,7 +396,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   max(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
   max(f: (i: I) => number, withoutMaybe: true): I | undefined;
   max(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
-    const res = this.fold(
+    const res = this.fold<Maybe<I>>(
       (max, a) => just<I>(max.isNone() || getValue(a) >= getValue(max.value) ? a : (max.value as I)),
       none<I>()
     );
@@ -408,7 +408,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   min(f: (i: I) => number, withoutMaybe: false): Maybe<I>;
   min(f: (i: I) => number, withoutMaybe: true): I | undefined;
   min(getValue = id, withoutMaybe = false): Maybe<I> | I | undefined {
-    const res = this.fold(
+    const res = this.fold<Maybe<I>>(
       (max, a) => just<I>(max.isNone() || getValue(a) < getValue(max.value) ? a : (max.value as I)),
       none<I>()
     );
@@ -418,8 +418,8 @@ export default class LazyIterator<I> implements Iterable<I> {
   nth(n: number): Maybe<I>;
   nth(n: number, withoutMaybe: false): Maybe<I>;
   nth(n: number, withoutMaybe: true): I | undefined;
-  nth(n: number, withoutMaybe = false) {
-    let result = none<I>();
+  nth(n: number, withoutMaybe = false): I | undefined | Maybe<I> {
+    let result: Maybe<I> = none<I>();
     this.forEach(value => {
       if (n-- <= 0) {
         result = just(value);
@@ -449,7 +449,7 @@ export default class LazyIterator<I> implements Iterable<I> {
   position(predicate: (i: I) => boolean): Maybe<number>;
   position(predicate: (i: I) => boolean, withoutMaybe: false): Maybe<number>;
   position(predicate: (i: I) => boolean, withoutMaybe: true): number | undefined;
-  position(predicate: (i: I) => boolean, withoutMaybe = false) {
+  position(predicate: (i: I) => boolean, withoutMaybe = false): Maybe<number> | number | undefined {
     let index = 0;
     let hasFound = false;
     this.forEach(value => {

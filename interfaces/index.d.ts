@@ -1,6 +1,7 @@
 export type { Functor } from "./functor";
 export type { AsyncMonad } from "./async-monad";
 export type { Alternative } from "./alternative";
+export type { Foldable } from "./foldable";
 export type { AsyncFunctor } from "./async-functor";
 export type { AsyncChainable } from "./async-chainable";
 export type { ClassImplements } from "./class-implements";
