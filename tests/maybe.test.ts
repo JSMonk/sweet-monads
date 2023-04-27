@@ -1,5 +1,6 @@
 import * as fc from "fast-check";
-import { fromNullable, just, merge, none } from "@sweet-monads/maybe";
+import * as sinon from "sinon";
+import { from, just, merge, none } from "@sweet-monads/maybe";
 
 describe("Maybe", () => {
   test("merge", () =>
@@ -15,10 +16,10 @@ describe("Maybe", () => {
       })
     ));
 
-  test("fromNullable", () =>
+  test("from", () =>
     fc.assert(
       fc.property(fc.option(fc.string()), option => {
-        const nil = fromNullable(option);
+        const nil = from(option);
         expect(nil.isJust()).toBe(option !== null && option !== undefined);
         expect(nil.isNone()).toBe(option === null || option === undefined);
       })
@@ -51,5 +52,38 @@ describe("Maybe", () => {
 
     expect(v1.unwrapOrElse(() => 6)).toBe(2);
     expect(v2.unwrapOrElse(() => 6)).toBe(6);
+  });
+
+  test("fold", () => {
+    const v1 = just(2);
+    const v2 = none<number>();
+
+    expect(
+      v1.fold(
+        () => 6,
+        x => x
+      )
+    ).toBe(2);
+    expect(
+      v2.fold(
+        () => 6,
+        x => x
+      )
+    ).toBe(6);
+  });
+
+  test("map", () => {
+    const v1 = just(2);
+    const v2 = none<number>();
+
+    const mySpy = sinon.spy(x => x * 2);
+
+    v1.map(x => (x < 3 ? "asd" : undefined)).unwrapOr("asd");
+
+    expect(v1.map(mySpy)).toHaveProperty("value", 4);
+    expect(mySpy.callCount).toBe(1);
+
+    expect(v2.map(mySpy).isNone()).toBeTruthy();
+    expect(mySpy.callCount).toBe(1);
   });
 });

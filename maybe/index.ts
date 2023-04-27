@@ -5,7 +5,8 @@ import type {
   ClassImplements,
   MonadConstructor,
   ApplicativeConstructor,
-  Container
+  Container,
+  Foldable
 } from "@sweet-monads/interfaces";
 
 const enum MaybeState {
@@ -29,7 +30,7 @@ type StaticCheck = ClassImplements<
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Maybe<any>>]
 >;
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
-  implements AsyncMonad<T>, Alternative<T>, Container<T> {
+  implements AsyncMonad<T>, Alternative<T>, Container<T>, Foldable<T, never> {
   static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
     return (m: Maybe<A>): Promise<Maybe<B>> => m.asyncChain(f);
   }
@@ -75,11 +76,7 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     );
   }
 
-  static from<T>(v: T): Maybe<T> {
-    return MaybeConstructor.just(v);
-  }
-
-  static fromNullable<T>(v: T): Maybe<Exclude<T, null | undefined>> {
+  static from<T>(v: T): Maybe<Exclude<T, null | undefined>> {
     return v !== null && v !== undefined
       ? MaybeConstructor.just(v as Exclude<T, null | undefined>)
       : MaybeConstructor.none<Exclude<T, null | undefined>>();
@@ -87,14 +84,14 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
 
   private static _noneInstance: MaybeConstructor<any, MaybeState.None>;
 
-  static none<T = never>(): Maybe<T> {
+  static none<T = never>(): MaybeConstructor<T, MaybeState.None> {
     if (MaybeConstructor._noneInstance === undefined) {
       MaybeConstructor._noneInstance = new MaybeConstructor<T, MaybeState.None>(MaybeState.None, undefined);
     }
     return MaybeConstructor._noneInstance;
   }
 
-  static just<T>(v: T): Maybe<T> {
+  static just<T>(v: T): MaybeConstructor<T, MaybeState.Just> {
     return new MaybeConstructor<T, MaybeState.Just>(MaybeState.Just, v);
   }
 
@@ -112,9 +109,13 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     return this.chain(x => x);
   }
 
-  map<V>(f: (r: T) => V): Maybe<V> {
+  map<V>(f: (r: T) => V): MaybeConstructor<Exclude<V, null | undefined>, MaybeState.Just>;
+  map<V>(f: (r: T) => V): MaybeConstructor<V, MaybeState.None>;
+  map<V>(
+    f: (r: T) => V
+  ): MaybeConstructor<Exclude<V, null | undefined>, MaybeState.Just> | MaybeConstructor<V, MaybeState.None> {
     if (this.isJust()) {
-      return MaybeConstructor.just<V>(f(this.value));
+      return from<V>(f(this.value));
     }
     return MaybeConstructor.none<V>();
   }
@@ -192,6 +193,16 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     return this.isJust() ? this.value : f();
   }
 
+  fold<R, L>(fn1: () => L, fn2: (x: T) => R): R | L {
+    return this.isJust() ? fn2(this.value) : fn1();
+  }
+
+  filter<X extends T>(pred: (x: T) => x is X): Maybe<X>;
+  filter(pred: (x: T) => boolean): Maybe<T>;
+  filter(pred: (x: T) => boolean): Maybe<T> {
+    return this.chain(y => (pred(y) ? just(y) : none()));
+  }
+
   get [Symbol.toStringTag]() {
     return "Maybe";
   }
@@ -199,6 +210,6 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
 
 export type Maybe<T> = MaybeConstructor<T, MaybeState.Just> | MaybeConstructor<T, MaybeState.None>;
 
-export const { merge, just, none, from, fromNullable, chain } = MaybeConstructor;
+export const { merge, just, none, from, chain } = MaybeConstructor;
 
 export const isMaybe = <T>(value: unknown | Maybe<T>): value is Maybe<T> => value instanceof MaybeConstructor;
