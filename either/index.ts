@@ -24,6 +24,7 @@ type StaticCheck = ClassImplements<
   typeof EitherConstructor,
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Either<any, any>>]
 >;
+
 class EitherConstructor<L, R, T extends EitherType = EitherType>
   implements AsyncMonad<R>, Alternative<T>, Container<R> {
   static chain<L, R, NR>(f: (v: R) => Promise<Either<never, NR>>): (m: Either<L, R>) => Promise<Either<L, NR>>;
@@ -193,11 +194,11 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
     return EitherConstructor.right(v);
   }
 
-  static fromPromise<L, R>(promise: Promise<R>): Promise<Either<L, R>> {
+  static fromPromise<R, L = unknown>(promise: Promise<R>): Promise<Either<L, R>> {
     return promise.then(EitherConstructor.right).catch(EitherConstructor.left);
   }
 
-  static fromTry<R>(fn: () => R): Either<unknown, R> {
+  static fromTry<R, L = unknown>(fn: () => R): Either<L, R> {
     try {
       return EitherConstructor.right(fn());
     } catch (e) {
