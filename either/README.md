@@ -214,7 +214,7 @@ function fromTry<L, R>(fn: () => R): Either<L, R>;
 fromTry(() => 2); // Either<never, number>.Right
 fromTry(() => {
   throw new Error("test");
-}); // Either<never, never>.Left
+}); // Either<Error, never>.Left
 ```
 
 #### `fromPromise`
