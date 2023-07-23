@@ -1,5 +1,6 @@
 import * as fc from "fast-check";
 import { fromNullable, just, merge, none } from "@sweet-monads/maybe";
+import { left, right } from "../either";
 
 describe("Maybe", () => {
   test("merge", () =>
@@ -51,5 +52,16 @@ describe("Maybe", () => {
 
     expect(v1.unwrapOrElse(() => 6)).toBe(2);
     expect(v2.unwrapOrElse(() => 6)).toBe(6);
+  });
+
+  test("fold", () => {
+    const mapNone = (): string | number => {
+      return "none";
+    };
+    const mapJust = (value: number): string | number => {
+      return value * 4;
+    };
+    expect(just(2).fold(mapNone, mapJust)).toBe(8);
+    expect(none().fold(mapNone, mapJust)).toBe("none");
   });
 });

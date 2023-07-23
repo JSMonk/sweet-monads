@@ -51,6 +51,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`Maybe#asyncApply`](#maybeasyncapply)
 - [`Maybe#chain`](#maybechain)
 - [`Maybe#asyncChain`](#maybeasyncchain)
+- [`Maybe#fold`](#maybefold)
 - [Helpers](#helpers)
 
 #### `chain`
@@ -376,6 +377,26 @@ const newVal2 = v1.asyncChain(a => Promise.resolve(none()));
 const newVal3 = v2.asyncChain(a => Promise.resolve(just(a.toString())));
 // Promise<Maybe<string>>.None without value
 const newVal4 = v2.asyncChain(a => Promise.resolve(none()));
+```
+
+##### `Maybe#fold`
+
+```typescript
+function fold<C>(mapNone: () => C, mapJust: (value: T) => C): C;
+```
+
+- Returns value mapped by one of mapper functions. If `Maybe` is `Just` then `mapJust` is result of `mapJust` 
+  is returned, otherwise return of `mapNone` gets returned.
+
+Example:
+```typescript
+const v1 = just(2);
+const v2 = none<number>();
+
+// "just: 4"
+const newVal1 = v1.fold(() => 'none', value => 'just: '+value*2) 
+// "none"
+const newVal2 = v1.fold(() => 'none', value => 'just: '+value*2)
 ```
 
 #### Helpers

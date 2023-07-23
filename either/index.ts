@@ -5,7 +5,8 @@ import type {
   ClassImplements,
   MonadConstructor,
   ApplicativeConstructor,
-  Container
+  Container,
+  Catamorphism
 } from "@sweet-monads/interfaces";
 
 const enum EitherType {
@@ -25,7 +26,7 @@ type StaticCheck = ClassImplements<
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Either<any, any>>]
 >;
 class EitherConstructor<L, R, T extends EitherType = EitherType>
-  implements AsyncMonad<R>, Alternative<T>, Container<R> {
+  implements AsyncMonad<R>, Alternative<T>, Container<R>, Catamorphism<L, R> {
   static chain<L, R, NR>(f: (v: R) => Promise<Either<never, NR>>): (m: Either<L, R>) => Promise<Either<L, NR>>;
   static chain<L, R, NL>(f: (v: R) => Promise<Either<NL, never>>): (m: Either<L, R>) => Promise<Either<NL | L, R>>;
   static chain<L, R, NL, NR>(f: (v: R) => Promise<Either<NL, NR>>): (m: Either<L, R>) => Promise<Either<NL | L, NR>>;
@@ -325,6 +326,10 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
 
   unwrapOrElse(f: (l: L) => R): R {
     return this.isRight() ? this.value : f(this.value as L);
+  }
+
+  fold<C>(mapLeft: (l: L) => C, mapRight: (r: R) => C) {
+    return this.isRight() ? mapRight(this.value as R) : mapLeft((this as Either<L, R>).value as L);
   }
 
   get [Symbol.toStringTag]() {

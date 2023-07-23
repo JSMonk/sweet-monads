@@ -106,4 +106,15 @@ describe("Either", () => {
     expect(right(1).toString()).toBe("[object Either]");
     expect(left(1).toString()).toBe("[object Either]");
   });
+
+  test("fold", () => {
+    const mapLeft = (value: number) => {
+      return value * 2;
+    };
+    const mapRight = (value: number) => {
+      return value * 3;
+    };
+    expect(right(2).fold(mapLeft, mapRight)).toBe(6);
+    expect(left(1).fold(mapLeft, mapRight)).toBe(2);
+  });
 });
