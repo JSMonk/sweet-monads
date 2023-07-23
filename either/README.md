@@ -225,8 +225,7 @@ fromTry<number, ParsingError>(() => {
     return result;
 })
 ```
-
-Enforcing types might be error prone. [Read more](#enforcing-error-types) about it. 
+Enforcing error types might be error-prone. [Read more](#enforcing-error-types) about it. 
 
 #### `fromPromise`
 
@@ -239,7 +238,12 @@ function fromPromise<L, R>(promise: Promise<R>): Promise<Either<L, R>>;
 ```typescript
 fromPromise(Promise.resolve(2)); // Either<never, number>.Right
 fromPromise(Promise.reject(new Error("test"))); // Either<unknown, never>.Left
+
+// enforcing error type
+fromPromise<number, Error>(Promise.resolve(2));
 ```
+
+Enforcing error types might be error-prone. [Read more](#enforcing-error-types) about it. 
 
 #### `isEither`
 
