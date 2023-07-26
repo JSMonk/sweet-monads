@@ -1,3 +1,3 @@
-export interface Catamorphism<A, B> {
-  fold<C>(l: (a: A) => C, r: (b: B) => C): C;
+export interface Catamorphism<Variants extends unknown[]> {
+  fold<C>(...args: { [K in keyof Variants]: (value: Variants[K]) => C }): C;
 }
