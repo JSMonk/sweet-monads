@@ -30,7 +30,7 @@ type StaticCheck = ClassImplements<
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Maybe<any>>]
 >;
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
-  implements AsyncMonad<T>, Alternative<T>, Container<T>, Catamorphism<[undefined, T]> {
+  implements AsyncMonad<T>, Alternative<T>, Container<T>, Catamorphism<[void, T]> {
   static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
     return (m: Maybe<A>): Promise<Maybe<B>> => m.asyncChain(f);
   }
