@@ -7,6 +7,7 @@ import type {
   Container
 } from "@sweet-monads/interfaces";
 
+
 function isWrappedFunction<A, B>(m: Identity<A> | Identity<(a: A) => B>): m is Identity<(a: A) => B> {
   return typeof m.value === "function";
 }
@@ -47,6 +48,7 @@ export default class Identity<T> implements AsyncMonad<T>, Container<T> {
 
   apply<A, B>(this: Identity<(a: A) => B>, arg: Identity<A>): Identity<B>;
   apply<A, B>(this: Identity<A>, fn: Identity<(a: A) => B>): Identity<B>;
+
   apply<A, B>(this: Identity<A> | Identity<(a: A) => B>, argOrFn: Identity<A> | Identity<(a: A) => B>): Identity<B> {
     if (isWrappedFunction(this)) {
       return (argOrFn as Identity<A>).map(this.value as (a: A) => B);
@@ -54,6 +56,7 @@ export default class Identity<T> implements AsyncMonad<T>, Container<T> {
     if (isWrappedFunction(argOrFn)) {
       return (argOrFn as Identity<(a: A) => B>).apply(this as Identity<A>);
     }
+
     throw new Error("Some of the arguments should be a function");
   }
 
@@ -63,7 +66,7 @@ export default class Identity<T> implements AsyncMonad<T>, Container<T> {
     this: Identity<Promise<A> | A> | Identity<(a: A) => Promise<B>>,
     argOrFn: Identity<Promise<A> | A> | Identity<(a: A) => Promise<B>>
   ): Promise<Identity<B>> {
-    if (isWrappedAsyncFunction(this)) {
+    if (isWrappedFunction(this)) {
       return (argOrFn as Identity<Promise<A> | A>)
         .map(a => Promise.resolve(a))
         .asyncMap(pa => pa.then(this.value as (a: A) => Promise<B>));

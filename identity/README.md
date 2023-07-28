@@ -97,6 +97,7 @@ function isIdentity<T>(value: unknown | Identity<T>): value is Identity<T>;
 
 ```typescript
 const value: unknown = 2;
+
 if (isIdentity(value)) {
   // ... value is Identity<unknown> at this block
 }
