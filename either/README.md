@@ -58,6 +58,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`Either#asyncApply`](#eitherasyncapply)
 - [`Either#chain`](#eitherchain)
 - [`Either#asyncChain`](#eitherasyncchain)
+- [`Either#fold`](#eitherfold)
 - [Helpers](#helpers)
 
 #### `chain`
@@ -495,6 +496,25 @@ const newVal2 = v1.asyncChain(a => left<TypeError, string>(new TypeError()));
 const newVal3 = v2.asyncChain(a => right<TypeError, string>(a.toString()));
 // Promise<Either<Error | TypeError, string>.Left> with value new Error()
 const newVal4 = v2.chain(a => left<TypeError, string>(new TypeError()));
+```
+
+##### `Either#fold`
+
+```typescript
+function fold<C>(mapLeft: (value: L) => C, mapRight: (value: R) => C): C;
+```
+
+- Returns values mapped by `mapRight` if `Either` is `Right`, otherwise value mapped by `mapLeft`
+  Example:
+
+```typescript
+const v1 = right<Error, number>(2);
+const v2 = left<Error, number>(new Error());
+
+// 4
+const newVal1 = v1.fold(() => 'fail', value => value * 2);
+// "fail"
+const newVal2 = v2.fold(() => 'fail', value => value * 2);
 ```
 
 #### Helpers

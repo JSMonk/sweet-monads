@@ -5,7 +5,8 @@ import type {
   ClassImplements,
   MonadConstructor,
   ApplicativeConstructor,
-  Container
+  Container,
+  Catamorphism
 } from "@sweet-monads/interfaces";
 
 const enum MaybeState {
@@ -29,7 +30,7 @@ type StaticCheck = ClassImplements<
   [MonadConstructor, ApplicativeConstructor, AsyncChainable<Maybe<any>>]
 >;
 export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
-  implements AsyncMonad<T>, Alternative<T>, Container<T> {
+  implements AsyncMonad<T>, Alternative<T>, Container<T>, Catamorphism<[void, T]> {
   static chain<A, B>(f: (v: A) => Promise<Maybe<B>>) {
     return (m: Maybe<A>): Promise<Maybe<B>> => m.asyncChain(f);
   }
@@ -190,6 +191,10 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
 
   unwrapOrElse(f: () => T): T {
     return this.isJust() ? this.value : f();
+  }
+
+  fold<C>(mapNone: (value: undefined) => C, mapJust: (r: T) => C) {
+    return this.isJust() ? mapJust(this.value as T) : mapNone(undefined);
   }
 
   get [Symbol.toStringTag]() {

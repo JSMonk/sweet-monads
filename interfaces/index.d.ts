@@ -8,3 +8,4 @@ export type { AsyncApplicative } from "./async-applicative";
 export type { Monad, MonadConstructor } from "./monad";
 export type { Applicative, ApplicativeConstructor } from "./applicative";
 export type { Container } from "./container";
+export type { Catamorphism } from "./catamorphism";
