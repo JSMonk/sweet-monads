@@ -64,4 +64,14 @@ describe("Maybe", () => {
     expect(just(2).fold(mapNone, mapJust)).toBe(8);
     expect(none().fold(mapNone, mapJust)).toBe("none");
   });
+
+  test("mapNullable", () => {
+    const v1 = just(2);
+    const v2 = none<number>();
+
+    expect(v1.mapNullable(a => a.toString()).unwrap()).toBe("2");
+    expect(v2.mapNullable(a => a.toString())).toBe(none());
+    expect(v2.mapNullable<string | null>(a => null)).toBe(none());
+    expect(v2.mapNullable<string | void>(a => undefined)).toBe(none());
+  });
 });

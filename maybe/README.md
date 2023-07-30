@@ -144,7 +144,7 @@ const v2 = from<2>(2); // Maybe<2>.Just
 #### `fromNullable`
 
 ```typescript
-function fromNullable<T>(value: T): Maybe<Exclude<T, null | undefined>>;
+function fromNullable<T>(value: T): Maybe<NonNullable<T>>;
 ```
 
 - Returns `Maybe` with `Just` state which contain value with `T` type if value is not null or undefined and `None` otherwise.
@@ -250,6 +250,42 @@ v3.join(); // Maybe.None without value
 ```
 
 #### `Maybe#map`
+
+```typescript
+function map<Val, NewVal>(fn: (val: Val) => NewVal): Maybe<NewVal>;
+```
+
+- Returns mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` otherwise `None`
+  Example:
+
+```typescript
+const v1 = just(2);
+const v2 = none<number>();
+
+const newVal1 = v1.map(a => a.toString()); // Maybe<string>.Just with value "2"
+const newVal2 = v2.map(a => a.toString()); // Maybe<string>.None without value
+```
+
+#### `Maybe#mapNullable`
+
+```typescript
+function mapNullable<Val, NewVal>(fn: (val: Val) => (NewVal | null | undefined)): Maybe<NonNullable<NewVal>>;
+```
+
+- Returns mapped by `fn` function value wrapped by `Maybe` if `Maybe` is `Just` and the returned value is not `null` or `undefined` otherwise `None`
+  Example:
+
+```typescript
+const v1 = just(2);
+const v2 = none<number>();
+
+const newVal1 = v1.mapNullable(a => a.toString()); // Maybe<string>.Just with value "2"
+const newVal2 = v2.mapNullable(a => a.toString()); // Maybe<string>.None without value
+const newVal3 = v2.mapNullable<string | null>(a => null); // Maybe<string>.None without value
+const newVal4 = v2.mapNullable<string | void>(a => undefined); // Maybe<string>.None without value
+```
+
+#### `Maybe#mapNullable`
 
 ```typescript
 function map<Val, NewVal>(fn: (val: Val) => NewVal): Maybe<NewVal>;

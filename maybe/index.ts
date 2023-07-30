@@ -80,10 +80,8 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     return MaybeConstructor.just(v);
   }
 
-  static fromNullable<T>(v: T): Maybe<Exclude<T, null | undefined>> {
-    return v !== null && v !== undefined
-      ? MaybeConstructor.just(v as Exclude<T, null | undefined>)
-      : MaybeConstructor.none<Exclude<T, null | undefined>>();
+  static fromNullable<T>(v: T): Maybe<NonNullable<T>> {
+    return v != null ? MaybeConstructor.just(v as NonNullable<T>) : MaybeConstructor.none<NonNullable<T>>();
   }
 
   private static _noneInstance: MaybeConstructor<any, MaybeState.None>;
@@ -118,6 +116,16 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
       return MaybeConstructor.just<V>(f(this.value));
     }
     return MaybeConstructor.none<V>();
+  }
+
+  mapNullable<V>(f: (r: T) => V | null | undefined): Maybe<NonNullable<V>> {
+    if (this.isJust()) {
+      const result = f(this.value);
+      if (result == null) return MaybeConstructor.none();
+      return MaybeConstructor.just(result);
+    }
+
+    return MaybeConstructor.none();
   }
 
   asyncMap<V>(f: (r: T) => Promise<V>): Promise<Maybe<V>> {
