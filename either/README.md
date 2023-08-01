@@ -215,8 +215,18 @@ function fromTry<L, R>(fn: () => R): Either<L, R>;
 fromTry(() => 2); // Either<never, number>.Right
 fromTry(() => {
   throw new Error("test");
-}); // Either<Error, never>.Left
+}); // Either<unknown, never>.Left
+
+// enforcing error type
+fromTry<number, ParsingError>(() => {
+    const result = parseInt(value, 10);
+    if (Number.isNaN(result)) {
+        throw new ParsingError('Invalid number');
+    }
+    return result;
+})
 ```
+Enforcing error types might be error-prone. [Read more](#enforcing-error-types) about it. 
 
 #### `fromPromise`
 
@@ -228,8 +238,13 @@ function fromPromise<L, R>(promise: Promise<R>): Promise<Either<L, R>>;
 
 ```typescript
 fromPromise(Promise.resolve(2)); // Either<never, number>.Right
-fromPromise(Promise.reject(new Error("test"))); // Either<Error, never>.Left
+fromPromise(Promise.reject(new Error("test"))); // Either<unknown, never>.Left
+
+// enforcing error type
+fromPromise<number, Error>(Promise.resolve(2));
 ```
+
+Enforcing error types might be error-prone. [Read more](#enforcing-error-types) about it. 
 
 #### `isEither`
 
@@ -540,6 +555,71 @@ rigth(2).unwrapOr(3) // returns 2
 left(2).unwrapOrElse(num => num * 2) // returns 4
 right(2).unwrapOrElse(num => num * 2) // returns 2
 ```
+
+#### Enforcing error types
+
+Typescript cannot detect type of thrown errors or rejected promises.
+
+```typescript
+class ParsingError {
+    constructor(readonly message: string) {}
+}
+
+// type is Either<unknown, number> but in theory should be Either<ParsingError, number>
+const newVal1 = fromTry(() => {
+    if (Math.random() > 0.5) {
+        return 10;
+    }
+    throw new ParsingError('Error')
+}); 
+
+// type is Either<unknown, never> but in theory should be Either<ParsingError, never>
+const newVal2 = fromPromise(Promise.reject(new ParsingError('Error')))
+```
+
+Having that on might you might sometimes need to add a hint for Typescript.
+```typescript
+// Either<ParsingError, number>
+const newVal1 = fromTry<number, ParsingError>(() => {
+    if (Math.random() > 0.5) {
+        return 10;
+    }
+    throw new ParsingError('Error')
+});
+
+// Either<ParsingError, never>.Left
+const newVal2 = fromPromise<number, ParsingError>(() => {
+  throw new Error("test");
+}); 
+```
+
+This might be error-prone. 
+You might change type of thrown error and forgot to change hint for typescript. In that case Typescript will never spot the error.
+```typescript
+const newVal1 = fromTry<number, ParsingError>(() => { // invalid type hint
+    if (Math.random() > 0.5) {
+        return 10;
+    }
+    throw new AnotherErrorType('Error')
+});
+```
+
+That is why it is safer to `mapLeft` thrown errors with type guards.
+```typescript
+// Either<AnotherErrorType, number>
+const newVal1 = fromTry(() => {
+   if (Math.random() > 0.5) {
+       return 10;
+   }
+   throw new AnotherErrorType();
+})
+    .mapLeft(x=> {
+        if (x instanceof AnotherErrorType) {
+            return x;
+        }
+        throw new Error('Invalid error type thrown');
+    })
+``` 
 
 ## License
 
