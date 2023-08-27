@@ -1,6 +1,6 @@
 {
   "name": "@sweet-monads/either",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "description": "Either monad",
   "main": "./cjs/index.js",
   "module": "./esm/index.js",
@@ -29,7 +29,7 @@
     "url": "https://github.com/JSMonk/sweet-monads/tree/master/either"
   },
   "dependencies": {
-    "@sweet-monads/interfaces": "^3.2.0"
+    "@sweet-monads/interfaces": "^3.3.0"
   },
   "author": "JSMonk",
   "license": "MIT"
