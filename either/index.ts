@@ -195,14 +195,14 @@ class EitherConstructor<L, R, T extends EitherType = EitherType>
   }
 
   static fromPromise<L, R>(promise: Promise<R>): Promise<Either<L, R>> {
-    return promise.then(EitherConstructor.right).catch(EitherConstructor.left);
+    return promise.then(EitherConstructor.right).catch(e => EitherConstructor.left(e as L));
   }
 
   static fromTry<L, R>(fn: () => R): Either<L, R> {
     try {
       return EitherConstructor.right(fn());
     } catch (e) {
-      return EitherConstructor.left(e);
+      return EitherConstructor.left(e as L);
     }
   }
 
