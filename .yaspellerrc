@@ -27,6 +27,7 @@
     "composable",
     "updatable",
     "undefinable",
-    "iterables"
+    "iterables",
+    "Maybe"
   ]
 }

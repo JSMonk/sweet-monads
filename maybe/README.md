@@ -52,6 +52,7 @@ const user = getUser(1).map(({ email }) => email);
 - [`Maybe#chain`](#maybechain)
 - [`Maybe#asyncChain`](#maybeasyncchain)
 - [`Maybe#fold`](#maybefold)
+- [`Maybe#filter`](#maybefilter)
 - [Helpers](#helpers)
 
 #### `chain`
@@ -433,6 +434,27 @@ const v2 = none<number>();
 const newVal1 = v1.fold(() => 'none', value => 'just: '+value*2) 
 // "none"
 const newVal2 = v1.fold(() => 'none', value => 'just: '+value*2)
+```
+
+##### `Maybe#filter`
+
+```typescript
+function filter(pred: (T) => boolean): Maybe<T>;
+```
+
+- Returns `Just` with current value if predicate function returns true otherwise `None`
+
+Example:
+```typescript
+const even = just(2);
+const odd = just(1);
+
+const isEven = (n: number) => n % 2 == 0;
+
+// "just: 2"
+const newVal1 = even.filter(isEven) 
+// "none"
+const newVal2 = odd.filter(isEven)
 ```
 
 #### Helpers

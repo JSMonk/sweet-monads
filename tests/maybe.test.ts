@@ -1,6 +1,5 @@
 import * as fc from "fast-check";
 import { fromNullable, just, merge, none } from "@sweet-monads/maybe";
-import { left, right } from "../either";
 
 describe("Maybe", () => {
   test("merge", () =>
@@ -63,6 +62,16 @@ describe("Maybe", () => {
     };
     expect(just(2).fold(mapNone, mapJust)).toBe(8);
     expect(none().fold(mapNone, mapJust)).toBe("none");
+  });
+
+  test("filter", () => {
+    const even = just(2);
+    const odd = just(1);
+
+    const isEven = (n: number) => n % 2 == 0;
+
+    expect(even.filter(isEven)).toStrictEqual(even);
+    expect(odd.filter(isEven)).toStrictEqual(none());
   });
 
   test("mapNullable", () => {
