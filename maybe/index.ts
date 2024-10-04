@@ -205,6 +205,12 @@ export default class MaybeConstructor<T, S extends MaybeState = MaybeState>
     return this.isJust() ? mapJust(this.value as T) : mapNone(undefined);
   }
 
+  filter<X extends T>(pred: (x: T) => x is X): Maybe<X>;
+  filter(pred: (x: T) => boolean): Maybe<T>;
+  filter(pred: (x: T) => boolean): Maybe<T> {
+    return this.chain(y => (pred(y) ? just(y) : none()));
+  }
+
   get [Symbol.toStringTag]() {
     return "Maybe";
   }
